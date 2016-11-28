@@ -1,3 +1,18 @@
+*Please note* This repository has been neglected. It basically serves as
+the genesis of the files src/thc.cpp and src/thc.h in the peer repository
+tarrasch-chess-gui. Those files serve as a bedrock chess API for the program
+Tarrasch Chess GUI. Those two files are basically a concatenation of the files
+present in this library. The idea for that was inspired by SQLite, which is
+similarly distributed as single concatenated .c and .h files to avoid the
+pain point of integrating a library into a project.
+
+My recommendation  is to use files src/thc.cpp and src/thc.h from peer
+repository tarrasch-chess-gui in preference to this repository, simply
+because they are being actively used. Of course it is easier to understand
+the more granular presentation of the code in this repository. One day it
+would be nice to add a python script or similar to this repository to
+automatically regenerate the concatenated two file version of the library.
+
 Background
 ==========
 
