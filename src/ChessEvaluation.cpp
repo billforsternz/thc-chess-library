@@ -729,7 +729,7 @@ static int black_pieces[]=
  ****************************************************************************/
 void ChessEvaluation::Planning()
 {    
-    Square square, weaker_king, bonus_square;
+    Square weaker_king, bonus_square;
     char piece;
     int score_black_material = 0;
     int score_white_material = 0;
@@ -739,7 +739,7 @@ void ChessEvaluation::Planning()
     // Get material for both sides
     int score_black_pieces = 0;
     int score_white_pieces = 0;
-    for( square=a8; square<=h1; ++square )
+    for( Square square=a8; square<=h1; ++square )
     {
         piece = squares[square];
         score_black_material += black_material[ piece ];
@@ -863,7 +863,6 @@ void ChessEvaluation::Planning()
 void ChessEvaluation::EvaluateLeaf( int &material, int &positional )
 {    
 	//DIAG_evaluate_leaf_count++;	
-    Square square;
     char   piece;
     int file;
     int bonus = 0;
@@ -950,7 +949,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
     int score_white_pieces = 0;
 
     // a8->h8    
-    for( square=a8; square<=h8; ++square )
+    for( Square square=a8; square<=h8; ++square )
     {
         piece = squares[square];
         score_black_material += black_material[ piece ];
@@ -1030,7 +1029,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
     unsigned int next_passer_mask = 0;
     unsigned int passer_mask = 0;
     unsigned int three_files = 0x1c0;   // 1 1100 0000
-    for( square=a7; square<=h7; ++square )
+    for( Square square=a7; square<=h7; ++square )
     {
         piece = squares[square];
         score_black_material += black_material[ piece ];
@@ -1120,7 +1119,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
     // a6->h6
     unsigned int file_mask = 0x80;  // 0 1000 0000
     three_files = 0x1c0;            // 1 1100 0000
-    for( square=a6; square<=h6; ++square )
+    for( Square square=a6; square<=h6; ++square )
     {
         piece = squares[square];
         score_black_material += black_material[ piece ];
@@ -1208,7 +1207,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
     // a5->h5;
     file_mask   = 0x80;             // 0 1000 0000
 //  three_files = 0x1c0;            // 1 1100 0000
-    for( square=a5; square<=h5; ++square )
+    for( Square square=a5; square<=h5; ++square )
     {
         piece = squares[square];
         score_black_material += black_material[ piece ];
@@ -1301,7 +1300,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
     next_passer_mask = 0;
     passer_mask = 0;
     three_files = 0x1c0;   // 1 1100 0000
-    for( square=a2; square<=h2; ++square )
+    for( Square square=a2; square<=h2; ++square )
     {
         piece = squares[square];
         score_black_material += black_material[ piece ];
@@ -1391,7 +1390,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
     // a3->h3
     file_mask = 0x80;       // 0 1000 0000
     three_files = 0x1c0;    // 1 1100 0000
-    for( square=a3; square<=h3; ++square )
+    for( Square square=a3; square<=h3; ++square )
     {
         piece = squares[square];
         score_black_material += black_material[ piece ];
@@ -1479,7 +1478,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
     // a4->h4
     file_mask   = 0x80;             // 0 1000 0000
 //  three_files = 0x1c0;            // 1 1100 0000
-    for( square=a4; square<=h4; ++square )
+    for( Square square=a4; square<=h4; ++square )
     {
         piece = squares[square];
         score_black_material += black_material[ piece ];
@@ -1569,7 +1568,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
     }
 
     // a1->h1
-    for( square=a1; square<=h1; ++square )
+    for( Square square=a1; square<=h1; ++square )
     {
         piece = squares[square];
         score_black_material += black_material[ piece ];
@@ -1879,9 +1878,9 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
             while( p > black_pawns_buf )
             {
                 p--;
-                Square square = *p;
-                int pfile2 = IFILE(square);
-                int prank2 = IRANK(square);
+                Square square2 = *p;
+                int pfile2 = IFILE(square2);
+                int prank2 = IRANK(square2);
                 if( (prank2==prank1+1 || prank2+1==prank1) &&
                     (pfile2==pfile1+1 || pfile2+1==pfile1)
                   )
@@ -1954,9 +1953,9 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
             while( p > white_pawns_buf )
             {
                 p--;
-                Square square = *p;
-                int pfile2 = IFILE(square);
-                int prank2 = IRANK(square);
+                Square square2 = *p;
+                int pfile2 = IFILE(square2);
+                int prank2 = IRANK(square2);
                 if( (prank2==prank1+1 || prank2+1==prank1) &&
                     (pfile2==pfile1+1 || pfile2+1==pfile1)
                   )

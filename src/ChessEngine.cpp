@@ -571,53 +571,7 @@ bool ChessEngine::CalculateNextMove( bool new_game, vector<Move> &pv, Move &best
  ****************************************************************************/
 bool ChessEngine::IsRepitition()
 {
-    bool repitition=false;
-
-    //  Save those aspects of current position that are changed by multiple 
-    //  PopMove() calls as we search backwards (i.e. squares, white,
-    //  detail, detail_idx)
-    bool save_white = white;
-    char save_squares[sizeof(squares)];
-    memcpy( save_squares, squares, sizeof(save_squares) );
-    unsigned char save_detail_idx = detail_idx;  // must be unsigned char
-    unsigned char idx             = history_idx; // must be unsigned char
-    DETAIL_SAVE;
-
-    // Search backwards ....
-    int nbr_half_moves = (full_move_count-1)*2 + (!white?1:0);
-    if( nbr_half_moves > nbrof(history)-1 )
-        nbr_half_moves = nbrof(history)-1;
-    if( nbr_half_moves > nbrof(detail_stack)-1 )
-        nbr_half_moves = nbrof(detail_stack)-1;
-    for( int i=0; i<nbr_half_moves; i++ )
-    {
-        Move m = history[--idx];
-        if( m.src == m.dst )
-            break;  // clearing history prevents bogus repitition draws
-        PopMove(m);
-
-        // ... looking for matching positions
-        if( white    == save_white      && // quick ones first!
-            DETAIL_EQ                   &&
-            0 == memcmp(squares,save_squares,sizeof(squares) )
-          )
-        {
-            repitition = true;
-            break;
-        }
-
-        // For performance reasons, abandon search early if pawn move
-        //  or capture
-        if( squares[m.src]=='P' || squares[m.src]=='p'  || !IsEmptySquare(m.capture) )
-            break;
-    }
-
-    // Restore current position
-    memcpy( squares, save_squares, sizeof(squares) );
-    detail_idx = save_detail_idx;
-    DETAIL_RESTORE;
-    white      = save_white;
-    return repitition;
+    return GetRepetitionCount() > 1;
 }
 
 /****************************************************************************
@@ -655,10 +609,10 @@ int ChessEngine::Score( MOVELIST &ml, int &besti )
     return( score );
 }
 
-const char *indent( int recurse_level )
+const char *indent( int recurse_level_ )
 {
     static const char *buf = "                                               ";
-    int nbr_spaces = recurse_level*2;
+    int nbr_spaces = recurse_level_*2;
     int len = (int)strlen(buf);
     int offset = len>=nbr_spaces ? len-nbr_spaces : 0;
     return buf + offset;
@@ -1021,7 +975,7 @@ void ChessEngine::TestGame()
     std::string nmove;
     Move move;
     const char *s, *txt;
-    const char *moves[] =
+    const char *moves_[] =
     {
         "B Nf3",      "H e5",
         "E Nxe5",     "H Nc6",
@@ -1057,7 +1011,7 @@ void ChessEngine::TestGame()
     unsigned long before = GetTickCount();
     for(;;)
     {
-        txt = moves[idx++];
+        txt = moves_[idx++];
         if( txt == NULL )
         {
             complete = true;
@@ -1067,8 +1021,8 @@ void ChessEngine::TestGame()
         txt += 2;
         if( typ=='B' || typ=='H' )  // book or human move
         {
-            bool okay = move.NaturalIn( this, txt );
-            if( !okay )
+            bool ok = move.NaturalIn( this, txt );
+            if( !ok )
             {
                 printf( "Couldn't convert nmove=%s\n", txt );
                 break;
@@ -1112,6 +1066,55 @@ void ChessEngine::TestGame()
 
 void ChessEngine::TestInternals()
 {
+    Init();
+    Move mv;
+    cprintf( "All castling allowed %08x\n", *DETAIL_ADDR );
+    mv.TerseIn(this,"g1f3");
+    PlayMove(mv);
+    mv.TerseIn(this,"g8f6");
+    PlayMove(mv);
+    cprintf( "All castling allowed %08x\n", *DETAIL_ADDR );
+    mv.TerseIn(this,"h1g1");
+    PlayMove(mv);
+    mv.TerseIn(this,"h8g8");
+    PlayMove(mv);
+    mv.TerseIn(this,"g1h1");
+    PlayMove(mv);
+    cprintf( "WKING castling not allowed %08x\n", *DETAIL_ADDR );
+    mv.TerseIn(this,"g8h8");
+    PlayMove(mv);
+    cprintf( "WKING BKING castling not allowed %08x\n", *DETAIL_ADDR );
+    mv.TerseIn(this,"b1c3");
+    PlayMove(mv);
+    mv.TerseIn(this,"b8c6");
+    PlayMove(mv);
+    mv.TerseIn(this,"a1b1");
+    PlayMove(mv);
+    mv.TerseIn(this,"a8b8");
+    PlayMove(mv);
+    mv.TerseIn(this,"b1a1");
+    PlayMove(mv);
+    cprintf( "WKING BKING WQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
+    mv.TerseIn(this,"b8a8");
+    PlayMove(mv);
+    cprintf( "WKING BKING WQUEEN BQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
+    ChessPosition::Init();
+    cprintf( "All castling allowed %08x\n", *DETAIL_ADDR );
+    mv.TerseIn(this,"e2e3");
+    PlayMove(mv);
+    mv.TerseIn(this,"e7e6");
+    PlayMove(mv);
+    cprintf( "All castling allowed %08x\n", *DETAIL_ADDR );
+    mv.TerseIn(this,"e1e2");
+    PlayMove(mv);
+    mv.TerseIn(this,"e8e7");
+    PlayMove(mv);
+    mv.TerseIn(this,"e2e1");
+    PlayMove(mv);
+    cprintf( "WKING WQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
+    mv.TerseIn(this,"e7e8");
+    PlayMove(mv);
+    cprintf( "WKING WQUEEN BKING BQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
     const char *fen = "b3k2r/8/8/8/8/8/8/R3K2R w KQk - 0 1";
     Move move;
     Forsyth(fen);

@@ -454,10 +454,10 @@ std::string ChessPosition::ForsythPublish()
         str += '-';
     else
     {
-        char file = 'a'+(char)save_file;
-        str += file;
-        char rank = '1'+(char)save_rank;
-        str += rank;
+        char file2 = 'a'+(char)save_file;
+        str += file2;
+        char rank2 = '1'+(char)save_rank;
+        str += rank2;
     }
 
     // Counts

@@ -74,7 +74,10 @@ inline Square& operator++ ( Square& sq )
 #define DETAIL_ADDR         ( (DETAIL*) ((char *)this + sizeof(ChessPosition) - sizeof(DETAIL))  )
 #define DETAIL_SAVE         DETAIL tmp = *DETAIL_ADDR
 #define DETAIL_RESTORE      *DETAIL_ADDR = tmp
-#define DETAIL_EQ           ( *DETAIL_ADDR == tmp )
+#define DETAIL_EQ_ALL               ( (*DETAIL_ADDR&0x0fffffff) == (tmp&0x0fffffff) )
+#define DETAIL_EQ_CASTLING          ( (*DETAIL_ADDR&0x0f000000) == (tmp&0x0f000000) )
+#define DETAIL_EQ_KING_POSITIONS    ( (*DETAIL_ADDR&0x00ffff00) == (tmp&0x00ffff00) )
+#define DETAIL_EQ_EN_PASSANT        ( (*DETAIL_ADDR&0x000000ff) == (tmp&0x000000ff) )
 #define DETAIL_PUSH         detail_stack[detail_idx++] = *DETAIL_ADDR
 #define DETAIL_POP          *DETAIL_ADDR = detail_stack[--detail_idx]
 #define DETAIL_CASTLING(sq) *( 3 + (unsigned char*)DETAIL_ADDR ) &= castling_prohibited_table[sq]

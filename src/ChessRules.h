@@ -20,7 +20,12 @@ class ChessRules: public ChessPosition
 public:
     // Default constructor
     ChessRules() : ChessPosition() { Init(); }
-    void Init()
+    void Init()    // TODO == ChessRules::Init() should call ChessPosition::Init() right ????!!!!
+                   // Thoughts: Maybe - but can't do this casually. For example we would need to
+                   // change the code that converts ChessPosition to ChessRules below, both the
+                   // copy constructor and assignment operator use ChessRules::Init() at a time
+                   // when it would be disastrous to set the initial position (because
+                   // we have carefully copied a position into the ChessRules object)
     {
         history_idx    = 1;    // prevent bogus repition draws
         history[0].src = a8;   // (look backwards through history stops when src==dst)
@@ -61,6 +66,9 @@ public:
 
     // Check draw rules (50 move rule etc.)
     bool IsDraw( bool white_asks, DRAWTYPE &result );
+
+    // Get number of times position has been repeated
+    int GetRepetitionCount();
 
     // Check insufficient material draw rule
     bool IsInsufficientDraw( bool white_asks, DRAWTYPE &result );
