@@ -35,6 +35,13 @@
 #ifndef CHESSDEFS_H
 #define CHESSDEFS_H
 
+inline bool is_dark( int sq )
+{
+    bool dark = (!(sq&8) &&  (sq&1))    // eg (a8,b8,c8...h8) && (b8|d8|f8|h8) odd rank + odd file
+             || ( (sq&8) && !(sq&1));   // eg (a7,b7,c7...h7) && (a7|c7|e7|g7) even rank + even file
+    return dark;
+}
+
 // TripleHappyChess
 namespace thc
 {
@@ -113,7 +120,7 @@ enum TERMINAL
 
 // Calculate an upper limit to the length of a list of moves   
 #define MAXMOVES (27 + 2*13 + 2*14 + 2*8 + 8 + 8*4  +  3*27)
-                //[Q   2*B    2*R    2*N   K   8*P] +  [3*Q]     
+                //[Q   2*B    2*R    2*N   K   8*P] +  [3*Q]
                 //             ^                         ^       
                 //[calculated practical maximum   ] + [margin]   
 
@@ -275,10 +282,10 @@ struct ChessPositionRaw
     Square enpassant_target : 8;
     Square wking_square     : 8;
     Square bking_square     : 8;
-    int  wking              : 1;    // Castling still allowed flags
-    int  wqueen             : 1;    //  unfortunately if the castling
-    int  bking              : 1;    //  flags are declared as bool, 
-    int  bqueen             : 1;    //  with Visual C++ at least, 
+    unsigned int  wking     : 1;    // Castling still allowed flags
+	unsigned int  wqueen    : 1;    //  unfortunately if the castling
+	unsigned int  bking     : 1;    //  flags are declared as bool, 
+	unsigned int  bqueen    : 1;    //  with Visual C++ at least, 
                                     //  the details blow out and use
                                     //  another 32 bits (??!!)
     // Note that for say white king side castling to be allowed in
@@ -340,18 +347,13 @@ public:
         full_move_count = 1;
     }
 
-    // Copy constructor
-    ChessPosition( const ChessPosition& src )
-    {
-        memcpy( (void*)this, (void*)&src, sizeof(ChessPosition) );
-    }
-
-    // Assignment operator
-    ChessPosition& operator=( const ChessPosition& src )
-    {
-        memcpy( (void*)this, (void*)&src, sizeof(ChessPosition) );
-        return( *this );
-    }
+    // Copy constructor and Assignment operator. Defining them this way
+	//  generates simple bitwise memory copy, which is exactly what we
+	//  want and is better practice than the old memcpy() versions (which
+	//  copy the vtable ptr as well - we don't want that). Thanks to Github
+	//  user metiscus for the pull request that fixed this.
+    ChessPosition( const ChessPosition& src ) = default;
+    ChessPosition& operator=( const ChessPosition& src ) = default;
 
     // Equality operator
     bool operator ==( const ChessPosition &other ) const
@@ -507,7 +509,12 @@ class ChessRules: public ChessPosition
 public:
     // Default constructor
     ChessRules() : ChessPosition() { Init(); }
-    void Init()
+    void Init()    // TODO == ChessRules::Init() should call ChessPosition::Init() right ????!!!!
+                   // Thoughts: Maybe - but can't do this casually. For example we would need to
+                   // change the code that converts ChessPosition to ChessRules below, both the
+                   // copy constructor and assignment operator use ChessRules::Init() at a time
+                   // when it would be disastrous to set the initial position (because
+                   // we have carefully copied a position into the ChessRules object)
     {
         history_idx    = 1;    // prevent bogus repition draws
         history[0].src = a8;   // (look backwards through history stops when src==dst)
@@ -548,6 +555,9 @@ public:
 
     // Check draw rules (50 move rule etc.)
     bool IsDraw( bool white_asks, DRAWTYPE &result );
+
+    // Get number of times position has been repeated
+    int GetRepetitionCount();
 
     // Check insufficient material draw rule
     bool IsInsufficientDraw( bool white_asks, DRAWTYPE &result );
