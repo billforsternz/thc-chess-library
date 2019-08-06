@@ -12,7 +12,7 @@
 #include "Portability.h"
 
 // return 0 if case insensitive match
-#ifdef THC_MAC
+#ifdef THC_UNIX
 int strcmpi( const char *s, const char *t )
 {
     bool same=true;
