@@ -740,10 +740,11 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                                                             }
                                                         }
                                                     }
-
                                                 }
                                             }
-                                        }    
+                                        }
+                                        if( probe==0 && count==1 )
+                                            found = true; // done, no need for disambiguation by check
                                     }
                                 }
                             }
@@ -1092,6 +1093,8 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                                                 }
                                             }
                                         }
+                                        if( probe==0 && count==1 )
+                                            found = true; // done, no need for disambiguation by check
                                     }
                                 }
                             }
