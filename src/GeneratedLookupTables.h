@@ -1,5 +1,5 @@
 /****************************************************************************
- * These lookup tables are machine generated
+ * GeneratedLookupTables.h These lookup tables are machine generated
  *  They require prior definitions of;
  *   squares (a1,a2..h8)
  *   pieces (P,N,B,N,R,Q,K)

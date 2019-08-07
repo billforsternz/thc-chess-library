@@ -1,5 +1,5 @@
 /****************************************************************************
- * Chess classes - Simple chess AI, add search to ChessEvaluation
+ * ChessEngine.h Chess classes - Simple chess AI, add search to ChessEvaluation
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
  *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>

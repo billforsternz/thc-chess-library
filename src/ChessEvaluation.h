@@ -1,5 +1,5 @@
 /****************************************************************************
- * Chess classes - Simple chess AI, leaf scoring function for position
+ * ChessEvaluation.h Chess classes - Simple chess AI, leaf scoring function for position
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
  *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>

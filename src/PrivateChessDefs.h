@@ -1,5 +1,5 @@
 /****************************************************************************
- * Chess classes - Internal implementation details
+ * PrivateChessDefs.h Chess classes - Internal implementation details
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
  *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
@@ -91,7 +91,7 @@ inline Square& operator++ ( Square& sq )
 
 
 // Convert piece, eg 'N' to bitmask in lookup tables. See automatically
-//  PrivateChessDefs.cpp and GeneratedLookupTables.inc for format of
+//  PrivateChessDefs.cpp and GeneratedLookupTables.h for format of
 //  lookup tables
 extern lte to_mask[];
 
