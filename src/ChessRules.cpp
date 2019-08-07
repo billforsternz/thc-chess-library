@@ -1,5 +1,5 @@
 /****************************************************************************
- * Chess classes - Rules of chess
+ * ChessRules.cpp Chess classes - Rules of chess
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
  *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
@@ -41,21 +41,21 @@ void ChessRules::TestInternals()
     const char *fen = "b3k2r/8/8/8/8/8/8/R3K2R w KQk - 0 1";
     Move move;
     Forsyth(fen);
-    printf( "Addresses etc.;\n" );
-    printf( " this = 0x%p\n",                         this );
-    printf( " (void *)this = 0x%p\n",                 (void *)this );
-    printf( " &white = 0x%p\n",                       &white );
-    printf( " &squares[0] = 0x%p\n",                  &squares[0] );
-    printf( " &half_move_clock = 0x%p\n",             &half_move_clock );
-    printf( " &full_move_count = 0x%p\n",             &full_move_count );
-    printf( " size to end of full_move_count = %lu", ((char *)&full_move_count - (char *)this) + sizeof(full_move_count) );
-    printf( " sizeof(ChessPosition) = %lu (should be 4 more than size to end of full_move_count)\n",
+    cprintf( "Addresses etc.;\n" );
+    cprintf( " this = 0x%p\n",                         this );
+    cprintf( " (void *)this = 0x%p\n",                 (void *)this );
+    cprintf( " &white = 0x%p\n",                       &white );
+    cprintf( " &squares[0] = 0x%p\n",                  &squares[0] );
+    cprintf( " &half_move_clock = 0x%p\n",             &half_move_clock );
+    cprintf( " &full_move_count = 0x%p\n",             &full_move_count );
+    cprintf( " size to end of full_move_count = %lu", ((char *)&full_move_count - (char *)this) + sizeof(full_move_count) );
+    cprintf( " sizeof(ChessPosition) = %lu (should be 4 more than size to end of full_move_count)\n",
            sizeof(ChessPosition) );
-    printf( " sizeof(Move) = %lu\n",                  sizeof(Move) );
+    cprintf( " sizeof(Move) = %lu\n",                  sizeof(Move) );
     
-    printf( " sizeof(ChessPositionRaw) = %lu\n", sizeof(ChessPositionRaw) );
-    printf( " (offsetof(ChessPositionRaw,full_move_count) + sizeof(full_move_count) + sizeof(DETAIL) =");
-    printf( " %lu + %lu + %lu = %lu\n",
+    cprintf( " sizeof(ChessPositionRaw) = %lu\n", sizeof(ChessPositionRaw) );
+    cprintf( " (offsetof(ChessPositionRaw,full_move_count) + sizeof(full_move_count) + sizeof(DETAIL) =");
+    cprintf( " %lu + %lu + %lu = %lu\n",
            offsetof(ChessPositionRaw,full_move_count), sizeof(full_move_count), sizeof(DETAIL),
            offsetof(ChessPositionRaw,full_move_count) + sizeof(full_move_count) + sizeof(DETAIL)
            );
@@ -71,12 +71,12 @@ void ChessRules::TestInternals()
             case 5: move.TerseIn(this,"e8g8");    break;
         }
         unsigned char *p = (unsigned char *)DETAIL_ADDR;
-        printf( " DETAIL_ADDR = 0x%p\n",  p );
-        printf( " DETAIL_ADDR[0] = %02x\n",  p[0] );
-        printf( " DETAIL_ADDR[1] = %02x\n",  p[1] );
-        printf( " DETAIL_ADDR[2] = %02x\n",  p[2] );
-        printf( " DETAIL_ADDR[3] = %02x\n",  p[3] );
-        printf( "Before %s: enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
+        cprintf( " DETAIL_ADDR = 0x%p\n",  p );
+        cprintf( " DETAIL_ADDR[0] = %02x\n",  p[0] );
+        cprintf( " DETAIL_ADDR[1] = %02x\n",  p[1] );
+        cprintf( " DETAIL_ADDR[2] = %02x\n",  p[2] );
+        cprintf( " DETAIL_ADDR[3] = %02x\n",  p[3] );
+        cprintf( "Before %s: enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
                " wking=%s, wqueen=%s, bking=%s, bqueen=%s\n",
                move.TerseOut().c_str(),
                enpassant_target,
@@ -87,7 +87,7 @@ void ChessRules::TestInternals()
                bking ?"true":"false",
                bqueen?"true":"false" );
         PushMove(move);
-        printf( "After PushMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
+        cprintf( "After PushMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
                " wking=%s, wqueen=%s, bking=%s, bqueen=%s\n",
                enpassant_target,
                wking_square,
@@ -97,7 +97,7 @@ void ChessRules::TestInternals()
                bking ?"true":"false",
                bqueen?"true":"false" );
         PopMove(move);
-        printf( "After PopMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
+        cprintf( "After PopMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
                " wking=%s, wqueen=%s, bking=%s, bqueen=%s\n",
                enpassant_target,
                wking_square,
@@ -107,7 +107,7 @@ void ChessRules::TestInternals()
                bking ?"true":"false",
                bqueen?"true":"false" );
         PushMove(move);
-        printf( "After PushMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
+        cprintf( "After PushMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
                " wking=%s, wqueen=%s, bking=%s, bqueen=%s\n",
                enpassant_target,
                wking_square,
