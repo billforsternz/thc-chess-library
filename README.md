@@ -1,4 +1,4 @@
-*Please note* This repository has been neglected. It basically serves as
+This repository serves as
 the genesis of the files src/thc.cpp and src/thc.h in the peer repository
 tarrasch-chess-gui. Those files serve as a bedrock chess API for the program
 Tarrasch Chess GUI. Those two files are basically a concatenation of the files
@@ -6,12 +6,15 @@ present in this library. The idea for that was inspired by SQLite, which is
 similarly distributed as single concatenated .c and .h files to avoid the
 pain point of integrating a library into a project.
 
-My recommendation  is to use files src/thc.cpp and src/thc.h from peer
-repository tarrasch-chess-gui in preference to this repository, simply
-because they are being actively used. Of course it is easier to understand
-the more granular presentation of the code in this repository. One day it
+This repository has recently been brought up to date with its peer
+tarrasch-chess-gui repository. It is easier to understand
+the more granular presentation of the code in this repository. I used
+to say *One day it
 would be nice to add a python script or similar to this repository to
-automatically regenerate the concatenated two file version of the library.
+automatically regenerate the concatenated two file version of the library.*
+I can now (August 7th 2019) say that this has been successfully implemented with a new program
+test-framework.cpp. This should make it practical to keep the repositories in
+sync from now on.
 
 Background
 ==========
@@ -49,19 +52,11 @@ requires that the user contribute a DebugPrintfInner() or similar function.
 To Do
 =====
 
-Firstly I need to get rid of DebugPrintf.h and Portability.h cross contamination from Tarrasch
-(see above). Next priority is adding more and better tests and documentation. At the moment there
-are just a few gratuitous tests in ChessEngine.cpp - dating from the time I was having trouble
-porting to Mac.
-
 I would like to do a bit of a renaming exercise - I am moving away from
 "using" and prefer explicit use of namespaces. All the thc library code
 is in namespace thc, so thc::position for example would be more logical
 than thc::ChessPosition (note thc = triple happy chess, where triple
 happy comes from triplehappy.com, a domain I use).
-
-A Python or similar script to generate thc.cpp and thc.h from the constituent parts would be a
-Good Thing (TM).
 
 An annoying thing is that all the code in this repository seems to have reverted to Windows
 CR/LF endings despite me carefully standardising on LF only. I need to sort this out. I blame
