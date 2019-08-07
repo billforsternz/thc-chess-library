@@ -1,5 +1,5 @@
 /****************************************************************************
- * Complement PrivateChessClasses.h by providing a shared instantation of
+ * PrivateChessDefs.cpp Complement PrivateChessDefs.h by providing a shared instantation of
  *  the automatically generated lookup tables.
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
@@ -17,7 +17,7 @@ namespace thc
 #define Q 16
 #define K 32
 
-// GeneratedLookupTables.inc assumes a suitable type lte = lookup tables element
+// GeneratedLookupTables.h assumes a suitable type lte = lookup tables element
 //  plus a bitmask convention for pieces using identifiers P,R,N,B,Q,K is 
 //  defined
 #include "GeneratedLookupTables.h"

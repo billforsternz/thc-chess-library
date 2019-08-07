@@ -1,5 +1,5 @@
 /****************************************************************************
- * Chess classes - Simple chess AI, leaf scoring function for position
+ * ChessEvaluation.cpp Chess classes - Simple chess AI, leaf scoring function for position
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
  *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
@@ -1976,7 +1976,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
 //	int score_test = material*4 /*balance=4*/ + positional;
 //  int score_test_cp = (score_test*10)/4;
 //	if( score_test_cp > 4000 )
-//      printf( "too much" );   // Problem fen "k7/8/PPK5/8/8/8/8/8 w - - 0 1"
+//      cprintf( "too much" );   // Problem fen "k7/8/PPK5/8/8/8/8/8 w - - 0 1"
 }
 
 
