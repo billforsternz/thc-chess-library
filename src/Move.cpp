@@ -1,5 +1,5 @@
 /****************************************************************************
- * Chess classes - Move
+ * Move.cpp Chess classes - Move
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
  *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
@@ -742,7 +742,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                                                     }
                                                 }
                                             }
-                                        }
+                                        }    
                                         if( probe==0 && count==1 )
                                             found = true; // done, no need for disambiguation by check
                                     }
@@ -1069,7 +1069,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                                                     // Any piece, friend or enemy must move to end of ray
                                                     ptr += ray_len;
                                                     ray_len = 0;
-                                                    if( cr->squares[src] == piece )
+                                                    if( cr->squares[src_] == piece )
                                                     {
                                                         bool src_file_ok = !src_file || FILE(src_)==src_file;
                                                         bool src_rank_ok = !src_rank || RANK(src_)==src_rank;
@@ -1147,7 +1147,7 @@ bool Move::TerseIn( ChessRules *cr, const char *tmove )
         cr->GenLegalMoveList( &list );
         for( i=0; !okay && i<list.count; i++ )
         {
-            if( list.moves[i].dst==dst_ && list.moves[i].src==src )
+            if( list.moves[i].dst==dst_ && list.moves[i].src==src_ )
             {
                 switch( list.moves[i].special )
                 {
