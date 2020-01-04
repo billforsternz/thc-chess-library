@@ -28,7 +28,8 @@ public:
     void Init()
     {
         white = true;
-        strcpy( squares,
+        strcpy_s( squares,
+           sizeof squares,
            "rnbqkbnr"
            "pppppppp"
            "        "
