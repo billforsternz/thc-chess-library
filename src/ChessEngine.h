@@ -6,7 +6,11 @@
  ****************************************************************************/
 #ifndef CHESSENGINE_H
 #define CHESSENGINE_H
-#include "thc.h"
+#include "Portability.h"
+#include "Move.h"
+#include "ChessPosition.h"
+#include "ChessRules.h"
+#include "ChessEvaluation.h"
 
 // TripleHappyChess
 namespace thc
