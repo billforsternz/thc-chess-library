@@ -3,6 +3,15 @@
 #include <QtWidgets/QStyleFactory>
 #include "MainWindow.h"
 
+#include "./../../src/ChessEngine.h"
+void ReportOnProgress(
+	bool    init,
+	int     multipv,
+	std::vector<thc::Move>& pv,
+	int     score_cp,
+	int     depth
+) {}
+
 #if _DEBUG
 #pragma comment( lib, "Qt5Cored.lib" )
 #pragma comment( lib, "Qt5Guid.lib" )

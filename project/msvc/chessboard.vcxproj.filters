@@ -7,6 +7,9 @@
     <Filter Include="_qt">
       <UniqueIdentifier>{a49b6806-1225-4c01-a733-6894933ab893}</UniqueIdentifier>
     </Filter>
+    <Filter Include="thc">
+      <UniqueIdentifier>{0ce27f58-97a3-40ce-be45-eed0e32c6c84}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main.cpp">
@@ -27,6 +30,27 @@
     <ClCompile Include="_qt\qrc_MainWindow.cpp">
       <Filter>_qt</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ChessEngine.cpp">
+      <Filter>thc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ChessEvaluation.cpp">
+      <Filter>thc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ChessPosition.cpp">
+      <Filter>thc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ChessRules.cpp">
+      <Filter>thc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Move.cpp">
+      <Filter>thc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Portability.cpp">
+      <Filter>thc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\PrivateChessDefs.cpp">
+      <Filter>thc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoItem Include="..\src\MainWindow.h">
@@ -45,5 +69,43 @@
     <QtUiItem Include="..\src\MainWindow.ui">
       <Filter>src</Filter>
     </QtUiItem>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\ChessDefs.h">
+      <Filter>thc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\ChessEngine.h">
+      <Filter>thc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\ChessEvaluation.h">
+      <Filter>thc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\ChessPosition.h">
+      <Filter>thc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\ChessPositionRaw.h">
+      <Filter>thc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\ChessRules.h">
+      <Filter>thc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\DebugPrintf.h">
+      <Filter>thc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\GeneratedLookupTables.h">
+      <Filter>thc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\HashLookup.h">
+      <Filter>thc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Move.h">
+      <Filter>thc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Portability.h">
+      <Filter>thc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\PrivateChessDefs.h">
+      <Filter>thc</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
