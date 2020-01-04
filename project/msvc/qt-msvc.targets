@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml" />
+    <AvailableItemName Include="QtUiItem">
+      <Targets>QtuiBuildTarget</Targets>
+    </AvailableItemName>
+    <AvailableItemName Include="QtMoItem">
+      <Targets>QtmoBuildTarget</Targets>
+    </AvailableItemName>
+    <AvailableItemName Include="QtResItem">
+      <Targets>QtresBuildTarget</Targets>
+    </AvailableItemName>
+  </ItemGroup>
+
+  <Target Name="QtuiBuildTarget" AfterTargets="CustomBuild" Inputs="%(QtUiItem.Identity)" Outputs="_qt/ui_%(QtUiItem.Filename).h">
+    <Message Text="Qt UIC %(QtUiItem.Filename)%(QtUiItem.Extension)" Importance="High"/>
+    <MakeDir Directories = "_qt" />
+    <Exec Command="$(ProjectDir)../../bin/uic %(QtUiItem.Identity) -o _qt/ui_%(QtUiItem.Filename).h"/>
+  </Target>
+
+  <Target Name="QtmoBuildTarget" AfterTargets="CustomBuild" Inputs="%(QtMoItem.Identity)" Outputs="_qt/moc_%(QtMoItem.Filename).cpp">
+    <Message Text="Qt MOC %(QtMoItem.Filename)%(QtMoItem.Extension)" Importance="High"/>
+    <MakeDir Directories = "_qt" />
+    <Exec Command="$(ProjectDir)../../bin/moc %(QtMoItem.Identity) -o _qt/moc_%(QtMoItem.Filename).cpp"/>
+  </Target>
+
+  <Target Name="QtresBuildTarget" AfterTargets="CustomBuild" Inputs="%(QtResItem.Identity)" Outputs="_qt/qrc_%(QtResItem.Filename).cpp">
+    <Message Text="Qt RCC %(QtResItem.Filename)%(QtResItem.Extension)" Importance="High"/>
+    <MakeDir Directories = "_qt" />
+    <Exec Command="$(ProjectDir)../../bin/rcc %(QtResItem.Identity) -name %(QtResItem.Filename) -o _qt/qrc_%(QtResItem.Filename).cpp"/>
+  </Target>
+
+  <Target Name="QtCleanTarget" AfterTargets="Clean">
+    <RemoveDir Directories = "_qt" />
+  </Target>
+
+</Project>

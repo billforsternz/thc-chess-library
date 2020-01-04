@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{9dfb51b7-57c4-4474-b0b8-b66594e91bd6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_qt">
+      <UniqueIdentifier>{a49b6806-1225-4c01-a733-6894933ab893}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\MainWindow.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Renderer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="_qt\moc_MainWindow.cpp">
+      <Filter>_qt</Filter>
+    </ClCompile>
+    <ClCompile Include="_qt\moc_Renderer.cpp">
+      <Filter>_qt</Filter>
+    </ClCompile>
+    <ClCompile Include="_qt\qrc_MainWindow.cpp">
+      <Filter>_qt</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoItem Include="..\src\MainWindow.h">
+      <Filter>src</Filter>
+    </QtMoItem>
+    <QtMoItem Include="..\src\Renderer.h">
+      <Filter>src</Filter>
+    </QtMoItem>
+  </ItemGroup>
+  <ItemGroup>
+    <QtResItem Include="..\src\MainWindow.qrc">
+      <Filter>src</Filter>
+    </QtResItem>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUiItem Include="..\src\MainWindow.ui">
+      <Filter>src</Filter>
+    </QtUiItem>
+  </ItemGroup>
+</Project>
