@@ -49,6 +49,20 @@ are the only files you need EXCEPT, unfortunately DebugPrintf.h and Portability.
 Tarrasch Chess GUI files and are also needed just at the moment. The presence of DebugPrintf.h
 requires that the user contribute a DebugPrintfInner() or similar function.
 
+CMake Build
+=====
+
+If you instead use CMake as a build system, you may prefer adding the library to your project
+as a CMake submodule. `CMakeLists.txt` provides the variable `THC_CHESS_INCLUDE` for the headers
+include directory and the libraries `thc_chess` (shared) and `thc_chess_static` (static).
+
+Usage example:
+```cmake
+add_subdirectory("${PROJECT_SOURCE_DIR}/path/to/library" EXCLUDE_FROM_ALL)
+include_directories(${THC_CHESS_INCLUDE})
+target_link_libraries(your_binary_name thc_chess_static) # or thc_chess for dynamic linking
+```
+
 To Do
 =====
 
