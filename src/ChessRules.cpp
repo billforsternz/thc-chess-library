@@ -1372,11 +1372,11 @@ void ChessRules::Transform()
         {
             src = SQ(file,r1);
             dst = SQ(file,r2);
-            if( wking_square_ == src )
+            if( wking_square == src )
                 bking_square_ = dst;
-            if( bking_square_ == src )
+            if( bking_square == src )
                 wking_square_ = dst;
-            if( enpassant_target_ == src )
+            if( enpassant_target == src )
                 enpassant_target_ = dst;
         }
     }
