@@ -1,20 +1,45 @@
-This repository serves as
-the genesis of the files src/thc.cpp and src/thc.h in the peer repository
-tarrasch-chess-gui. Those files serve as a bedrock chess API for the program
-Tarrasch Chess GUI. Those two files are basically a concatenation of the files
-present in this library. The idea for that was inspired by SQLite, which is
-similarly distributed as single concatenated .c and .h files to avoid the
-pain point of integrating a library into a project.
+# THC Chess Libary
 
-This repository has recently been brought up to date with its peer
-tarrasch-chess-gui repository. It is easier to understand
-the more granular presentation of the code in this repository. I used
-to say *One day it
-would be nice to add a python script or similar to this repository to
-automatically regenerate the concatenated two file version of the library.*
-I can now (August 7th 2019) say that this has been successfully implemented with a new program
-test-framework.cpp. This should make it practical to keep the repositories in
-sync from now on.
+THC stands for "Triplehappy Chess". Triplehappy is a former company name, and still exists
+as triplehappy.com, a website hosting my chess projects. THC the library is a C++ implementation
+of the rules of standard chess. It is intended to provide a convenient API for different types of C++
+chess programs (engines, GUIs, utilities, you name it). THC used to take the form of a bunch of
+C++ files that needed to be gathered into a library, but C++ libraries are a bit awkward, so it
+now takes the form of just two C++ files, thc.cpp and thc.h with no further dependencies.
+
+Getting started
+===============
+
+I have had quite a lot of correspondence from people who have had various problems getting
+started with THC, so I have simplified the process as much as possible - and it's now really
+simple! You don't have to worry about how THC is put together and tested. You just need
+to grab two files thc.cpp (a C++ file) and thc.h (a C++ include file) and add them into
+your project (irrespective of your OS, IDE compiler whatever - they're just simple, standard
+portable C++).
+
+To illustrate the process, I've introduced the new program demo.cpp. This is a demo program.
+Just build a program that compiles and links the two C++ files demo.cpp and thc.cpp together.
+Please don't try to compile thc.h, it's an include file, and should be #included into your
+program not separately linked!
+
+The demo.cpp program is simple and self explanatory, and by looking at it and getting it
+going you will see the sort of things you can do with THC. It might be a good idea to keep
+demo.cpp as the main() file in your project (rename it to something else) and then to
+progressively replace it with the functionality you want to build.
+
+THC and other projects/repositories
+===================================
+
+An exercise is underway to get all my Github chess projects properly aligned. When complete
+
+- thc, a C++ implementation of the rules of chess
+- Tarrasch Chess GUI, My main project, a chess workbench
+- Sargon 1978, porting the original classic Z80 program to work as a UCI engine
+- Tarrasch Toy Engine, a simple original UCI engine
+
+The idea is that project thc will deliver a simple pair of C++ file thc.cpp and thc.h which
+implement the rules of chess for the other three projects. When complete thc.cpp and thc.h
+will be the same in all three projects! Not there yet.
 
 Background
 ==========
@@ -34,6 +59,30 @@ Features
 * Compress positions
 * Generate fast position hash codes move by move.
 * Fast operation using lookup tables, efficient data structures
+
+Older Information
+=================
+
+Everything that follows is a little tired and out of date, I will leave it in
+for now but I should rewrite, reorganise somewhat.
+
+This repository serves as
+the genesis of the files src/thc.cpp and src/thc.h in the peer repository
+tarrasch-chess-gui. Those files serve as a bedrock chess API for the program
+Tarrasch Chess GUI. Those two files are basically a concatenation of the files
+present in this library. The idea for that was inspired by SQLite, which is
+similarly distributed as single concatenated .c and .h files to avoid the
+pain point of integrating a library into a project.
+
+This repository has recently been brought up to date with its peer
+tarrasch-chess-gui repository. It is easier to understand
+the more granular presentation of the code in this repository. I used
+to say *One day it
+would be nice to add a python script or similar to this repository to
+automatically regenerate the concatenated two file version of the library.*
+I can now (August 7th 2019) say that this has been successfully implemented with a new program
+test-framework.cpp. This should make it practical to keep the repositories in
+sync from now on.
 
 Status
 ======
