@@ -17,29 +17,15 @@ to grab two files thc.cpp (a C++ file) and thc.h (a C++ include file) and add th
 your project (irrespective of your OS, IDE compiler whatever - they're just simple, standard
 portable C++).
 
-To illustrate the process, I've introduced the new program demo.cpp. This is a demo program.
-Just build a program that compiles and links the two C++ files demo.cpp and thc.cpp together.
-Please don't try to compile thc.h, it's an include file, and should be #included into your
-program not separately linked!
+To illustrate the process, I've introduced the new demonstration program called demo.cpp. This
+is a kind of 'Hello World' program for THC. Just build a program that compiles and links the
+two C++ files demo.cpp and thc.cpp together. I've included a Visual C++ 2017 solution and project
+but really any C++ development system should work fine.
 
 The demo.cpp program is simple and self explanatory, and by looking at it and getting it
 going you will see the sort of things you can do with THC. It might be a good idea to keep
 demo.cpp as the main() file in your project (rename it to something else) and then to
 progressively replace it with the functionality you want to build.
-
-THC and other projects/repositories
-===================================
-
-An exercise is underway to get all my Github chess projects properly aligned. When complete
-
-- thc, a C++ implementation of the rules of chess
-- Tarrasch Chess GUI, My main project, a chess workbench
-- Sargon 1978, porting the original classic Z80 program to work as a UCI engine
-- Tarrasch Toy Engine, a simple original UCI engine
-
-The idea is that project thc will deliver a simple pair of C++ file thc.cpp and thc.h which
-implement the rules of chess for the other three projects. When complete thc.cpp and thc.h
-will be the same in all three projects! Not there yet.
 
 Background
 ==========
@@ -59,6 +45,20 @@ Features
 * Compress positions
 * Generate fast position hash codes move by move.
 * Fast operation using lookup tables, efficient data structures
+
+THC and other projects/repositories
+===================================
+
+In December 2020 I (finally) got all my Github chess projects properly aligned.
+
+- THC, a C++ implementation of the rules of chess (this project)
+- Tarrasch Chess GUI, My main project, a chess workbench
+- Sargon 1978, porting the original classic Z80 program to work as a UCI engine
+- Tarrasch Toy Engine, a simple original UCI engine
+
+The idea is that project thc will deliver a simple pair of C++ file thc.cpp and thc.h which
+implement the rules of chess for the other three projects. Finally thc.cpp and thc.h
+are the same for all three projects! (at least on December 2nd 2020).
 
 Older Information
 =================
@@ -99,7 +99,7 @@ Tarrasch Chess GUI files and are also needed just at the moment. The presence of
 requires that the user contribute a DebugPrintfInner() or similar function.
 
 CMake Build
-=====
+===========
 
 If you instead use CMake as a build system, you may prefer adding the library to your project
 as a CMake submodule. `CMakeLists.txt` provides the variable `THC_CHESS_INCLUDE` for the headers
@@ -128,4 +128,4 @@ CR/LF endings despite me carefully standardising on LF only. I need to sort this
 Although you won't find much test code (yet), the code is battle proven from years of use and
 incremental improvement inside the Tarrasch Chess GUI project.
 
-Bill Forster <billforsternz@gmail.com> 25Mar2014
+Bill Forster <billforsternz@gmail.com> 25Mar2014, updated 2Dec2020
