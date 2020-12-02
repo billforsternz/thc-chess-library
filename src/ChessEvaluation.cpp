@@ -2,7 +2,7 @@
  * ChessEvaluation.cpp Chess classes - Simple chess AI, leaf scoring function for position
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 #define _CRT_SECURE_NO_DEPRECATE
 #include <stdio.h>
@@ -11,7 +11,6 @@
 #include <ctype.h>
 #include <assert.h>
 #include <algorithm>
-#include "DebugPrintf.h"
 #include "ChessEvaluation.h"
 #include "PrivateChessDefs.h"
 using namespace std;
@@ -46,7 +45,7 @@ static int either_colour_material[]=
  *  Fast white to move version
  ****************************************************************************/
 int ChessEvaluation::EnpriseWhite()
-{    
+{
 
     int best_so_far=0;  // amount of material that can be safely captured
 
@@ -87,7 +86,7 @@ int ChessEvaluation::EnpriseWhite()
             ptr = knight_lookup[square];
             nbr_squares = *ptr++;
             while( nbr_squares-- )
-            {    
+            {
                 attack_square = (Square)*ptr++;
                 if( (attacker = squares[attack_square]) == 'N' )
                     *attackers++ = attacker;
@@ -102,7 +101,7 @@ int ChessEvaluation::EnpriseWhite()
             ptr = attacks_black_lookup[square];
             nbr_rays = *ptr++;
             while( nbr_rays-- )
-            {    
+            {
                 nbr_squares = *ptr++;
                 while( nbr_squares-- )
                 {
@@ -114,7 +113,7 @@ int ChessEvaluation::EnpriseWhite()
                     //  it matches a piece that attacks down that ray we have found
                     //  an attacker
                     if( IsWhite(attacker) && (to_mask[attacker]&mask) )
-                    {   
+                    {
                         if( attacker != 'P' ) // we've already done pawn
                             *attackers++ = attacker;
                         if( attacker == 'K' ) // don't look beyond a king
@@ -122,7 +121,7 @@ int ChessEvaluation::EnpriseWhite()
                             ptr += (nbr_squares+nbr_squares);
                             nbr_squares = 0;
                         }
-                    }    
+                    }
 
                     // Any other piece or a defender, must move to end of ray
                     else if( !IsEmptySquare(attacker) )
@@ -203,7 +202,7 @@ int ChessEvaluation::EnpriseWhite()
             ptr = knight_lookup[square];
             nbr_squares = *ptr++;
             while( nbr_squares-- )
-            {    
+            {
                 defend_square = (Square)*ptr++;
                 if( (defender = squares[defend_square]) == 'n' )
                     *defenders++ = defender;
@@ -218,7 +217,7 @@ int ChessEvaluation::EnpriseWhite()
             ptr = attacks_white_lookup[square];
             nbr_rays = *ptr++;
             while( nbr_rays-- )
-            {    
+            {
                 nbr_squares = *ptr++;
                 while( nbr_squares-- )
                 {
@@ -230,7 +229,7 @@ int ChessEvaluation::EnpriseWhite()
                     //  it matches a piece that defends down that ray we have found
                     //  a defender
                     if( IsBlack(defender) && (to_mask[defender]&mask) )
-                    {   
+                    {
                         if( defender != 'p' ) // we've already done pawn
                             *defenders++ = defender;
                         if( defender == 'k' ) // don't look beyond a king
@@ -238,7 +237,7 @@ int ChessEvaluation::EnpriseWhite()
                             ptr += (nbr_squares+nbr_squares);
                             nbr_squares = 0;
                         }
-                    }    
+                    }
 
                     // Any other piece or an attacker, must move to end of ray
                     else if( !IsEmptySquare(defender) )
@@ -313,7 +312,7 @@ int ChessEvaluation::EnpriseWhite()
                 // Defender can elect to stop here
                 if( net < min )
                     min = net;
-        
+
                 // Can defender recapture ?
                 if( d == defenders )
                 {
@@ -348,9 +347,9 @@ int ChessEvaluation::EnpriseWhite()
  *  Fast black to move version
  ****************************************************************************/
 int ChessEvaluation::EnpriseBlack()
-{    
+{
     int best_so_far=0;  // amount of material that can be safely captured
-    
+
     // Locals
     unsigned char defenders_buf[32];
     unsigned char *defenders;
@@ -388,7 +387,7 @@ int ChessEvaluation::EnpriseBlack()
             ptr = knight_lookup[square];
             nbr_squares = *ptr++;
             while( nbr_squares-- )
-            {    
+            {
                 attack_square = (Square)*ptr++;
                 if( (attacker = squares[attack_square]) == 'n' )
                     *attackers++ = attacker;
@@ -403,7 +402,7 @@ int ChessEvaluation::EnpriseBlack()
             ptr = attacks_white_lookup[square];
             nbr_rays = *ptr++;
             while( nbr_rays-- )
-            {    
+            {
                 nbr_squares = *ptr++;
                 while( nbr_squares-- )
                 {
@@ -415,7 +414,7 @@ int ChessEvaluation::EnpriseBlack()
                     //  it matches a piece that attacks down that ray we have found
                     //  an attacker
                     if( IsBlack(attacker) && (to_mask[attacker]&mask) )
-                    {   
+                    {
                         if( attacker != 'p' ) // we've already done pawn
                             *attackers++ = attacker;
                         if( attacker == 'k' ) // don't look beyond a king
@@ -423,7 +422,7 @@ int ChessEvaluation::EnpriseBlack()
                             ptr += (nbr_squares+nbr_squares);
                             nbr_squares = 0;
                         }
-                    }    
+                    }
 
                     // Any other piece or a defender, must move to end of ray
                     else if( !IsEmptySquare(attacker) )
@@ -504,7 +503,7 @@ int ChessEvaluation::EnpriseBlack()
             ptr = knight_lookup[square];
             nbr_squares = *ptr++;
             while( nbr_squares-- )
-            {    
+            {
                 defend_square = (Square)*ptr++;
                 if( (defender = squares[defend_square]) == 'N' )
                     *defenders++ = defender;
@@ -519,7 +518,7 @@ int ChessEvaluation::EnpriseBlack()
             ptr = attacks_black_lookup[square];
             nbr_rays = *ptr++;
             while( nbr_rays-- )
-            {    
+            {
                 nbr_squares = *ptr++;
                 while( nbr_squares-- )
                 {
@@ -531,7 +530,7 @@ int ChessEvaluation::EnpriseBlack()
                     //  it matches a piece that defends down that ray we have found
                     //  a defender
                     if( IsWhite(defender) && (to_mask[defender]&mask) )
-                    {   
+                    {
                         if( defender != 'P' ) // we've already done pawn
                             *defenders++ = defender;
                         if( defender == 'K' ) // don't look beyond a king
@@ -539,7 +538,7 @@ int ChessEvaluation::EnpriseBlack()
                             ptr += (nbr_squares+nbr_squares);
                             nbr_squares = 0;
                         }
-                    }    
+                    }
 
                     // Any other piece or an attacker, must move to end of ray
                     else if( !IsEmptySquare(defender) )
@@ -612,7 +611,7 @@ int ChessEvaluation::EnpriseBlack()
                 // Defender can elect to stop here
                 if( net < min )
                     min = net;
-        
+
                 // Can defender recapture ?
                 if( d == defenders )
                 {
@@ -648,23 +647,23 @@ int ChessEvaluation::EnpriseBlack()
 static int king_ending_bonus_static[] =
 {
     #if 1
-    /*  0x00-0x07 a8-h8 */ -25,-25,-25,-25,-25,-25,-25,-25,    
-    /*  0x00-0x0f a7-h7 */ -25,  0,  0,  0,  0,  0,  0,-25,    
-    /*  0x10-0x17 a6-h6 */ -25,  0, 25, 25, 25, 25,  0,-25,    
-    /*  0x10-0x1f a5-h5 */ -25,  0, 25, 50, 50, 25,  0,-25,    
-    /*  0x20-0x27 a4-h4 */ -25,  0, 25, 50, 50, 25,  0,-25,    
-    /*  0x20-0x2f a3-h3 */ -25,  0, 25, 25, 25, 25,  0,-25,    
-    /*  0x30-0x37 a2-h2 */ -25,  0,  0,  0,  0,  0,  0,-25,    
-    /*  0x30-0x3f a1-h1 */ -25,-25,-25,-25,-25,-25,-25,-25     
+    /*  0x00-0x07 a8-h8 */ -25,-25,-25,-25,-25,-25,-25,-25,
+    /*  0x00-0x0f a7-h7 */ -25,  0,  0,  0,  0,  0,  0,-25,
+    /*  0x10-0x17 a6-h6 */ -25,  0, 25, 25, 25, 25,  0,-25,
+    /*  0x10-0x1f a5-h5 */ -25,  0, 25, 50, 50, 25,  0,-25,
+    /*  0x20-0x27 a4-h4 */ -25,  0, 25, 50, 50, 25,  0,-25,
+    /*  0x20-0x2f a3-h3 */ -25,  0, 25, 25, 25, 25,  0,-25,
+    /*  0x30-0x37 a2-h2 */ -25,  0,  0,  0,  0,  0,  0,-25,
+    /*  0x30-0x3f a1-h1 */ -25,-25,-25,-25,-25,-25,-25,-25
     #else
-    /*  0x00-0x07 a8-h8 */ -10,-10,-10,-10,-10,-10,-10,-10,    
-    /*  0x00-0x0f a7-h7 */ -10,  0,  0,  0,  0,  0,  0,-10,    
-    /*  0x10-0x17 a6-h6 */ -10,  0, 10, 10, 10, 10,  0,-10,    
-    /*  0x10-0x1f a5-h5 */ -10,  0, 10, 20, 20, 10,  0,-10,    
-    /*  0x20-0x27 a4-h4 */ -10,  0, 10, 20, 20, 10,  0,-10,    
-    /*  0x20-0x2f a3-h3 */ -10,  0, 10, 10, 10, 10,  0,-10,    
-    /*  0x30-0x37 a2-h2 */ -10,  0,  0,  0,  0,  0,  0,-10,    
-    /*  0x30-0x3f a1-h1 */ -10,-10,-10,-10,-10,-10,-10,-10     
+    /*  0x00-0x07 a8-h8 */ -10,-10,-10,-10,-10,-10,-10,-10,
+    /*  0x00-0x0f a7-h7 */ -10,  0,  0,  0,  0,  0,  0,-10,
+    /*  0x10-0x17 a6-h6 */ -10,  0, 10, 10, 10, 10,  0,-10,
+    /*  0x10-0x1f a5-h5 */ -10,  0, 10, 20, 20, 10,  0,-10,
+    /*  0x20-0x27 a4-h4 */ -10,  0, 10, 20, 20, 10,  0,-10,
+    /*  0x20-0x2f a3-h3 */ -10,  0, 10, 10, 10, 10,  0,-10,
+    /*  0x30-0x37 a2-h2 */ -10,  0,  0,  0,  0,  0,  0,-10,
+    /*  0x30-0x3f a1-h1 */ -10,-10,-10,-10,-10,-10,-10,-10
     #endif
 };
 
@@ -728,7 +727,7 @@ static int black_pieces[]=
  *   (needs a lot of improvement)
  ****************************************************************************/
 void ChessEvaluation::Planning()
-{    
+{
     Square weaker_king, bonus_square;
     char piece;
     int score_black_material = 0;
@@ -798,7 +797,7 @@ void ChessEvaluation::Planning()
 
     // Are we in an ending ?
     if( ending )
-    { 
+    {
 
         // Reset dynamic king position arrays
         memcpy( king_ending_bonus_dynamic_white,
@@ -837,7 +836,7 @@ void ChessEvaluation::Planning()
             const lte *ptr = good_king_position_lookup[weaker_king];
             lte nbr_squares = *ptr++;
             while( nbr_squares-- )
-            {    
+            {
                 bonus_square = (Square)*ptr++;
                 if( king_ending_bonus_static[bonus_square] >
                     king_ending_bonus_static[weaker_king]
@@ -857,12 +856,12 @@ void ChessEvaluation::Planning()
 /****************************************************************************
  * Evaluate a position, leaf node
  *
- *	 (this makes a rather ineffectual effort to score positional features
+ *   (this makes a rather ineffectual effort to score positional features
  *    needs a lot of improvement)
  ****************************************************************************/
 void ChessEvaluation::EvaluateLeaf( int &material, int &positional )
-{    
-	//DIAG_evaluate_leaf_count++;	
+{
+    //DIAG_evaluate_leaf_count++;
     char   piece;
     int file;
     int bonus = 0;
@@ -884,7 +883,7 @@ void ChessEvaluation::EvaluateLeaf( int &material, int &positional )
     int black_queen_developed_bonus      =0;
     int black_queen78_bonus              =0;
     int black_undeveloped_minor_bonus    =0;
-            
+
 
 #define BONUS_WHITE_SWAP_PIECE          60
 #define BONUS_BLACK_SWAP_PIECE          -60
@@ -902,8 +901,8 @@ void ChessEvaluation::EvaluateLeaf( int &material, int &positional )
 #define BONUS_BLACK_KING_CENTRAL3       -12
 #define BONUS_BLACK_QUEEN_CENTRAL       -10
 #define BONUS_BLACK_QUEEN_DEVELOPED     -10
-#define BONUS_BLACK_QUEEN78             -5 
-#define BONUS_BLACK_ROOK7               -5 
+#define BONUS_BLACK_QUEEN78             -5
+#define BONUS_BLACK_ROOK7               -5
 #define BONUS_BLACK_PAWN5               -20     // boosted because now must be passed
 #define BONUS_BLACK_PAWN6               -30     // boosted because now must be passed
 #define BONUS_BLACK_PAWN7               -40     // boosted because now must be passed
@@ -923,8 +922,8 @@ void ChessEvaluation::EvaluateLeaf( int &material, int &positional )
 #define BONUS_WHITE_KING_CENTRAL3        12
 #define BONUS_WHITE_QUEEN_CENTRAL        10
 #define BONUS_WHITE_QUEEN_DEVELOPED      10
-#define BONUS_WHITE_QUEEN78              5 
-#define BONUS_WHITE_ROOK7                5 
+#define BONUS_WHITE_QUEEN78              5
+#define BONUS_WHITE_ROOK7                5
 #define BONUS_WHITE_PAWN5                20     // boosted because now must be passed
 #define BONUS_WHITE_PAWN6                30     // boosted because now must be passed
 #define BONUS_WHITE_PAWN7                40     // boosted because now must be passed
@@ -934,7 +933,7 @@ void ChessEvaluation::EvaluateLeaf( int &material, int &positional )
 const int MATERIAL_OPENING = (500 + ((8*10+4*30+2*50+90)*2)/3);
 const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
 
-    
+
     Square black_king_square = SQUARE_INVALID;
     Square white_king_square = SQUARE_INVALID;
     Square black_pawns_buf[16];
@@ -948,7 +947,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
     int score_black_pieces = 0;
     int score_white_pieces = 0;
 
-    // a8->h8    
+    // a8->h8
     for( Square square=a8; square<=h8; ++square )
     {
         piece = squares[square];
@@ -1025,7 +1024,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
         }
     }
 
-    // a7->h7    
+    // a7->h7
     unsigned int next_passer_mask = 0;
     unsigned int passer_mask = 0;
     unsigned int three_files = 0x1c0;   // 1 1100 0000
@@ -1203,7 +1202,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
         three_files >>= 1;
     }
     passer_mask |= next_passer_mask;
-    
+
     // a5->h5;
     file_mask   = 0x80;             // 0 1000 0000
 //  three_files = 0x1c0;            // 1 1100 0000
@@ -1657,7 +1656,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
     }
     else
     {
-        // bonus += white_king_central_bonus;  
+        // bonus += white_king_central_bonus;
         bonus += white_queen78_bonus;
     }
 
@@ -1674,7 +1673,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
     }
     else
     {
-        // bonus += black_king_central_bonus;    
+        // bonus += black_king_central_bonus;
         bonus += black_queen78_bonus;
     }
 
@@ -1752,7 +1751,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
 
     // Reward stronger side with a bonus for swapping pieces not pawns
     if( material>0 && planning_white_piece_pawn_percent ) // if white ahead
-                                                          //   and a figure to compare to  
+                                                          //   and a figure to compare to
     {
         int score_white_pawns = score_white_material - 500 // -500 is king
                                 - score_white_pieces;
@@ -1804,7 +1803,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
         material += piece_pawn_ratio_adjustment;
     }
     else if( material<0 && planning_black_piece_pawn_percent ) // if black ahead
-                                                               //   and a figure to compare to  
+                                                               //   and a figure to compare to
     {
         int score_black_pawns = (0-score_black_material) - 500 // -500 is king
                                 - score_black_pieces;
@@ -1853,7 +1852,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
 
                 // Will queen if eg Pa3, Kd3
                 if( kfile > pfile )
-                    black_will_queen = (kfile-pfile > prank); // eg d-a=3 > 2 
+                    black_will_queen = (kfile-pfile > prank); // eg d-a=3 > 2
 
                 // Will queen if eg Ph3, Ke3
                 else if( kfile < pfile )
@@ -1927,7 +1926,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
 
                 // Will queen if eg Pa6, Kd6
                 if( kfile > pfile )
-                    white_will_queen = (kfile-pfile > 7-prank); // eg d-a=3 > 7-5=2 
+                    white_will_queen = (kfile-pfile > 7-prank); // eg d-a=3 > 7-5=2
 
                 // Will queen if eg Ph3, Ke3
                 else if( kfile < pfile )
@@ -1973,9 +1972,9 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
             material += 65; // almost as good as a white queen (if it's too close we might not actually queen!)
     }
     #endif
-//	int score_test = material*4 /*balance=4*/ + positional;
+//  int score_test = material*4 /*balance=4*/ + positional;
 //  int score_test_cp = (score_test*10)/4;
-//	if( score_test_cp > 4000 )
+//  if( score_test_cp > 4000 )
 //      cprintf( "too much" );   // Problem fen "k7/8/PPK5/8/8/8/8/8 w - - 0 1"
 }
 
@@ -2034,9 +2033,9 @@ void ChessEvaluation::GenLegalMoveListSorted( MOVELIST *list )
                 score = 0;
             else
             {
-			    int material, positional;
-			    EvaluateLeaf(material,positional);
-			    score = material*4 /*balance=4*/ + positional;
+                int material, positional;
+                EvaluateLeaf(material,positional);
+                score = material*4 /*balance=4*/ + positional;
             }
             MOVE_IDX x;
             x.score = score;

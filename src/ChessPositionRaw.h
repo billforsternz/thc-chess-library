@@ -2,7 +2,7 @@
  * ChessPositionRaw.h Chess classes - A raw chess position, could be used as a C style POD
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 #ifndef CHESSPOSITIONRAW_H
 #define CHESSPOSITIONRAW_H
@@ -50,9 +50,9 @@ struct ChessPositionRaw
     Square wking_square     : 8;
     Square bking_square     : 8;
     unsigned int  wking     : 1;    // Castling still allowed flags
-	unsigned int  wqueen    : 1;    //  unfortunately if the castling
-	unsigned int  bking     : 1;    //  flags are declared as bool, 
-	unsigned int  bqueen    : 1;    //  with Visual C++ at least, 
+    unsigned int  wqueen    : 1;    //  unfortunately if the castling
+    unsigned int  bking     : 1;    //  flags are declared as bool,
+    unsigned int  bqueen    : 1;    //  with Visual C++ at least,
                                     //  the details blow out and use
                                     //  another 32 bits (??!!)
     // Note that for say white king side castling to be allowed in

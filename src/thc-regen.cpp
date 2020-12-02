@@ -5,7 +5,7 @@
  *
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 
 /*
@@ -17,21 +17,18 @@
         ChessPosition.cpp
         ChessRules.cpp
         ChessEvaluation.cpp
-        ChessEngine.cpp
         Move.cpp
         PrivateChessDefs.cpp
          nested inline expansion of -> GeneratedLookupTables.h
  */
 
-// Don't reproduce this section
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
 #include <algorithm>
-#include "Portability.h"
-#include "DebugPrintf.h"
 #include "thc.h"
 using namespace std;
 using namespace thc;
@@ -39,12 +36,11 @@ using namespace thc;
  * Portability.cpp Simple definitions to aid platform portability
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 
 // return 0 if case insensitive match
-#ifdef THC_UNIX
-int strcmpi( const char *s, const char *t )
+int strcmp_ignore( const char *s, const char *t )
 {
     bool same=true;
     while( *s && *t && same )
@@ -57,14 +53,12 @@ int strcmpi( const char *s, const char *t )
         same = false;
     return same?0:1;
 }
-#endif
-
 
 /****************************************************************************
  * PrivateChessDefs.h Chess classes - Internal implementation details
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 #ifndef PRIVATE_CHESS_DEFS_H_INCLUDED
 #define PRIVATE_CHESS_DEFS_H_INCLUDED
@@ -199,7 +193,7 @@ extern const lte *attacks_black_lookup[];
  * HashLookup.h Quickly generate position hash codes with these lookup tables
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 static uint32_t hash_lookup[64]['r'-'B'+1] =
 {  // B                          K              N            P          Q          R
@@ -854,7 +848,7 @@ static uint64_t hash64_lookup[64]['r'-'B'+1] =
  * ChessPosition.cpp Chess classes - Representation of the position on the board
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 
 /* Some project notes */
@@ -884,11 +878,13 @@ static uint64_t hash64_lookup[64]['r'-'B'+1] =
  *    ChessEngine     extends ChessEvaluation
  *      ;ChessEngine adds a search tree to ChessEvaluation to make a
  *      ;complete simple engine (the Tarrasch Toy Engine)
+ *      ;ChessEngine is now split off from the rest of the thc chess library
+ *      ;and is part of the Tarrasch Toy Engine project instead
  ****************************************************************************/
 
 /****************************************************************************
  * Explanation of namespace thc:
- * 
+ *
  *  The Chess classes use the C++ namespace facility to ensure they can be
  *  used without name conflicts with other 3rd party code. A short, but
  *  highly likely to be unique namespace name is best, we choose "thc" which
@@ -898,13 +894,13 @@ static uint64_t hash64_lookup[64]['r'-'B'+1] =
 /****************************************************************************
  * My original license, now replaced by MIT license full text of which is
  * in file LICENSE in project's root directory.
- * 
+ *
  * Licensing provisions for all TripleHappy Chess source code;
  *
  * Start Date: 15 February 2003.
  * This software is licensed to be used freely. The following licensing
  * provisions apply;
- * 
+ *
  * 1) The 'author' is asserted to be the original author of the code, Bill
  *    Forster of Wellington, New Zealand.
  * 2) The 'licensee' is anyone else who wishes to use the software.
@@ -955,7 +951,7 @@ std::string ChessPosition::ToDebugStr( const char *label )
  *   return bool okay
  ****************************************************************************/
 bool ChessPosition::Forsyth( const char *txt )
-{    
+{
     int   file, rank, skip, store, temp;
     int   count_wking=0, count_bking=0;
     char  c, cross;
@@ -997,22 +993,22 @@ bool ChessPosition::Forsyth( const char *txt )
             {
                 case 'x':   cross = 'x';
                             skip = 1;
-                            break;   
+                            break;
                 case ' ':
                 case '\t':  done = true;            break;
                 case 'k':   p = 'k';
                             count_bking++;          break;
                 case 'K':   p = 'K';
                             count_wking++;          break;
-                case 'p':   
-                case 'r':   
-                case 'n':   
-                case 'b':   
-                case 'q':   
-                case 'P':   
-                case 'R':   
-                case 'N':   
-                case 'B':   
+                case 'p':
+                case 'r':
+                case 'n':
+                case 'b':
+                case 'q':
+                case 'P':
+                case 'R':
+                case 'N':
+                case 'B':
                 case 'Q':   p = c;   break;
                 case '1':   case '2':   case '3':   case '4':
                 case '5':   case '6':   case '7':   case '8':
@@ -1031,7 +1027,7 @@ bool ChessPosition::Forsyth( const char *txt )
                     {
                         txt++;
                         skip += 8;
-                    }   
+                    }
                     break;
                 }
                 default:    okay=false;
@@ -1056,9 +1052,9 @@ bool ChessPosition::Forsyth( const char *txt )
                     rank--;
                 }
                 if( sq == h1 )
-                    done = true;        // last square, we're done !            
+                    done = true;        // last square, we're done !
             }
-        }   
+        }
 
         // In validation pass make sure there's 1 white king and 1 black king
    /*   if( store==0 )  // disabled to allow ILLEGAL_NOT_ONE_KING_EACH message
@@ -1091,8 +1087,8 @@ bool ChessPosition::Forsyth( const char *txt )
         // Who to move
         if( okay )
         {
-            if( *txt == '/' 
-             || *txt == '|' 
+            if( *txt == '/'
+             || *txt == '|'
              || *txt == '\\' )
                 txt++;
             while( *txt==' ' || *txt=='\t' )
@@ -1153,7 +1149,7 @@ bool ChessPosition::Forsyth( const char *txt )
                 }
             }
         }
-            
+
         // Enpassant target
         if( okay )
         {
@@ -1238,7 +1234,7 @@ std::string ChessPosition::ForsythPublish()
         {
             save_file = file;
             save_rank = rank;
-        }           
+        }
         p = squares[sq];
         if( p == ' ' )
             empty++;
@@ -1287,7 +1283,7 @@ std::string ChessPosition::ForsythPublish()
         if( bqueen_allowed() )
             str += 'q';
     }
-    
+
     // Enpassant target square
     str += ' ';
     if( enpassant_target==SQUARE_INVALID || save_rank==0 )
@@ -1363,7 +1359,7 @@ unsigned short ChessPosition::Compress( CompressedPosition &dst ) const
         int idx = ep_target+8; //idx = SOUTH(enpassant_target) is black pawn
         src.squares[idx] = src.squares[idx-24]; // store 1st rank
         src.squares[idx-24] = 'p';              // indicate ep
-    }        
+    }
 
     // Black captures enpassant on a3,b3...h3
     else if( !src.white && ep_target!=SQUARE_INVALID )
@@ -1371,7 +1367,7 @@ unsigned short ChessPosition::Compress( CompressedPosition &dst ) const
         int idx = ep_target-8; //idx = NORTH(enpassant_target) is white pawn
         src.squares[idx] = src.squares[idx+24]; // store 1st rank
         src.squares[idx+24] = 'P';              // indicate ep
-    }        
+    }
 
     // This old ugly one has a bug ... (search for bug below)
     #else
@@ -1393,8 +1389,8 @@ unsigned short ChessPosition::Compress( CompressedPosition &dst ) const
             src.squares[idx] = src.squares[idx-24]; // store 1st rank
             src.squares[idx-24] = 'p';              // indicate ep
         }
-    }        
-    
+    }
+
     // Black captures enpassant on a3,b3...h3
     else if( !src.white && a3<=src.enpassant_target && src.enpassant_target<=h3 )
     {
@@ -1411,10 +1407,10 @@ unsigned short ChessPosition::Compress( CompressedPosition &dst ) const
             src.squares[idx] = src.squares[idx+24]; // store 1st rank
             src.squares[idx+24] = 'P';              // indicate ep
         }
-    }        
+    }
     #endif
-    
-    
+
+
     // Encode empty square with 2 bits, and other 12 possibilities with
     //  all the other possible nibbles that don't start with those 2 bits
     #define CEMPTY      2   // 10
@@ -1712,7 +1708,7 @@ void ChessPosition::Decompress( const CompressedPosition &src )
             enpassant_target = (Square)(idx-16);
         }
     }
-    
+
     // Decode "castling possible" as opposition pawn on rook's home square
     //  (which is otherwise impossible)
     if( squares[e1] == 'K' )
@@ -1845,7 +1841,7 @@ uint32_t ChessPosition::HashUpdate( uint32_t hash_in, Move move )
             hash ^= hash_lookup[a8]['a'-'B'];     // replace with empty square
             hash ^= hash_lookup[d8][target-'B'];  // remove target piece
             hash ^= hash_lookup[d8][piece-'B'];   // replace with moving piece
-            
+
             break;
         }
         case SPECIAL_PROMOTION_QUEEN:
@@ -2025,7 +2021,7 @@ uint64_t ChessPosition::Hash64Update( uint64_t hash_in, Move move )
             hash ^= hash64_lookup[a8]['a'-'B'];     // replace with empty square
             hash ^= hash64_lookup[d8][target-'B'];  // remove target piece
             hash ^= hash64_lookup[d8][piece-'B'];   // replace with moving piece
-            
+
             break;
         }
         case SPECIAL_PROMOTION_QUEEN:
@@ -2108,7 +2104,7 @@ uint64_t ChessPosition::Hash64Update( uint64_t hash_in, Move move )
  * ChessRules.cpp Chess classes - Rules of chess
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 
 // Table indexed by Square, gives mask for DETAIL_CASTLING, such that a move
@@ -2129,26 +2125,42 @@ static unsigned char castling_prohibited_table[] =
     (unsigned char)(~(WQUEEN+WKING)),  0xff, 0xff, (unsigned char)(~WKING)  // e1-h1
 };
 
-void ChessRules::TestInternals()
+/****************************************************************************
+ * Test internals, for porting to new environments etc
+ *   For the moment at least, this is best used by stepping through it
+ *   thoughtfully with a debugger. It is not set up to automatically
+ *   check whether THC is going to work in the new environment
+ ****************************************************************************/
+static int log_discard( const char *format, ... ) { return 0; }
+bool ChessRules::TestInternals( int (*log)(const char *,...) )
 {
+    if( log == NULL )
+        log = log_discard;
     Init();
     Move mv;
-    cprintf( "All castling allowed %08x\n", *DETAIL_ADDR );
+    log( "All castling allowed %08x\n", *DETAIL_ADDR );
     mv.TerseIn(this,"g1f3");
     PlayMove(mv);
     mv.TerseIn(this,"g8f6");
     PlayMove(mv);
-    cprintf( "All castling allowed %08x\n", *DETAIL_ADDR );
+    log( "All castling allowed %08x\n", *DETAIL_ADDR );
+    bool KQkq_allowed   = wking && bking && wqueen && bqueen;
+    bool KQkq_allowed_f = wking_allowed() && bking_allowed() && wqueen_allowed() && bqueen_allowed();
     mv.TerseIn(this,"h1g1");
     PlayMove(mv);
     mv.TerseIn(this,"h8g8");
     PlayMove(mv);
-    mv.TerseIn(this,"g1h1");
+    mv.TerseIn(this,"g1h1");  // return of rook to h1 clears wking
     PlayMove(mv);
-    cprintf( "WKING castling not allowed %08x\n", *DETAIL_ADDR );
-    mv.TerseIn(this,"g8h8");
+    log( "WKING castling not allowed %08x\n", *DETAIL_ADDR );
+    bool Qkq_allowed  = !wking && bking && wqueen && bqueen;
+    bool Qkq_allowed_f = !wking_allowed() && !bking_allowed() && wqueen_allowed() && bqueen_allowed();
+    // The _f version is different, !bking_allowed() because it checks and finds no rook on h8
+    mv.TerseIn(this,"g8h8");  // return of rook to h8 clears bking
     PlayMove(mv);
-    cprintf( "WKING BKING castling not allowed %08x\n", *DETAIL_ADDR );
+    log( "WKING BKING castling not allowed %08x\n", *DETAIL_ADDR );
+    bool Qq_allowed   = !wking && !bking && wqueen && bqueen;
+    bool Qq_allowed_f = !wking_allowed() && !bking_allowed() && wqueen_allowed() && bqueen_allowed();
     mv.TerseIn(this,"b1c3");
     PlayMove(mv);
     mv.TerseIn(this,"b8c6");
@@ -2157,47 +2169,57 @@ void ChessRules::TestInternals()
     PlayMove(mv);
     mv.TerseIn(this,"a8b8");
     PlayMove(mv);
-    mv.TerseIn(this,"b1a1");
+    mv.TerseIn(this,"b1a1");  // return of rook to a1 clears wqueen
     PlayMove(mv);
-    cprintf( "WKING BKING WQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
-    mv.TerseIn(this,"b8a8");
+    log( "WKING BKING WQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
+    bool q_allowed   = !wking && !bking && !wqueen && bqueen;
+    bool q_allowed_f = !wking_allowed() && !bking_allowed() && !wqueen_allowed() && !bqueen_allowed();
+    // The _f version is different, !bqueen_allowed() because it checks and finds no rook on a8
+    mv.TerseIn(this,"b8a8");  // return of rook to a8 clears bqueen
     PlayMove(mv);
-    cprintf( "WKING BKING WQUEEN BQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
+    log( "WKING BKING WQUEEN BQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
+    bool none_allowed   = !wking && !bking && !wqueen && !bqueen;
+    bool none_allowed_f = !wking_allowed() && !bking_allowed() && !wqueen_allowed() && !bqueen_allowed();
     ChessPosition::Init();
-    cprintf( "All castling allowed %08x\n", *DETAIL_ADDR );
+    log( "All castling allowed %08x\n", *DETAIL_ADDR );
     mv.TerseIn(this,"e2e3");
     PlayMove(mv);
     mv.TerseIn(this,"e7e6");
     PlayMove(mv);
-    cprintf( "All castling allowed %08x\n", *DETAIL_ADDR );
+    log( "All castling allowed %08x\n", *DETAIL_ADDR );
     mv.TerseIn(this,"e1e2");
     PlayMove(mv);
     mv.TerseIn(this,"e8e7");
     PlayMove(mv);
-    mv.TerseIn(this,"e2e1");
+    mv.TerseIn(this,"e2e1");  // return of king to e1 clears wking, wqueen
     PlayMove(mv);
-    cprintf( "WKING WQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
+    log( "WKING WQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
+    bool kq_allowed   = !wking && bking && !wqueen && bqueen;
+    bool kq_allowed_f = !wking_allowed() && !bking_allowed() && !wqueen_allowed() && !bqueen_allowed();
+    // The _f version is different, !bking_allowed() and !bqueen_allowed() because they check and finds no king on e8
     mv.TerseIn(this,"e7e8");
     PlayMove(mv);
-    cprintf( "WKING WQUEEN BKING BQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
+    log( "WKING WQUEEN BKING BQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
+    bool none_allowed2   = !wking && !bking && !wqueen && !bqueen;
+    bool none_allowed2_f = !wking_allowed() && !bking_allowed() && !wqueen_allowed() && !bqueen_allowed();
     const char *fen = "b3k2r/8/8/8/8/8/8/R3K2R w KQk - 0 1";
     Move move;
     Forsyth(fen);
-    cprintf( "Addresses etc.;\n" );
-    cprintf( " this = 0x%p\n",                         this );
-    cprintf( " (void *)this = 0x%p\n",                 (void *)this );
-    cprintf( " &white = 0x%p\n",                       &white );
-    cprintf( " &squares[0] = 0x%p\n",                  &squares[0] );
-    cprintf( " &half_move_clock = 0x%p\n",             &half_move_clock );
-    cprintf( " &full_move_count = 0x%p\n",             &full_move_count );
-    cprintf( " size to end of full_move_count = %lu", ((char *)&full_move_count - (char *)this) + sizeof(full_move_count) );
-    cprintf( " sizeof(ChessPosition) = %lu (should be 4 more than size to end of full_move_count)\n",
+    log( "Addresses etc.;\n" );
+    log( " this = 0x%p\n",                         this );
+    log( " (void *)this = 0x%p\n",                 (void *)this );
+    log( " &white = 0x%p\n",                       &white );
+    log( " &squares[0] = 0x%p\n",                  &squares[0] );
+    log( " &half_move_clock = 0x%p\n",             &half_move_clock );
+    log( " &full_move_count = 0x%p\n",             &full_move_count );
+    log( " size to end of full_move_count = %lu", ((char *)&full_move_count - (char *)this) + sizeof(full_move_count) );
+    log( " sizeof(ChessPosition) = %lu (should be 4 more than size to end of full_move_count)\n",
            sizeof(ChessPosition) );
-    cprintf( " sizeof(Move) = %lu\n",                  sizeof(Move) );
-    
-    cprintf( " sizeof(ChessPositionRaw) = %lu\n", sizeof(ChessPositionRaw) );
-    cprintf( " (offsetof(ChessPositionRaw,full_move_count) + sizeof(full_move_count) + sizeof(DETAIL) =");
-    cprintf( " %lu + %lu + %lu = %lu\n",
+    log( " sizeof(Move) = %lu\n",                  sizeof(Move) );
+
+    log( " sizeof(ChessPositionRaw) = %lu\n", sizeof(ChessPositionRaw) );
+    log( " (offsetof(ChessPositionRaw,full_move_count) + sizeof(full_move_count) + sizeof(DETAIL) =");
+    log( " %lu + %lu + %lu = %lu\n",
            offsetof(ChessPositionRaw,full_move_count), sizeof(full_move_count), sizeof(DETAIL),
            offsetof(ChessPositionRaw,full_move_count) + sizeof(full_move_count) + sizeof(DETAIL)
            );
@@ -2213,12 +2235,12 @@ void ChessRules::TestInternals()
             case 5: move.TerseIn(this,"e8g8");    break;
         }
         unsigned char *p = (unsigned char *)DETAIL_ADDR;
-        cprintf( " DETAIL_ADDR = 0x%p\n",  p );
-        cprintf( " DETAIL_ADDR[0] = %02x\n",  p[0] );
-        cprintf( " DETAIL_ADDR[1] = %02x\n",  p[1] );
-        cprintf( " DETAIL_ADDR[2] = %02x\n",  p[2] );
-        cprintf( " DETAIL_ADDR[3] = %02x\n",  p[3] );
-        cprintf( "Before %s: enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
+        log( " DETAIL_ADDR = 0x%p\n",  p );
+        log( " DETAIL_ADDR[0] = %02x\n",  p[0] );
+        log( " DETAIL_ADDR[1] = %02x\n",  p[1] );
+        log( " DETAIL_ADDR[2] = %02x\n",  p[2] );
+        log( " DETAIL_ADDR[3] = %02x\n",  p[3] );
+        log( "Before %s: enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
                " wking=%s, wqueen=%s, bking=%s, bqueen=%s\n",
                move.TerseOut().c_str(),
                enpassant_target,
@@ -2229,7 +2251,7 @@ void ChessRules::TestInternals()
                bking ?"true":"false",
                bqueen?"true":"false" );
         PushMove(move);
-        cprintf( "After PushMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
+        log( "After PushMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
                " wking=%s, wqueen=%s, bking=%s, bqueen=%s\n",
                enpassant_target,
                wking_square,
@@ -2239,7 +2261,7 @@ void ChessRules::TestInternals()
                bking ?"true":"false",
                bqueen?"true":"false" );
         PopMove(move);
-        cprintf( "After PopMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
+        log( "After PopMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
                " wking=%s, wqueen=%s, bking=%s, bqueen=%s\n",
                enpassant_target,
                wking_square,
@@ -2249,7 +2271,7 @@ void ChessRules::TestInternals()
                bking ?"true":"false",
                bqueen?"true":"false" );
         PushMove(move);
-        cprintf( "After PushMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
+        log( "After PushMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
                " wking=%s, wqueen=%s, bking=%s, bqueen=%s\n",
                enpassant_target,
                wking_square,
@@ -2259,9 +2281,11 @@ void ChessRules::TestInternals()
                bking ?"true":"false",
                bqueen?"true":"false" );
     }
+
+    // Later, extend this to check addresses etc
+    return KQkq_allowed && Qkq_allowed && Qq_allowed && q_allowed && none_allowed && kq_allowed && none_allowed2 &&
+           KQkq_allowed_f && Qkq_allowed_f && Qq_allowed_f && q_allowed_f && none_allowed_f && kq_allowed_f && none_allowed2_f;
 }
-
-
 
 /****************************************************************************
  * Play a move
@@ -2366,9 +2390,9 @@ void ChessRules::GenLegalMoveList( MOVELIST *list, bool check[MAXMOVES],
         PushMove( list2.moves[i] );
         okay = Evaluate(terminal_score);
         Square king_to_move = (Square)(white ? wking_square : bking_square );
-		bool bcheck = false;
+        bool bcheck = false;
         if( AttackedPiece(king_to_move) )
-		    bcheck = true;
+            bcheck = true;
         PopMove( list2.moves[i] );
         if( okay )
         {
@@ -2410,7 +2434,7 @@ bool ChessRules::IsDraw( bool white_asks, DRAWTYPE &result )
     if( !draw )
         result = NOT_DRAW;
     return( draw );
-}       
+}
 
 /****************************************************************************
  * Get number of times position has been repeated
@@ -2419,7 +2443,7 @@ int ChessRules::GetRepetitionCount()
 {
     int matches=0;
 
-    //  Save those aspects of current position that are changed by multiple 
+    //  Save those aspects of current position that are changed by multiple
     //  PopMove() calls as we search backwards (i.e. squares, white,
     //  detail, detail_idx)
     char save_squares[sizeof(squares)];
@@ -2549,7 +2573,7 @@ int ChessRules::GetRepetitionCount()
     detail_idx = save_detail_idx;
     DETAIL_RESTORE;
     return( matches+1 );  // +1 counts original position
-}       
+}
 
 /****************************************************************************
  * Check insufficient material draw rule
@@ -2567,9 +2591,9 @@ bool ChessRules::IsInsufficientDraw( bool white_asks, DRAWTYPE &result )
         piece = squares[square];
         switch( piece )
         {
-            case 'B':    
-            case 'b':    
-            case 'N':    
+            case 'B':
+            case 'b':
+            case 'N':
             case 'n':       bishop_or_knight=true;  // and fall through
             case 'Q':
             case 'q':
@@ -2582,7 +2606,7 @@ bool ChessRules::IsInsufficientDraw( bool white_asks, DRAWTYPE &result )
                             else
                                 lone_bking = false;
                             break;
-        }       
+        }
         if( !lone_wking && !lone_bking )
             break;  // quit early for performance
     }
@@ -2616,10 +2640,10 @@ bool ChessRules::IsInsufficientDraw( bool white_asks, DRAWTYPE &result )
 }
 
 /****************************************************************************
- * Generate a list of all possible moves in a position                
+ * Generate a list of all possible moves in a position
  ****************************************************************************/
 void ChessRules::GenMoveList( MOVELIST *l )
-{    
+{
     Square square;
 
     // Convenient spot for some asserts
@@ -2639,16 +2663,16 @@ void ChessRules::GenMoveList( MOVELIST *l )
 
     // Loop through all squares
     for( square=a8; square<=h1; ++square )
-    {    
-        
+    {
+
         // If square occupied by a piece of the right colour
         char piece=squares[square];
         if( (white&&IsWhite(piece)) || (!white&&IsBlack(piece)) )
-        {   
+        {
 
             // Generate moves according to the occupying piece
             switch( piece )
-            {    
+            {
                 case 'P':
                 {
                     WhitePawnMoves( l, square );
@@ -2661,7 +2685,7 @@ void ChessRules::GenMoveList( MOVELIST *l )
                 }
                 case 'N':
                 case 'n':
-                {    
+                {
                     const lte *ptr = knight_lookup[square];
                     ShortMoves( l, square, ptr, NOT_SPECIAL );
                     break;
@@ -2693,10 +2717,10 @@ void ChessRules::GenMoveList( MOVELIST *l )
                     KingMoves( l, square );
                     break;
                 }
-            }    
-        }    
+            }
+        }
     }
-}    
+}
 
 /****************************************************************************
  * Generate moves for pieces that move along multi-move rays (B,R,Q)
@@ -2723,7 +2747,7 @@ void ChessRules::LongMoves( MOVELIST *l, Square square, const lte *ptr )
                 m->special = NOT_SPECIAL;
                 m++;
                 l->count++;
-            }    
+            }
 
             // Else must move to end of ray
             else
@@ -2740,16 +2764,16 @@ void ChessRules::LongMoves( MOVELIST *l, Square square, const lte *ptr )
                     m->capture = piece;
                     l->count++;
                     m++;
-                }    
+                }
             }
-        }    
-    }    
+        }
+    }
 }
 
 /****************************************************************************
  * Generate moves for pieces that move along single move rays (N,K)
  ****************************************************************************/
-void ChessRules::ShortMoves( MOVELIST *l, Square square, 
+void ChessRules::ShortMoves( MOVELIST *l, Square square,
                                          const lte *ptr, SPECIAL special  )
 {
     Move *m=&l->moves[l->count];
@@ -2769,7 +2793,7 @@ void ChessRules::ShortMoves( MOVELIST *l, Square square,
             m->capture = ' ';
             m++;
             l->count++;
-        }    
+        }
 
         // Else if occupied by enemy man, add move to list as a capture
         else if( (white&&IsBlack(piece)) || (!white&&IsWhite(piece)) )
@@ -2780,15 +2804,15 @@ void ChessRules::ShortMoves( MOVELIST *l, Square square,
             m->capture = piece;
             m++;
             l->count++;
-        }    
-    }    
+        }
+    }
 }
 
 /****************************************************************************
  * Generate list of king moves
  ****************************************************************************/
 void ChessRules::KingMoves( MOVELIST *l, Square square )
-{    
+{
     const lte *ptr = king_lookup[square];
     ShortMoves( l, square, ptr, SPECIAL_KING_MOVE );
 
@@ -2798,10 +2822,10 @@ void ChessRules::KingMoves( MOVELIST *l, Square square )
 
     // White castling
     if( square == e1 )   // king on e1 ?
-    { 
+    {
 
         // King side castling
-        if( 
+        if(
             squares[g1] == ' '   &&
             squares[f1] == ' '   &&
             squares[h1] == 'R'   &&
@@ -2817,10 +2841,10 @@ void ChessRules::KingMoves( MOVELIST *l, Square square )
             m->capture = ' ';
             m++;
             l->count++;
-        }    
+        }
 
         // Queen side castling
-        if( 
+        if(
             squares[b1] == ' '         &&
             squares[c1] == ' '         &&
             squares[d1] == ' '         &&
@@ -2842,10 +2866,10 @@ void ChessRules::KingMoves( MOVELIST *l, Square square )
 
     // Black castling
     if( square == e8 )   // king on e8 ?
-    { 
+    {
 
         // King side castling
-        if( 
+        if(
             squares[g8] == ' '         &&
             squares[f8] == ' '         &&
             squares[h8] == 'r'         &&
@@ -2861,7 +2885,7 @@ void ChessRules::KingMoves( MOVELIST *l, Square square )
             m->capture = ' ';
             m++;
             l->count++;
-        }    
+        }
 
         // Queen side castling
         if(
@@ -2883,13 +2907,13 @@ void ChessRules::KingMoves( MOVELIST *l, Square square )
             l->count++;
         }
     }
-}    
+}
 
 /****************************************************************************
  * Generate list of white pawn moves
  ****************************************************************************/
 void ChessRules::WhitePawnMoves( MOVELIST *l,  Square square )
-{    
+{
     Move *m = &l->moves[l->count];
     const lte *ptr = pawn_white_lookup[square];
     bool promotion = (RANK(square) == '7');
@@ -2920,9 +2944,9 @@ void ChessRules::WhitePawnMoves( MOVELIST *l,  Square square )
                 l->count++;
             }
             else
-            {    
+            {
 
-                // Generate (under)promotions in the order (Q),N,B,R               
+                // Generate (under)promotions in the order (Q),N,B,R
                 //  but we no longer rely on this elsewhere as it
                 //  stops us reordering moves
                 m->special   = SPECIAL_PROMOTION_QUEEN;
@@ -2946,7 +2970,7 @@ void ChessRules::WhitePawnMoves( MOVELIST *l,  Square square )
                 m->special   = SPECIAL_PROMOTION_ROOK;
                 m++;
                 l->count++;
-            }    
+            }
         }
     }
 
@@ -2969,9 +2993,9 @@ void ChessRules::WhitePawnMoves( MOVELIST *l,  Square square )
             l->count++;
         }
         else
-        {    
+        {
 
-            // Generate (under)promotions in the order (Q),N,B,R               
+            // Generate (under)promotions in the order (Q),N,B,R
             //  but we no longer rely on this elsewhere as it
             //  stops us reordering moves
             m->special   = SPECIAL_PROMOTION_QUEEN;
@@ -2995,15 +3019,15 @@ void ChessRules::WhitePawnMoves( MOVELIST *l,  Square square )
             m->special   = SPECIAL_PROMOTION_ROOK;
             m++;
             l->count++;
-        }    
+        }
     }
-}    
+}
 
 /****************************************************************************
  * Generate list of black pawn moves
  ****************************************************************************/
 void ChessRules::BlackPawnMoves( MOVELIST *l, Square square )
-{    
+{
     Move *m = &l->moves[l->count];
     const lte *ptr = pawn_black_lookup[square];
     bool promotion = (RANK(square) == '2');
@@ -3034,9 +3058,9 @@ void ChessRules::BlackPawnMoves( MOVELIST *l, Square square )
                 l->count++;
             }
             else
-            {    
+            {
 
-                // Generate (under)promotions in the order (Q),N,B,R               
+                // Generate (under)promotions in the order (Q),N,B,R
                 //  but we no longer rely on this elsewhere as it
                 //  stops us reordering moves
                 m->special   = SPECIAL_PROMOTION_QUEEN;
@@ -3060,7 +3084,7 @@ void ChessRules::BlackPawnMoves( MOVELIST *l, Square square )
                 m->special   = SPECIAL_PROMOTION_ROOK;
                 m++;
                 l->count++;
-            }    
+            }
         }
     }
 
@@ -3083,9 +3107,9 @@ void ChessRules::BlackPawnMoves( MOVELIST *l, Square square )
             l->count++;
         }
         else
-        {    
+        {
 
-            // Generate (under)promotions in the order (Q),N,B,R               
+            // Generate (under)promotions in the order (Q),N,B,R
             //  but we no longer rely on this elsewhere as it
             //  stops us reordering moves
             m->special   = SPECIAL_PROMOTION_QUEEN;
@@ -3109,15 +3133,15 @@ void ChessRules::BlackPawnMoves( MOVELIST *l, Square square )
             m->special   = SPECIAL_PROMOTION_ROOK;
             m++;
             l->count++;
-        }    
+        }
     }
-}    
+}
 
 /****************************************************************************
  * Make a move (with the potential to undo)
  ****************************************************************************/
-void ChessRules::PushMove( Move& m ) 
-{    
+void ChessRules::PushMove( Move& m )
+{
     // Push old details onto stack
     DETAIL_PUSH;
 
@@ -3157,25 +3181,25 @@ void ChessRules::PushMove( Move& m )
         squares[m.src] = ' ';
         squares[m.dst] = (white?'Q':'q');
         break;
-        
+
         // In promotion case, dst piece doesn't equal src piece
         case SPECIAL_PROMOTION_ROOK:
         squares[m.src] = ' ';
         squares[m.dst] = (white?'R':'r');
         break;
-        
+
         // In promotion case, dst piece doesn't equal src piece
         case SPECIAL_PROMOTION_BISHOP:
         squares[m.src] = ' ';
         squares[m.dst] = (white?'B':'b');
         break;
-        
+
         // In promotion case, dst piece doesn't equal src piece
         case SPECIAL_PROMOTION_KNIGHT:
         squares[m.src] = ' ';
         squares[m.dst] = (white?'N':'n');
         break;
-        
+
         // White enpassant removes pawn south of destination
         case SPECIAL_WEN_PASSANT:
         squares[m.src] = ' ';
@@ -3233,23 +3257,23 @@ void ChessRules::PushMove( Move& m )
         squares[a8] = ' ';
         bking_square = c8;
         break;
-    }    
+    }
 
     // Toggle who-to-move
     Toggle();
-}    
+}
 
 /****************************************************************************
  * Undo a move
  ****************************************************************************/
-void ChessRules::PopMove( Move& m ) 
-{    
+void ChessRules::PopMove( Move& m )
+{
     // Previous detail field
     DETAIL_POP;
 
     // Toggle who-to-move
     Toggle();
-    
+
     // Special handling might be required
     switch( m.special )
     {
@@ -3269,7 +3293,7 @@ void ChessRules::PopMove( Move& m )
             squares[m.src] = 'p';
         squares[m.dst] = m.capture;
         break;
-        
+
         // White enpassant re-insert black pawn south of destination
         case SPECIAL_WEN_PASSANT:
         squares[m.src] = 'P';
@@ -3309,15 +3333,15 @@ void ChessRules::PopMove( Move& m )
         squares[c8] = ' ';
         squares[a8] = 'r';
         break;
-    }    
-}    
+    }
+}
 
 
 /****************************************************************************
  * Determine if an occupied square is attacked
  ****************************************************************************/
 bool ChessRules::AttackedPiece( Square square )
-{    
+{
     bool enemy_is_white  =  IsBlack(squares[square]);
     return( AttackedSquare(square,enemy_is_white) );
 }
@@ -3326,7 +3350,7 @@ bool ChessRules::AttackedPiece( Square square )
  * Is a square is attacked by enemy ?
  ****************************************************************************/
 bool ChessRules::AttackedSquare( Square square, bool enemy_is_white )
-{    
+{
     Square dst;
     const lte *ptr = (enemy_is_white ? attacks_black_lookup[square] : attacks_white_lookup[square] );
     lte nbr_rays = *ptr++;
@@ -3364,9 +3388,9 @@ bool ChessRules::AttackedSquare( Square square, bool enemy_is_white )
                 // Goto end of ray
                 ptr += (2*ray_len);
                 ray_len = 0;
-            }    
-        }    
-    }    
+            }
+        }
+    }
 
     ptr = knight_lookup[square];
     lte nbr_squares = *ptr++;
@@ -3380,7 +3404,7 @@ bool ChessRules::AttackedSquare( Square square, bool enemy_is_white )
             return true;
     }
     return false;
-}    
+}
 
 /****************************************************************************
  * Evaluate a position, returns bool okay (not okay means illegal position)
@@ -3394,62 +3418,62 @@ bool ChessRules::Evaluate()
 
 bool ChessRules::Evaluate( TERMINAL &score_terminal )
 {
-	return( Evaluate(NULL,score_terminal) );
+    return( Evaluate(NULL,score_terminal) );
 }
 
 bool ChessRules::Evaluate( MOVELIST *p, TERMINAL &score_terminal )
-{    
+{
     /* static ;remove for thread safety */ MOVELIST local_list;
-	MOVELIST &list = p?*p:local_list;
+    MOVELIST &list = p?*p:local_list;
     int i, any;
     Square my_king, enemy_king;
-	bool okay;    
+    bool okay;
     score_terminal=NOT_TERMINAL;
 
-	//DIAG_evaluate_count++;	
+    //DIAG_evaluate_count++;
 
     // Enemy king is attacked and our move, position is illegal
     enemy_king = (Square)(white ? bking_square : wking_square);
     if( AttackedPiece(enemy_king) )
-		okay = false;
+        okay = false;
 
-	// Else legal position
-	else
+    // Else legal position
+    else
     {
-		okay = true;
+        okay = true;
 
-		// Work out if the game is over by checking for any legal moves
-		GenMoveList( &list );
-		for( any=i=0 ; i<list.count && any==0 ; i++ )
-		{    
-			PushMove( list.moves[i] );
-			my_king = (Square)(white ? bking_square : wking_square);
-			if( !AttackedPiece(my_king) )
-				any++;
-			PopMove( list.moves[i] );
-		}    
+        // Work out if the game is over by checking for any legal moves
+        GenMoveList( &list );
+        for( any=i=0 ; i<list.count && any==0 ; i++ )
+        {
+            PushMove( list.moves[i] );
+            my_king = (Square)(white ? bking_square : wking_square);
+            if( !AttackedPiece(my_king) )
+                any++;
+            PopMove( list.moves[i] );
+        }
 
-		// If no legal moves, position is either checkmate or stalemate
-		if( any == 0 )
-		{    
-			my_king = (Square)(white ? wking_square : bking_square);
-			if( AttackedPiece(my_king) )
-				score_terminal = (white ? TERMINAL_WCHECKMATE
-									    : TERMINAL_BCHECKMATE);
-			else
-				score_terminal = (white ? TERMINAL_WSTALEMATE
-									    : TERMINAL_BSTALEMATE);
-		}    
-	}
-	return(okay);
-}    
+        // If no legal moves, position is either checkmate or stalemate
+        if( any == 0 )
+        {
+            my_king = (Square)(white ? wking_square : bking_square);
+            if( AttackedPiece(my_king) )
+                score_terminal = (white ? TERMINAL_WCHECKMATE
+                                        : TERMINAL_BCHECKMATE);
+            else
+                score_terminal = (white ? TERMINAL_WSTALEMATE
+                                        : TERMINAL_BSTALEMATE);
+        }
+    }
+    return(okay);
+}
 
 // Transform a position with W to move into an equivalent with B to move and vice-versa
 void ChessRules::Transform()
 {
     Toggle();
-    Square wking_square_ = (Square)0;           
-    Square bking_square_ = (Square)0;           
+    Square wking_square_ = (Square)0;
+    Square bking_square_ = (Square)0;
     Square enpassant_target_ = (Square)this->enpassant_target;
 
     // swap wking <-> bking
@@ -3482,7 +3506,7 @@ void ChessRules::Transform()
     this->wking_square      = wking_square_;
     this->bking_square      = bking_square_;
     this->enpassant_target  = enpassant_target_;
-    
+
     // Loop through half the board
     for( file='a'; file<='h'; file++ )
     {
@@ -3543,7 +3567,7 @@ Move ChessRules::Transform( Move move )
 
     // Special moves
     switch( move.special )
-    {           
+    {
         case SPECIAL_WK_CASTLING:       ret.special = SPECIAL_BK_CASTLING;          break;
         case SPECIAL_BK_CASTLING:       ret.special = SPECIAL_WK_CASTLING;          break;
         case SPECIAL_WQ_CASTLING:       ret.special = SPECIAL_BQ_CASTLING;          break;
@@ -3561,13 +3585,13 @@ Move ChessRules::Transform( Move move )
     else if( isupper(move.capture) )
         ret.capture = tolower(move.capture);
     return ret;
-}                
-                 
+}
+
 /****************************************************************************
  *  Test for legal position, sets reason to a mask of possibly multiple reasons
  ****************************************************************************/
 bool ChessRules::IsLegal( ILLEGAL_REASON& reason )
-{    
+{
     int  ireason = 0;
     int  wkings=0, bkings=0, wpawns=0, bpawns=0, wpieces=0, bpieces=0;
     bool legal = true;
@@ -3628,12 +3652,12 @@ bool ChessRules::IsLegal( ILLEGAL_REASON& reason )
                 rank--;
             }
         }
-    }   
+    }
     if( wkings!=1 || bkings!=1 )
     {
         legal = false;
         ireason |= IR_NOT_ONE_KING_EACH;
-    }        
+    }
     if( opposition_king_location!=SQUARE_INVALID && AttackedPiece(opposition_king_location) )
     {
         legal = false;
@@ -3643,22 +3667,22 @@ bool ChessRules::IsLegal( ILLEGAL_REASON& reason )
     {
         legal = false;
         ireason |= IR_WHITE_TOO_MANY_PIECES;
-    }        
+    }
     if( bpieces>8 && (bpieces+bpawns)>16 )
     {
         legal = false;
         ireason |= IR_BLACK_TOO_MANY_PIECES;
-    }        
+    }
     if( wpawns > 8 )
     {
         legal = false;
         ireason |= IR_WHITE_TOO_MANY_PAWNS;
-    }        
+    }
     if( bpawns > 8 )
     {
         legal = false;
         ireason |= IR_BLACK_TOO_MANY_PAWNS;
-    }        
+    }
     reason = (ILLEGAL_REASON)ireason;
     return( legal );
 }
@@ -3667,7 +3691,7 @@ bool ChessRules::IsLegal( ILLEGAL_REASON& reason )
  * ChessEvaluation.cpp Chess classes - Simple chess AI, leaf scoring function for position
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 
 //-- preferences
@@ -3699,7 +3723,7 @@ static int either_colour_material[]=
  *  Fast white to move version
  ****************************************************************************/
 int ChessEvaluation::EnpriseWhite()
-{    
+{
 
     int best_so_far=0;  // amount of material that can be safely captured
 
@@ -3740,7 +3764,7 @@ int ChessEvaluation::EnpriseWhite()
             ptr = knight_lookup[square];
             nbr_squares = *ptr++;
             while( nbr_squares-- )
-            {    
+            {
                 attack_square = (Square)*ptr++;
                 if( (attacker = squares[attack_square]) == 'N' )
                     *attackers++ = attacker;
@@ -3755,7 +3779,7 @@ int ChessEvaluation::EnpriseWhite()
             ptr = attacks_black_lookup[square];
             nbr_rays = *ptr++;
             while( nbr_rays-- )
-            {    
+            {
                 nbr_squares = *ptr++;
                 while( nbr_squares-- )
                 {
@@ -3767,7 +3791,7 @@ int ChessEvaluation::EnpriseWhite()
                     //  it matches a piece that attacks down that ray we have found
                     //  an attacker
                     if( IsWhite(attacker) && (to_mask[attacker]&mask) )
-                    {   
+                    {
                         if( attacker != 'P' ) // we've already done pawn
                             *attackers++ = attacker;
                         if( attacker == 'K' ) // don't look beyond a king
@@ -3775,7 +3799,7 @@ int ChessEvaluation::EnpriseWhite()
                             ptr += (nbr_squares+nbr_squares);
                             nbr_squares = 0;
                         }
-                    }    
+                    }
 
                     // Any other piece or a defender, must move to end of ray
                     else if( !IsEmptySquare(attacker) )
@@ -3856,7 +3880,7 @@ int ChessEvaluation::EnpriseWhite()
             ptr = knight_lookup[square];
             nbr_squares = *ptr++;
             while( nbr_squares-- )
-            {    
+            {
                 defend_square = (Square)*ptr++;
                 if( (defender = squares[defend_square]) == 'n' )
                     *defenders++ = defender;
@@ -3871,7 +3895,7 @@ int ChessEvaluation::EnpriseWhite()
             ptr = attacks_white_lookup[square];
             nbr_rays = *ptr++;
             while( nbr_rays-- )
-            {    
+            {
                 nbr_squares = *ptr++;
                 while( nbr_squares-- )
                 {
@@ -3883,7 +3907,7 @@ int ChessEvaluation::EnpriseWhite()
                     //  it matches a piece that defends down that ray we have found
                     //  a defender
                     if( IsBlack(defender) && (to_mask[defender]&mask) )
-                    {   
+                    {
                         if( defender != 'p' ) // we've already done pawn
                             *defenders++ = defender;
                         if( defender == 'k' ) // don't look beyond a king
@@ -3891,7 +3915,7 @@ int ChessEvaluation::EnpriseWhite()
                             ptr += (nbr_squares+nbr_squares);
                             nbr_squares = 0;
                         }
-                    }    
+                    }
 
                     // Any other piece or an attacker, must move to end of ray
                     else if( !IsEmptySquare(defender) )
@@ -3966,7 +3990,7 @@ int ChessEvaluation::EnpriseWhite()
                 // Defender can elect to stop here
                 if( net < min )
                     min = net;
-        
+
                 // Can defender recapture ?
                 if( d == defenders )
                 {
@@ -4001,9 +4025,9 @@ int ChessEvaluation::EnpriseWhite()
  *  Fast black to move version
  ****************************************************************************/
 int ChessEvaluation::EnpriseBlack()
-{    
+{
     int best_so_far=0;  // amount of material that can be safely captured
-    
+
     // Locals
     unsigned char defenders_buf[32];
     unsigned char *defenders;
@@ -4041,7 +4065,7 @@ int ChessEvaluation::EnpriseBlack()
             ptr = knight_lookup[square];
             nbr_squares = *ptr++;
             while( nbr_squares-- )
-            {    
+            {
                 attack_square = (Square)*ptr++;
                 if( (attacker = squares[attack_square]) == 'n' )
                     *attackers++ = attacker;
@@ -4056,7 +4080,7 @@ int ChessEvaluation::EnpriseBlack()
             ptr = attacks_white_lookup[square];
             nbr_rays = *ptr++;
             while( nbr_rays-- )
-            {    
+            {
                 nbr_squares = *ptr++;
                 while( nbr_squares-- )
                 {
@@ -4068,7 +4092,7 @@ int ChessEvaluation::EnpriseBlack()
                     //  it matches a piece that attacks down that ray we have found
                     //  an attacker
                     if( IsBlack(attacker) && (to_mask[attacker]&mask) )
-                    {   
+                    {
                         if( attacker != 'p' ) // we've already done pawn
                             *attackers++ = attacker;
                         if( attacker == 'k' ) // don't look beyond a king
@@ -4076,7 +4100,7 @@ int ChessEvaluation::EnpriseBlack()
                             ptr += (nbr_squares+nbr_squares);
                             nbr_squares = 0;
                         }
-                    }    
+                    }
 
                     // Any other piece or a defender, must move to end of ray
                     else if( !IsEmptySquare(attacker) )
@@ -4157,7 +4181,7 @@ int ChessEvaluation::EnpriseBlack()
             ptr = knight_lookup[square];
             nbr_squares = *ptr++;
             while( nbr_squares-- )
-            {    
+            {
                 defend_square = (Square)*ptr++;
                 if( (defender = squares[defend_square]) == 'N' )
                     *defenders++ = defender;
@@ -4172,7 +4196,7 @@ int ChessEvaluation::EnpriseBlack()
             ptr = attacks_black_lookup[square];
             nbr_rays = *ptr++;
             while( nbr_rays-- )
-            {    
+            {
                 nbr_squares = *ptr++;
                 while( nbr_squares-- )
                 {
@@ -4184,7 +4208,7 @@ int ChessEvaluation::EnpriseBlack()
                     //  it matches a piece that defends down that ray we have found
                     //  a defender
                     if( IsWhite(defender) && (to_mask[defender]&mask) )
-                    {   
+                    {
                         if( defender != 'P' ) // we've already done pawn
                             *defenders++ = defender;
                         if( defender == 'K' ) // don't look beyond a king
@@ -4192,7 +4216,7 @@ int ChessEvaluation::EnpriseBlack()
                             ptr += (nbr_squares+nbr_squares);
                             nbr_squares = 0;
                         }
-                    }    
+                    }
 
                     // Any other piece or an attacker, must move to end of ray
                     else if( !IsEmptySquare(defender) )
@@ -4265,7 +4289,7 @@ int ChessEvaluation::EnpriseBlack()
                 // Defender can elect to stop here
                 if( net < min )
                     min = net;
-        
+
                 // Can defender recapture ?
                 if( d == defenders )
                 {
@@ -4301,23 +4325,23 @@ int ChessEvaluation::EnpriseBlack()
 static int king_ending_bonus_static[] =
 {
     #if 1
-    /*  0x00-0x07 a8-h8 */ -25,-25,-25,-25,-25,-25,-25,-25,    
-    /*  0x00-0x0f a7-h7 */ -25,  0,  0,  0,  0,  0,  0,-25,    
-    /*  0x10-0x17 a6-h6 */ -25,  0, 25, 25, 25, 25,  0,-25,    
-    /*  0x10-0x1f a5-h5 */ -25,  0, 25, 50, 50, 25,  0,-25,    
-    /*  0x20-0x27 a4-h4 */ -25,  0, 25, 50, 50, 25,  0,-25,    
-    /*  0x20-0x2f a3-h3 */ -25,  0, 25, 25, 25, 25,  0,-25,    
-    /*  0x30-0x37 a2-h2 */ -25,  0,  0,  0,  0,  0,  0,-25,    
-    /*  0x30-0x3f a1-h1 */ -25,-25,-25,-25,-25,-25,-25,-25     
+    /*  0x00-0x07 a8-h8 */ -25,-25,-25,-25,-25,-25,-25,-25,
+    /*  0x00-0x0f a7-h7 */ -25,  0,  0,  0,  0,  0,  0,-25,
+    /*  0x10-0x17 a6-h6 */ -25,  0, 25, 25, 25, 25,  0,-25,
+    /*  0x10-0x1f a5-h5 */ -25,  0, 25, 50, 50, 25,  0,-25,
+    /*  0x20-0x27 a4-h4 */ -25,  0, 25, 50, 50, 25,  0,-25,
+    /*  0x20-0x2f a3-h3 */ -25,  0, 25, 25, 25, 25,  0,-25,
+    /*  0x30-0x37 a2-h2 */ -25,  0,  0,  0,  0,  0,  0,-25,
+    /*  0x30-0x3f a1-h1 */ -25,-25,-25,-25,-25,-25,-25,-25
     #else
-    /*  0x00-0x07 a8-h8 */ -10,-10,-10,-10,-10,-10,-10,-10,    
-    /*  0x00-0x0f a7-h7 */ -10,  0,  0,  0,  0,  0,  0,-10,    
-    /*  0x10-0x17 a6-h6 */ -10,  0, 10, 10, 10, 10,  0,-10,    
-    /*  0x10-0x1f a5-h5 */ -10,  0, 10, 20, 20, 10,  0,-10,    
-    /*  0x20-0x27 a4-h4 */ -10,  0, 10, 20, 20, 10,  0,-10,    
-    /*  0x20-0x2f a3-h3 */ -10,  0, 10, 10, 10, 10,  0,-10,    
-    /*  0x30-0x37 a2-h2 */ -10,  0,  0,  0,  0,  0,  0,-10,    
-    /*  0x30-0x3f a1-h1 */ -10,-10,-10,-10,-10,-10,-10,-10     
+    /*  0x00-0x07 a8-h8 */ -10,-10,-10,-10,-10,-10,-10,-10,
+    /*  0x00-0x0f a7-h7 */ -10,  0,  0,  0,  0,  0,  0,-10,
+    /*  0x10-0x17 a6-h6 */ -10,  0, 10, 10, 10, 10,  0,-10,
+    /*  0x10-0x1f a5-h5 */ -10,  0, 10, 20, 20, 10,  0,-10,
+    /*  0x20-0x27 a4-h4 */ -10,  0, 10, 20, 20, 10,  0,-10,
+    /*  0x20-0x2f a3-h3 */ -10,  0, 10, 10, 10, 10,  0,-10,
+    /*  0x30-0x37 a2-h2 */ -10,  0,  0,  0,  0,  0,  0,-10,
+    /*  0x30-0x3f a1-h1 */ -10,-10,-10,-10,-10,-10,-10,-10
     #endif
 };
 
@@ -4381,7 +4405,7 @@ static int black_pieces[]=
  *   (needs a lot of improvement)
  ****************************************************************************/
 void ChessEvaluation::Planning()
-{    
+{
     Square weaker_king, bonus_square;
     char piece;
     int score_black_material = 0;
@@ -4451,7 +4475,7 @@ void ChessEvaluation::Planning()
 
     // Are we in an ending ?
     if( ending )
-    { 
+    {
 
         // Reset dynamic king position arrays
         memcpy( king_ending_bonus_dynamic_white,
@@ -4490,7 +4514,7 @@ void ChessEvaluation::Planning()
             const lte *ptr = good_king_position_lookup[weaker_king];
             lte nbr_squares = *ptr++;
             while( nbr_squares-- )
-            {    
+            {
                 bonus_square = (Square)*ptr++;
                 if( king_ending_bonus_static[bonus_square] >
                     king_ending_bonus_static[weaker_king]
@@ -4510,12 +4534,12 @@ void ChessEvaluation::Planning()
 /****************************************************************************
  * Evaluate a position, leaf node
  *
- *	 (this makes a rather ineffectual effort to score positional features
+ *   (this makes a rather ineffectual effort to score positional features
  *    needs a lot of improvement)
  ****************************************************************************/
 void ChessEvaluation::EvaluateLeaf( int &material, int &positional )
-{    
-	//DIAG_evaluate_leaf_count++;	
+{
+    //DIAG_evaluate_leaf_count++;
     char   piece;
     int file;
     int bonus = 0;
@@ -4537,7 +4561,7 @@ void ChessEvaluation::EvaluateLeaf( int &material, int &positional )
     int black_queen_developed_bonus      =0;
     int black_queen78_bonus              =0;
     int black_undeveloped_minor_bonus    =0;
-            
+
 
 #define BONUS_WHITE_SWAP_PIECE          60
 #define BONUS_BLACK_SWAP_PIECE          -60
@@ -4555,8 +4579,8 @@ void ChessEvaluation::EvaluateLeaf( int &material, int &positional )
 #define BONUS_BLACK_KING_CENTRAL3       -12
 #define BONUS_BLACK_QUEEN_CENTRAL       -10
 #define BONUS_BLACK_QUEEN_DEVELOPED     -10
-#define BONUS_BLACK_QUEEN78             -5 
-#define BONUS_BLACK_ROOK7               -5 
+#define BONUS_BLACK_QUEEN78             -5
+#define BONUS_BLACK_ROOK7               -5
 #define BONUS_BLACK_PAWN5               -20     // boosted because now must be passed
 #define BONUS_BLACK_PAWN6               -30     // boosted because now must be passed
 #define BONUS_BLACK_PAWN7               -40     // boosted because now must be passed
@@ -4576,8 +4600,8 @@ void ChessEvaluation::EvaluateLeaf( int &material, int &positional )
 #define BONUS_WHITE_KING_CENTRAL3        12
 #define BONUS_WHITE_QUEEN_CENTRAL        10
 #define BONUS_WHITE_QUEEN_DEVELOPED      10
-#define BONUS_WHITE_QUEEN78              5 
-#define BONUS_WHITE_ROOK7                5 
+#define BONUS_WHITE_QUEEN78              5
+#define BONUS_WHITE_ROOK7                5
 #define BONUS_WHITE_PAWN5                20     // boosted because now must be passed
 #define BONUS_WHITE_PAWN6                30     // boosted because now must be passed
 #define BONUS_WHITE_PAWN7                40     // boosted because now must be passed
@@ -4587,7 +4611,7 @@ void ChessEvaluation::EvaluateLeaf( int &material, int &positional )
 const int MATERIAL_OPENING = (500 + ((8*10+4*30+2*50+90)*2)/3);
 const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
 
-    
+
     Square black_king_square = SQUARE_INVALID;
     Square white_king_square = SQUARE_INVALID;
     Square black_pawns_buf[16];
@@ -4601,7 +4625,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
     int score_black_pieces = 0;
     int score_white_pieces = 0;
 
-    // a8->h8    
+    // a8->h8
     for( Square square=a8; square<=h8; ++square )
     {
         piece = squares[square];
@@ -4678,7 +4702,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
         }
     }
 
-    // a7->h7    
+    // a7->h7
     unsigned int next_passer_mask = 0;
     unsigned int passer_mask = 0;
     unsigned int three_files = 0x1c0;   // 1 1100 0000
@@ -4856,7 +4880,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
         three_files >>= 1;
     }
     passer_mask |= next_passer_mask;
-    
+
     // a5->h5;
     file_mask   = 0x80;             // 0 1000 0000
 //  three_files = 0x1c0;            // 1 1100 0000
@@ -5310,7 +5334,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
     }
     else
     {
-        // bonus += white_king_central_bonus;  
+        // bonus += white_king_central_bonus;
         bonus += white_queen78_bonus;
     }
 
@@ -5327,7 +5351,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
     }
     else
     {
-        // bonus += black_king_central_bonus;    
+        // bonus += black_king_central_bonus;
         bonus += black_queen78_bonus;
     }
 
@@ -5405,7 +5429,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
 
     // Reward stronger side with a bonus for swapping pieces not pawns
     if( material>0 && planning_white_piece_pawn_percent ) // if white ahead
-                                                          //   and a figure to compare to  
+                                                          //   and a figure to compare to
     {
         int score_white_pawns = score_white_material - 500 // -500 is king
                                 - score_white_pieces;
@@ -5457,7 +5481,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
         material += piece_pawn_ratio_adjustment;
     }
     else if( material<0 && planning_black_piece_pawn_percent ) // if black ahead
-                                                               //   and a figure to compare to  
+                                                               //   and a figure to compare to
     {
         int score_black_pawns = (0-score_black_material) - 500 // -500 is king
                                 - score_black_pieces;
@@ -5506,7 +5530,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
 
                 // Will queen if eg Pa3, Kd3
                 if( kfile > pfile )
-                    black_will_queen = (kfile-pfile > prank); // eg d-a=3 > 2 
+                    black_will_queen = (kfile-pfile > prank); // eg d-a=3 > 2
 
                 // Will queen if eg Ph3, Ke3
                 else if( kfile < pfile )
@@ -5580,7 +5604,7 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
 
                 // Will queen if eg Pa6, Kd6
                 if( kfile > pfile )
-                    white_will_queen = (kfile-pfile > 7-prank); // eg d-a=3 > 7-5=2 
+                    white_will_queen = (kfile-pfile > 7-prank); // eg d-a=3 > 7-5=2
 
                 // Will queen if eg Ph3, Ke3
                 else if( kfile < pfile )
@@ -5626,9 +5650,9 @@ const int MATERIAL_MIDDLE  = (500 + ((8*10+4*30+2*50+90)*1)/3);
             material += 65; // almost as good as a white queen (if it's too close we might not actually queen!)
     }
     #endif
-//	int score_test = material*4 /*balance=4*/ + positional;
+//  int score_test = material*4 /*balance=4*/ + positional;
 //  int score_test_cp = (score_test*10)/4;
-//	if( score_test_cp > 4000 )
+//  if( score_test_cp > 4000 )
 //      cprintf( "too much" );   // Problem fen "k7/8/PPK5/8/8/8/8/8 w - - 0 1"
 }
 
@@ -5687,9 +5711,9 @@ void ChessEvaluation::GenLegalMoveListSorted( MOVELIST *list )
                 score = 0;
             else
             {
-			    int material, positional;
-			    EvaluateLeaf(material,positional);
-			    score = material*4 /*balance=4*/ + positional;
+                int material, positional;
+                EvaluateLeaf(material,positional);
+                score = material*4 /*balance=4*/ + positional;
             }
             MOVE_IDX x;
             x.score = score;
@@ -5711,1221 +5735,10 @@ void ChessEvaluation::GenLegalMoveListSorted( MOVELIST *list )
 }
 
 /****************************************************************************
- * Chess classes - Simple chess AI, add search to ChessEvaluation
- *  Author:  Bill Forster
- *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
- ****************************************************************************/
-
-//-- preferences
-//#define TRANSFORM   // transform so all moves are played by white
-#define ALPHA_BETA
-// #define EXTRA_DEBUG_CODE1
-// #define EXTRA_DEBUG_CODE2
-// #define EXTRA_DEBUG_CODE3
-
-// Define one of the following only
-//#define SIX_PLY
-//#define FIVE_PLY   //when I started infinite search, it was set to this
-//#define THREE_PLY
-#define VARIABLE_PLY
-#define DEFAULT_DEPTH 4
-int  gbl_depth=DEFAULT_DEPTH;
-bool gbl_stop;
-#ifdef VARIABLE_PLY
-    #define IF_STOP_RECURSING if( recurse_level>gbl_depth || gbl_stop )
-#endif
-#ifdef SIX_PLY
-    #define IF_STOP_RECURSING if( recurse_level>5 )
-#endif
-#ifdef FIVE_PLY
-    #define IF_STOP_RECURSING if( recurse_level>4 )
-#endif
-#ifdef THREE_PLY
-    #define IF_STOP_RECURSING if( recurse_level>2 )
-#endif
-
-  #define LEVEL_STOP_SORTING  5 //12000         11500
-//#define LEVEL_STOP_SORTING  4 //16797         
-//#define LEVEL_STOP_SORTING  3 //21625
-//#define LEVEL_STOP_SORTING  2 //40578
-//#define LEVEL_STOP_SORTING  1 //84750
-//#define LEVEL_STOP_SORTING  0 //84950
-//#define LEVEL_CAREFUL_SORTING 6 //23203        30265
-//#define LEVEL_CAREFUL_SORTING 5 //11118        16422
-//#define LEVEL_CAREFUL_SORTING 4 // 8719        11700
-  #define LEVEL_CAREFUL_SORTING 3 // 8828 8797   11500
-//#define LEVEL_CAREFUL_SORTING 2 //12031
-//#define LEVEL_CAREFUL_SORTING 1 //12328
-//#define LEVEL_CAREFUL_SORTING 0 //12250
-int DIAG_evaluate_count;
-int DIAG_evaluate_leaf_count;
-int DIAG_make_move_primary;	
-int DIAG_cutoffs;
-int DIAG_deep_cutoffs;
-
-// Utilities
-#ifndef nbrof
-    #define nbrof(array) (sizeof((array))/sizeof((array)[0]))
-#endif
-
-// Macro to convert chess notation to Square convention,   
-//  eg a8=0, h8=7, a8=8, h1=63
-#define SQ(f,r)  ( (Square) ( ('8'-(r))*8 + ((f)-'a') )   )
-
-/****************************************************************************
- * Calculate a new move, returns bool have_move, calculates score in units
- *  of balance*decipawns (white positive) uses recursion
- ****************************************************************************/
-#define POS_INFINITY  1000000000
-#define NEG_INFINITY -1000000000
-#define MAX_DEPTH 30
-static Move moves[MAX_DEPTH][MAX_DEPTH];   // Obviously all these disgusting static
-static Move pv_array[MAX_DEPTH];           //  arrays mean only once instance of the
-static unsigned int pv_count;               //  ChessEngine type can work at once.
-static int scores[MAX_DEPTH][MAX_DEPTH];    //  This must be fixed in the future
-static int recurse_level;
-static int static_balance;
-bool ChessEngine::CalculateNextMove( bool &only_move, int &score, Move &move, int balance, int depth )
-{
-    MOVELIST ml;
-    gbl_stop = false;
-    only_move = false;
-    bool have_move=true;
-    if( depth > MAX_DEPTH-10 )
-        gbl_depth = MAX_DEPTH-10;
-    else
-        gbl_depth = depth;
-    //Planning();
-	GenLegalMoveListSorted( &ml );
-    recurse_level  = 0;
-    static_balance = balance;
-    pv_count = 0;
-	int besti;
-    if( ml.count == 0 )
-    {
-        besti = -1;
-        score = 0;
-    }
-    else if( ml.count == 1 )
-    {
-        // If only one legal move play it
-        only_move = true;
-        besti = 0;
-        PushMove( ml.moves[0] );
-		int material, positional;
-		EvaluateLeaf(material,positional);
-		score = material*static_balance + positional;
-        PopMove( ml.moves[0] );
-        pv_array[0] = ml.moves[besti];
-        pv_count = 1;
-    }
-    else
-        score = Score( ml, besti );
-
-	// Copy best move to caller
-	if( besti == -1 )
-    {
-        have_move = false;
-        move.Invalid();
-    }
-    else if( !only_move )
-    {
-        move = ml.moves[besti];
-
-	    for( int i=0; i<MAX_DEPTH; i++ )
-	    {
-		    if( moves[i][0].src == moves[i][0].dst )
-			    break;
-		    dbg_printf( "%d: score %d, %c%c-%c%c\n", i, scores[i][0],
-					       FILE(moves[i][0].src),
-		                   RANK(moves[i][0].src),
-		                   FILE(moves[i][0].dst),
-		                   RANK(moves[i][0].dst) );
-	    }
-	    dbg_printf( "DIAG_make_move_primary=%d\n"
-				     "DIAG_evaluate_count=%d\n"
-				     "DIAG_evaluate_leaf_count=%d\n"
-				     "DIAG_cutoffs=%d\n"
-				     "DIAG_deep_cutoffs=%d\n",
-				     DIAG_make_move_primary,
-				     0,//DIAG_evaluate_count,
-				     0,//DIAG_evaluate_leaf_count,
-				     DIAG_cutoffs, 
-				     DIAG_deep_cutoffs	);
-	    for( int i=0; i<MAX_DEPTH; i++ )
-	    {
-		    if( moves[i][0].src == moves[i][0].dst )
-			    break;
-            if( i>0 && scores[i][0]!=scores[i-1][0] )
-                break;
-            pv_array[i] = moves[i][0];
-            pv_count++;
-        }
-    }
-	return have_move;
-}
-
-/****************************************************************************
- * A version for Multi-PV mode, called repeatedly, removes best move from
- *  movelist each time
- ****************************************************************************/
-bool ChessEngine::CalculateNextMove( int &score, Move &move, int balance, int depth, bool first )
-{
-    bool have_move=true;
-	static MOVELIST ml;
-    if( first )
-    {
-        gbl_stop = false;
-        if( depth > MAX_DEPTH-10 )
-            gbl_depth = MAX_DEPTH-10;
-        else
-            gbl_depth = depth;
-        //Planning();
-	    GenLegalMoveListSorted( &ml );
-    }
-    static_balance = balance;
-    recurse_level  = 0;
-	int besti;
-    if( ml.count == 0 )
-    {
-        besti = -1;
-        score = 0;
-    }
-    else
-        score = Score( ml, besti );
-
-	// Copy best move to caller
-    pv_count = 0;
-	if( besti == -1 )
-    {
-        have_move = false;
-        move.Invalid();
-    }
-    else
-    {
-        move = ml.moves[besti];
-
-        // Remove best move from list for later calls
-        for( int i=besti+1; i<ml.count; i++ )
-            ml.moves[i-1] = ml.moves[i];
-        ml.count--;
-	    for( int i=0; i<MAX_DEPTH; i++ )
-	    {
-		    if( moves[i][0].src == moves[i][0].dst )
-			    break;
-		    dbg_printf( "%d: score %d, %c%c-%c%c\n", i, scores[i][0],
-					       FILE(moves[i][0].src),
-		                   RANK(moves[i][0].src),
-		                   FILE(moves[i][0].dst),
-		                   RANK(moves[i][0].dst) );
-	    }
-	    dbg_printf( "DIAG_make_move_primary=%d\n"
-				     "DIAG_evaluate_count=%d\n"
-				     "DIAG_evaluate_leaf_count=%d\n"
-				     "DIAG_cutoffs=%d\n"
-				     "DIAG_deep_cutoffs=%d\n",
-				     DIAG_make_move_primary,
-				     0,//DIAG_evaluate_count,
-				     0,//DIAG_evaluate_leaf_count,
-				     DIAG_cutoffs, 
-				     DIAG_deep_cutoffs	);
-	    for( int i=0; i<MAX_DEPTH; i++ )
-	    {
-		    if( moves[i][0].src == moves[i][0].dst )
-			    break;
-            if( i>0 && scores[i][0]!=scores[i-1][0] )
-                break;
-            pv_array[i] = moves[i][0];
-            pv_count++;
-        }
-    }
-	return have_move;
-}
-
-
-/****************************************************************************
- * Internal version for repitition avoidance
- ****************************************************************************/
-bool ChessEngine::CalculateNextMove( MOVELIST &ml, bool &only_move, int &score, int &besti, int balance, int depth )
-{
-    gbl_stop = false;
-    only_move = false;
-    bool have_move=true;
-    if( depth > MAX_DEPTH-10 )
-        gbl_depth = MAX_DEPTH-10;
-    else
-        gbl_depth = depth;
-    recurse_level  = 0;
-    static_balance = balance;
-    pv_count = 0;
-    if( ml.count == 0 )
-    {
-        besti = -1;
-        score = 0;
-    }
-    else if( ml.count == 1 )
-    {
-        // If only one legal move play it
-        only_move = true;
-        besti = 0;
-        PushMove( ml.moves[0] );
-		int material, positional;
-		EvaluateLeaf(material,positional);
-		score = material*static_balance + positional;
-        PopMove( ml.moves[0] );
-        pv_array[0] = ml.moves[0];
-        pv_count = 1;
-    }
-    else
-        score = Score( ml, besti );
-
-	// Copy best move to caller
-	if( besti == -1 )
-        have_move = false;
-    else if( !only_move )
-    {
-	    for( int i=0; i<MAX_DEPTH; i++ )
-	    {
-		    if( moves[i][0].src == moves[i][0].dst )
-			    break;
-		    dbg_printf( "%d: score %d, %c%c-%c%c\n", i, scores[i][0],
-					       FILE(moves[i][0].src),
-		                   RANK(moves[i][0].src),
-		                   FILE(moves[i][0].dst),
-		                   RANK(moves[i][0].dst) );
-	    }
-	    dbg_printf( "DIAG_make_move_primary=%d\n"
-				     "DIAG_evaluate_count=%d\n"
-				     "DIAG_evaluate_leaf_count=%d\n"
-				     "DIAG_cutoffs=%d\n"
-				     "DIAG_deep_cutoffs=%d\n",
-				     DIAG_make_move_primary,
-				     0,//DIAG_evaluate_count,
-				     0,//DIAG_evaluate_leaf_count,
-				     DIAG_cutoffs, 
-				     DIAG_deep_cutoffs	);
-	    for( int i=0; i<MAX_DEPTH; i++ )
-	    {
-		    if( moves[i][0].src == moves[i][0].dst )
-			    break;
-            if( i>0 && scores[i][0]!=scores[i-1][0] )
-                break;
-            pv_array[i] = moves[i][0];
-            pv_count++;
-        }
-    }
-	return have_move;
-}
-
-/****************************************************************************
- * Public interface to version for repitition avoidance
- ****************************************************************************/
-extern void ReportOnProgress
-(
-    bool    init,
-    int     multipv,
-    vector<Move> &pv,
-    int     score_cp,
-    int     depth
-);
-
-bool ChessEngine::CalculateNextMove( bool new_game, vector<Move> &pv, Move &bestmove, int &score_cp,
-                            unsigned long ms_time,
-                            unsigned long ms_budget,
-                            int balance,
-                            int &depth )
-{
-    int besti=0;
-    score_cp=0;
-    depth=0;
-    unsigned long elapsed_time;
-    unsigned long base_time = GetTickCount();	
-    MOVELIST ml;
-    //Planning();
-	GenLegalMoveListSorted( &ml );
-    bool have_move = false;
-    bool only_move = false;
-    int score=0;
-    unsigned long previous_elapsed=0;
-    static bool winning_ring[2];
-    static bool losing_ring[2];
-    static int ring_idx;
-    static int killing;
-    const int initial_kill_threshold = 800;
-    const int bump_kill_threshold = 10; // must show trend else stop chopping search
-    static int multiplier[30];
-
-    release_printf( "CNM: new_game = %s\n", new_game?"true":"false" );
-    if( new_game )
-    {
-        losing_ring[0]  = losing_ring[1]  =  false;
-        winning_ring[0] = winning_ring[1] =  false;
-        ring_idx = 0;
-        killing = initial_kill_threshold;
-        for( int i=0; i<30; i++ )
-            multiplier[i] = 0;
-    }
-
-    for( depth=1; depth<20; depth++ ) // depth+=2 )
-    {    
-        have_move = CalculateNextMove( ml, only_move, score, besti, balance, depth );
-        if( have_move )
-        {
-            score_cp = (score*10)/balance;  // convert to centipawns
-            GetPV( pv );
-            ReportOnProgress
-            (
-                false,
-                1,
-                pv,
-                score_cp,
-                depth
-            );
-        }
-
-        unsigned long now_time = GetTickCount();	
-        elapsed_time = now_time-base_time;
-        release_printf( "CNM: elapsed_time=%u, previous_elapsed=%u\n", elapsed_time, previous_elapsed );
-        if( depth && previous_elapsed )
-            multiplier[depth-1] =  elapsed_time/previous_elapsed;
-        if( !have_move )
-            release_printf( "No move\n" );
-        else
-        {
-            std::string s = ml.moves[besti].NaturalOut(this);
-            release_printf( "Depth:%d Move:%s Score:%d Elapsed time:%lu Budget time:%lu Maximum time:%lu\n",
-                depth, s.c_str(), (score*10)/balance, elapsed_time, ms_budget, ms_time );
-        }
-        unsigned long budget_threshold    = ms_budget/2;        
-        unsigned long inc_depth_threshold = ms_time/10;
-        release_printf( "CNM: [%d] elapsed_time=%lu, budget_threshold=%lu, inc_depth_threshold=%lu\n",
-                                depth, elapsed_time, budget_threshold, inc_depth_threshold );
-        unsigned long predicted_time_1=0;
-        if( elapsed_time && previous_elapsed )
-            predicted_time_1 = elapsed_time * (elapsed_time/previous_elapsed);
-        unsigned long predicted_time_2=0;
-        if( elapsed_time && multiplier[depth] )
-            predicted_time_2 = elapsed_time * multiplier[depth];
-        release_printf( "CNM: [%d] predicted_time (based on this position only)=%lu\n",
-                            depth, predicted_time_1 );
-        release_printf( "CNM: [%d] predicted_time (based on previous positions)=%lu\n",
-                            depth, predicted_time_2 );
-        if( only_move || !have_move )
-        {
-            release_printf( "CNM: stop[%d] because only move or no move\n", depth );
-            break;      // stop thinking if zero or one moves
-        }
-        if( score_cp<-30000 || score_cp>30000 )
-        {
-            release_printf( "CNM: stop[%d] because mate detected\n", depth );
-            break;      // stop thinking if mate anyway
-        }
-        if( depth>=5 && winning_ring[0] && winning_ring[1] && (score_cp>killing) )
-        {
-            release_printf( "CNM: stop[%d] because winning score_cp=%d\n", depth, score_cp );
-            break;      // stop thinking if it's going very well/very_poorly
-        }
-        if( depth>=5 && losing_ring[0] && losing_ring[1] && (score_cp<killing) )
-        {
-            release_printf( "CNM: stop[%d] because losing score_cp=%d\n", depth, score_cp );
-            break;      // stop thinking if it's going very well/very_poorly
-        }
-        if( elapsed_time > budget_threshold )
-        {
-            release_printf( "CNM: stop[%d] because budget exceeded\n", depth );
-            break;
-        }
-        if( predicted_time_1 > inc_depth_threshold )
-        {
-            release_printf( "CNM: stop[%d] because predicted_time (based on this position only) > threshold\n", depth );
-            break;  // stop thinking if we estimate we're going to use too much time
-        }
-        if( predicted_time_2 > inc_depth_threshold )
-        {
-            release_printf( "CNM: stop[%d] because predicted_time (based on previous positions) > threshold\n", depth );
-            break;  // stop thinking if we estimate we're going to use too much time
-        }
-        previous_elapsed = elapsed_time;
-    }
-    int dont_show_lower_depth = depth;
-    GetPV( pv );
-    if( have_move )
-    {
-
-        // Save the best line in case we can't find a non-repetition that's
-        //  not better for us
-        vector<Move> save_best_line = pv;
-        
-        // Convert to centipawns
-        score_cp = (score*10)/balance;
-        if( score_cp > 30000 )
-            score_cp = 30000 + (score_cp-30000)/10000;
-        else if( score < -30000 )
-            score_cp = -30000 + (score_cp+30000)/10000;
-        for( int candidate=0; candidate<6; candidate++ )
-        {
-            if( only_move )
-                break;
-            #define REPITITION_AVOID_THRESHOLD 0  /*50   0.5 pawns */
-            bool we_are_better = (WhiteToPlay() ? score_cp>REPITITION_AVOID_THRESHOLD : score_cp<-REPITITION_AVOID_THRESHOLD );
-            if( !we_are_better && candidate>0 )
-            {
-                // Revert
-                pv = save_best_line;
-                ReportOnProgress
-                (
-                    false,
-                    1,
-                    pv,
-                    score_cp,
-                    dont_show_lower_depth
-                );
-            }
-            if( !we_are_better )
-                break;
-
-            // If we are better, test whether the current best move will repeat
-            static Move save_history[256];          // must be 256 ..
-            unsigned char save_history_idx;  // .. so this can loop around
-            static DETAIL save_detail_stack[256];   // must be 256 ..
-            unsigned char save_detail_idx;   // .. so this can loop around
-            memcpy(save_history,history,sizeof(history));
-            memcpy(save_detail_stack,detail_stack,sizeof(detail_stack));
-            save_history_idx = history_idx;
-            save_detail_idx  = detail_idx;
-            ChessPosition save = *this;
-            Move move = ml.moves[besti];
-            PlayMove( move );
-            bool repitition = IsRepitition();
-            *this = save;
-            memcpy(detail_stack,save_detail_stack,sizeof(detail_stack));
-            memcpy(history,save_history,sizeof(history));
-            history_idx = save_history_idx;
-            detail_idx = save_detail_idx;
-
-            // If it won't no problem
-            if( !repitition )
-                break;
-
-            // Remove best move from list
-            release_printf( "Removing %s (score %d) because of repetition\n", move.TerseOut().c_str(), score_cp );
-            for( int i=besti+1; i<ml.count; i++ )
-                ml.moves[i-1] = ml.moves[i];
-            ml.count--;
-            if( ml.count < 1 )
-                break;
-
-            // Try again with a different candidate move
-            if( candidate == 0 )
-                depth--;    // multiple candidates, so must use less deep calculation
-            bool only_move_unused;
-            if( !CalculateNextMove( ml,only_move_unused,score,besti,balance,depth ) )
-                break;
-            score_cp = (score*10)/balance;  // convert to centipawns
-            if( score_cp > 30000 )
-                score_cp = 30000 + (score_cp-30000)/10000;
-            else if( score < -30000 )
-                score_cp = -30000 + (score_cp+30000)/10000;
-            std::string nmove;
-            move = ml.moves[besti];
-            nmove = move.NaturalOut( this );
-            release_printf( "Repetition attempt; Depth:%d Move:%s Score:%d\n",
-                depth, nmove.c_str(), (score*10)/balance );
-            GetPV( pv );
-            ReportOnProgress
-            (
-                false,
-                1,
-                pv,
-                score_cp,
-                dont_show_lower_depth
-            );
-        }
-    }
-    if( have_move )
-        bestmove = pv[0];
-    winning_ring[ring_idx] = (score_cp>killing);
-    losing_ring[ring_idx]  = (score_cp<0-killing);
-    ring_idx++;
-    ring_idx &= 1;
-    if( winning_ring[0] && winning_ring[1] )
-        killing += bump_kill_threshold;
-    else if( losing_ring[0] && losing_ring[1] )
-        killing += bump_kill_threshold;
-    else
-        killing = initial_kill_threshold;
-    release_printf( "CNM: winning_ring[0]=%s\n", winning_ring[0]?"true":"false" );
-    release_printf( "CNM: winning_ring[1]=%s\n", winning_ring[1]?"true":"false" );
-    release_printf( "CNM: losing_ring[0]=%s\n",  losing_ring[0]?"true":"false" );
-    release_printf( "CNM: losing_ring[1]=%s\n",  losing_ring[1]?"true":"false" );
-    release_printf( "CNM: killing=%d\n",         killing );
-    if( have_move )
-        release_printf( "CNM: bestmove=%s\n",    bestmove.TerseOut().c_str() );
-    return have_move;
-}
-
-/****************************************************************************
- * Has this position occurred before ?
- ****************************************************************************/
-bool ChessEngine::IsRepitition()
-{
-    return GetRepetitionCount() > 1;
-}
-
-/****************************************************************************
- * Retrieve PV (primary variation?), call after CalculateNextMove()
- ****************************************************************************/
-void ChessEngine::GetPV( vector<Move> &pv )
-{
-    pv.clear();
-	for( unsigned int i=0; i<pv_count; i++ )
-        pv.push_back( pv_array[i] );
-}
-
-
-#ifdef ALPHA_BETA
-int alpha[MAX_DEPTH];   // Todo get rid of all the crazy static vars!!
-int beta[MAX_DEPTH];
-#endif
-/****************************************************************************
- * Score a position
- ****************************************************************************/
-int ChessEngine::Score( MOVELIST &ml, int &besti )
-{
-    int score;
-	#ifdef ALPHA_BETA
-    for( int i=0; i<MAX_DEPTH; i++ )
-    {
-        alpha[i] = NEG_INFINITY;    // best white score to date
-        beta[i]  = POS_INFINITY;    // best black score to date
-    }
-	#endif
-    if( white )
-        score = ScoreWhiteToMove( ml, besti, 0 );
-    else
-        score = ScoreBlackToMove( ml, besti, 0 );
-    return( score );
-}
-
-const char *indent( int recurse_level_ )
-{
-    static const char *buf = "                                               ";
-    int nbr_spaces = recurse_level_*2;
-    int len = (int)strlen(buf);
-    int offset = len>=nbr_spaces ? len-nbr_spaces : 0;
-    return buf + offset;
-}
-
-#ifdef EXTRA_DEBUG_CODE1
-static unsigned long tag_generator;
-#endif
-
-int ChessEngine::ScoreWhiteToMove( MOVELIST &ml, int &besti, int black_mobility )
-{
-    int white_mobility = ml.count;
-    bool prune=false;
-    TERMINAL score_terminal;
-    MOVELIST ml2;
-	int i, score=0, temp;
-    int max  = NEG_INFINITY;
-    besti = -1;
-    recurse_level++;
-	#ifdef ALPHA_BETA
-    alpha[recurse_level] =  NEG_INFINITY;    // best white score to date
-    beta[recurse_level]  =  POS_INFINITY;    // best black score to date
-	#endif
-    #ifdef EXTRA_DEBUG_CODE1
-    unsigned long tag = tag_generator++;
-    if( recurse_level < LEVEL_CAREFUL_SORTING )
-    {
-        dbg_printf( "%sScoreWhiteToMove() [%lu], sorted [", indent(recurse_level), tag );
-        CarefulSort( ml );
-    }
-    else
-        dbg_printf( "%sScoreWhiteToMove() [%lu], not sorted [", indent(recurse_level), tag );
-	for( i=0; i<ml.count; i++  )
-	{
-        Move move;
-        move = ml.moves[i];
-        std::string nmove;
-        nmove = move.NaturalOut( this );
-        dbg_printf( " %s", nmove.c_str() );
-    }
-    dbg_printf( "]\n" );
-    #else
-    if( recurse_level < LEVEL_CAREFUL_SORTING )
-        CarefulSort( ml );
-    #endif
-	for( i=0; !prune && i<ml.count; i++  )
-	{
-        #ifdef EXTRA_DEBUG_CODE1
-        Move move;
-        move = ml.moves[i];
-        std::string nmove;
-        nmove = move.NaturalOut( this );
-        dbg_printf( "%sScoreWhiteToMove() [%lu], playing .%s\n", indent(recurse_level), tag, nmove.c_str() );
-        #endif
-		PushMove( ml.moves[i] );
-		DIAG_make_move_primary++;	
-		//if( (recurse_level>=7) || (recurse_level>4 && i>=ml.scount)  )
-		//if( (recurse_level>=8) || (recurse_level>4 && i>=ml.scount && !AttackedPiece(bking)) )
-        IF_STOP_RECURSING
-		{
-            #ifdef VARIABLE_PLY
-            if( gbl_stop )
-                cprintf("Stop command received\n" );
-            #endif
-			int material, positional;
-			EvaluateLeaf(material,positional);
-			score = material*static_balance + positional + (white_mobility-black_mobility)/4;
-            #ifdef EXTRA_DEBUG_CODE1
-            dbg_printf( "%s [%lu] Leaf score: score=%d: (material=%d, positional=%d, white_mobility=%d, black_mobility=%d)\n",
-                            indent(recurse_level), tag, score, material, positional, white_mobility, black_mobility );
-            #endif
-        }
-		else
-		{
-			bool okay = Evaluate(&ml2,score_terminal);
-			//bool okay = Evaluate(recurse_level>=LEVEL_CAREFUL_SORTING-1,&ml2,score_terminal);
-			//bool okay = Evaluate(recurse_level<LEVEL_STOP_SORTING,&ml2,score_terminal);
-			if( !okay )
-				score = NEG_INFINITY;
-			else
-			{
-				switch( score_terminal )
-    			{
-	    			case TERMINAL_WCHECKMATE: score=-10000*(MAX_DEPTH-recurse_level);       break;
-		    		case TERMINAL_BCHECKMATE: score=10000*(MAX_DEPTH-recurse_level);        break;
-					case TERMINAL_WSTALEMATE: score=0;										break;
-    				case TERMINAL_BSTALEMATE: score=0;										break;
-	    			case 0: 				  score = ScoreBlackToMove( ml2, temp, white_mobility );		break;
-				}
-			}
-            #ifdef EXTRA_DEBUG_CODE1
-            dbg_printf( "%s [%lu] Recursion score: score=%d\n",
-                            indent(recurse_level), tag, score );
-            #endif
-		}
-        if( score > max )
-        {
-            #ifdef EXTRA_DEBUG_CODE1
-            dbg_printf( "%s [%lu] New max: score=%d, previous max=%d\n",
-                            indent(recurse_level), tag, score, max );
-            #endif
-			#ifdef ALPHA_BETA
-            for( int j=recurse_level-1; j>=0 ; j-=2 )
-            {   
-                if( score > beta[j] )
-                {
-                    prune = true;
-					DIAG_cutoffs++;
-                    #ifdef EXTRA_DEBUG_CODE1
-                    dbg_printf( "%s [%lu] Beta %s: score=%d, beta[%d] = %d\n",
-                                    indent(recurse_level), tag, j!=recurse_level-1?"deep prune":"prune",
-                                    score, j, beta[j] );
-                    #endif
-					if( j != recurse_level-1 )
-						DIAG_deep_cutoffs++;
-                    break;
-                }
-            }
-            if( score > alpha[recurse_level] )
-            {
-                #ifdef EXTRA_DEBUG_CODE1
-                dbg_printf( "%s [%lu] Alpha update: score=%d > old alpha[%d] = %d\n",
-                                indent(recurse_level), tag,
-                                score, recurse_level, alpha[recurse_level] );
-                #endif
-                alpha[recurse_level] = score;
-            }
-			#endif
-            max   = score;
-            besti = i;
-			{
-				int l = recurse_level-1;
-				scores[l][l] = max;
-				moves [l][l] = ml.moves[besti];
-				for( int j=l+1; j<MAX_DEPTH; j++ )
-				{
-					scores[j][l] = scores[j][l+1];
-					moves [j][l] = moves [j][l+1];
-				}
-			}
-        }
-	 	PopMove( ml.moves[i] );
-    }
-    recurse_level--;
-    return( max );
-}
-
-struct MOVE_SORT_NODE
-{
-    Move *ptr;
-    int   score;
-};
-
-
-int comp_white( const void *p1, const void *p2 )
-{
-    int i1 = ((MOVE_SORT_NODE *)p1)->score;
-    int i2 = ((MOVE_SORT_NODE *)p2)->score;
-    int ret = 0;
-    if( i1 < i2 )
-        ret = 1;
-    else if( i1 > i2 )
-        ret = -1;
-    return ret;
-}
-
-int comp_black( const void *p1, const void *p2 )
-{
-    int i1 = ((MOVE_SORT_NODE *)p1)->score;
-    int i2 = ((MOVE_SORT_NODE *)p2)->score;
-    int ret = 0;
-    if( i1 < i2 )
-        ret = -1;
-    else if( i1 > i2 )
-        ret = 1;
-    return ret;
-}
-
-void ChessEngine::CarefulSort( MOVELIST &ml )
-{
-    MOVELIST out;
-    int i;
-    MOVE_SORT_NODE buf[MAXMOVES];
-    for( i=0; i<ml.count; i++ )
-    {
-        PushMove( ml.moves[i] );
-   		int material, positional;
-		EvaluateLeaf(material,positional);
-        buf[i].score = material*static_balance + positional;
-        buf[i].ptr   = &ml.moves[i];
-        PopMove( ml.moves[i] );
-    }
-    qsort( buf, ml.count, sizeof(MOVE_SORT_NODE), white?comp_white:comp_black );
-    for( i=0; i<ml.count; i++ )
-        out.moves[i] = *buf[i].ptr;
-    for( i=0; i<ml.count; i++ )
-        ml.moves[i] = out.moves[i];
-    #ifdef EXTRA_DEBUG_CODE3
-    dbg_printf( "Sorting position with %s to move;\n%s\n", white?"white":"black", squares );
-    for( i=0; i<ml.count; i++ )
-    {
-        Move move;
-        move = ml.moves[i];
-        std::string nmove;
-        nmove = move.NaturalOut( this );
-        dbg_printf( " %s", nmove.c_str() );
-    }
-    #endif
-}
-
-int ChessEngine::ScoreBlackToMove( MOVELIST &ml, int &besti, int white_mobility )
-{
-    int black_mobility = ml.count;
-    TERMINAL score_terminal;
-    bool prune=false;
-    MOVELIST ml2;
-	int i, score=0, temp;
-    int min = POS_INFINITY;
-    besti = -1;
-    recurse_level++;
-	#ifdef ALPHA_BETA
-    alpha[recurse_level] =  NEG_INFINITY;    // best white score to date
-    beta[recurse_level]  =  POS_INFINITY;    // best black score to date
-	#endif
-    #ifdef EXTRA_DEBUG_CODE1
-    unsigned long tag = tag_generator++;
-    if( recurse_level < LEVEL_CAREFUL_SORTING )
-    {
-        dbg_printf( "%sScoreBlackToMove() [%lu], sorted [", indent(recurse_level), tag );
-        CarefulSort( ml );
-    }
-    else
-        dbg_printf( "%sScoreBlackToMove() [%lu], not sorted [", indent(recurse_level), tag );
-	for( i=0; i<ml.count; i++  )
-	{
-        Move move;
-        move = ml.moves[i];
-        std::string nmove;
-        nmove = move.NaturalOut( this );
-        dbg_printf( " %s", nmove.c_str() );
-    }
-    dbg_printf( "]\n" );
-    #else
-    if( recurse_level < LEVEL_CAREFUL_SORTING )
-        CarefulSort( ml );
-    #endif
-	for( i=0; !prune && i<ml.count; i++  )
-	{
-        #ifdef EXTRA_DEBUG_CODE1
-        Move move;
-        move = ml.moves[i];
-        std::string nmove;
-        nmove = move.NaturalOut( this );
-        dbg_printf( "%sScoreBlackToMove() [%lu], playing %s\n", indent(recurse_level), tag, nmove.c_str() );
-        #endif
-		PushMove( ml.moves[i] );
-		DIAG_make_move_primary++;	
-		//if( (recurse_level>=7) || (recurse_level>4 && i>=ml.scount)  )
-		//if( (recurse_level>=8) || (recurse_level>4 && i>=ml.scount && !AttackedPiece(wking_square)) )
-        IF_STOP_RECURSING
-		{
-            #ifdef VARIABLE_PLY
-            if( gbl_stop )
-                cprintf("Stop command received\n" );
-            #endif
-			int material, positional;
-			EvaluateLeaf(material,positional);
-			score = material*static_balance + positional + (white_mobility-black_mobility)/4;
-            #ifdef EXTRA_DEBUG_CODE1
-            dbg_printf( "%s [%lu] Leaf score: score=%d: (material=%d, positional=%d, white_mobility=%d, black_mobility=%d)\n",
-                            indent(recurse_level), tag, score, material, positional, white_mobility, black_mobility );
-            #endif
-        }
-		else
-		{
-			bool okay = Evaluate(&ml2,score_terminal);
-			//bool okay = Evaluate(recurse_level>=LEVEL_CAREFUL_SORTING-1,&ml2,score_terminal);
-			//bool okay = Evaluate(recurse_level<LEVEL_STOP_SORTING,&ml2,score_terminal);
-			if( !okay )
-				score = POS_INFINITY;
-			else
-			{
-				switch( score_terminal )
-    			{
-	    			case TERMINAL_WCHECKMATE: score=-10000*(20-recurse_level);				break;
-		    		case TERMINAL_BCHECKMATE: score=10000*(20-recurse_level);				break;
-					case TERMINAL_WSTALEMATE: score=0;										break;
-    				case TERMINAL_BSTALEMATE: score=0;										break;
-	    			case 0: 				  score = ScoreWhiteToMove( ml2, temp, black_mobility );		break;
-				}
-			}
-            #ifdef EXTRA_DEBUG_CODE1
-            dbg_printf( "%s [%lu] Recursion score: score=%d\n",
-                            indent(recurse_level), tag, score );
-            #endif
-		}
-        if( score < min )
-        {
-            #ifdef EXTRA_DEBUG_CODE1
-            dbg_printf( "%s [%lu] New min: score=%d, previous min=%d\n",
-                            indent(recurse_level), tag, score, min );
-            #endif
-			#ifdef ALPHA_BETA
-            for( int j=recurse_level-1; j>=0 ; j-=2 )
-            {
-                if( score < alpha[j] )
-                {
-                    prune = true;
-					DIAG_cutoffs++;
-                    #ifdef EXTRA_DEBUG_CODE1
-                    dbg_printf( "%s [%lu] Alpha %s: score=%d, alpha[%d] = %d\n",
-                                    indent(recurse_level), tag, j!=recurse_level-1?"deep prune":"prune",
-                                    score, j, alpha[j] );
-                    #endif
-					if( j != recurse_level-1 )
-						DIAG_deep_cutoffs++;
-                    break;
-                }
-            }
-            if( score < beta[recurse_level] )
-            {
-                #ifdef EXTRA_DEBUG_CODE1
-                dbg_printf( "%s [%lu] Beta update: score=%d < old beta[%d] = %d\n",
-                                indent(recurse_level), tag,
-                                score, recurse_level, beta[recurse_level] );
-                #endif
-                beta[recurse_level] = score;
-            }
-			#endif
-            min   = score;
-            besti = i;
-			{
-				int l = recurse_level-1;
-				scores[l][l] = min;
-				moves [l][l] = ml.moves[besti];
-				for( int j=l+1; j<MAX_DEPTH; j++ )
-				{
-					scores[j][l] = scores[j][l+1];
-					moves [j][l] = moves [j][l+1];
-				}
-			}
-        }
-	 	PopMove( ml.moves[i] );
-    }
-    recurse_level--;
-    return( min );
-}
-
-//==================== TESTING
-
-// Some results 4-Nov-2008 (elapsed time in millisecs)
-//   Minimax, no alpha-beta            4319860, 4268234
-//   Alpha-beta but no strong moves    84950            (50 times faster)
-//   Alpha-beta + strong moves         12547            (344 times faster)
-//   (made EnpriseWhite(), EnpriseBlack) - 11984
-void ChessEngine::TestGame()
-{
-    int idx=0;
-    bool okay;
-    std::string nmove;
-    Move move;
-    const char *s, *txt;
-    const char *moves_[] =
-    {
-        "B Nf3",      "H e5",
-        "E Nxe5",     "H Nc6",
-        "E d4",       "H Bb4+",
-        "E c3",       "H Ba5",
-        "E b4",       "H Bb6",
-        "E e4",       "H f6",
-        "E Qh5+",     "H g6",
-        "E Nxg6",     "H d5",
-        "E Nxh8+",    "H Kd7",
-        "E Qxd5+",    "H Ke7",
-        "E Qf7+",     "H Kd6",
-        "E Bf4+",     "H Ne5",
-        "E Qd5+",     "H Ke7",
-        "E Qxd8+",    "H Kxd8",
-        "E dxe5",     "H a5",
-        "E Bc4",      "H a4",
-        "E Bxg8",     "H a3",
-        "E exf6",     "H Rb8",
-        "E Bxh7",     "H Ra8",
-        "E Bc1",      "H Rb8",
-        "E Nxa3",     "H Ra8",
-        "E e5",       "H Rb8",
-        "E f7",       "H Ra8",
-        "E f8=Q+",    "H Kd7",
-        "E Qf7+",     "H Kc6",
-        "E Be4#", 
-        NULL
-    };
-    ChessEngine temp;
-    *this = temp;   // init
-    bool complete = false;
-    unsigned long before = GetTickCount();
-    for(;;)
-    {
-        txt = moves_[idx++];
-        if( txt == NULL )
-        {
-            complete = true;
-            break;
-        }
-        char typ = *txt;
-        txt += 2;
-        if( typ=='B' || typ=='H' )  // book or human move
-        {
-            bool ok = move.NaturalIn( this, txt );
-            if( !ok )
-            {
-                cprintf( "Couldn't convert nmove=%s\n", txt );
-                break;
-            }
-            cprintf( "Input: %s\n", txt );
-            PlayMove( move );
-        }
-        else if( typ == 'E' ) // engine move
-        {
-            #define BALANCE 4
-            int score;
-            bool only_move;
-            CalculateNextMove( only_move, score, move, BALANCE, DEFAULT_DEPTH );
-            nmove = move.NaturalOut( this );
-            cprintf( "Output: %s\n", nmove.c_str() );
-            s = strstr(txt,nmove.c_str());
-            okay  = false;
-            if( s != NULL )
-            {
-                if( s==txt || *(s-1)==' ' )
-                {
-                    s += strlen(nmove.c_str());
-                    if( *s=='\0' || *s==' ' )
-                        okay = true; // s points at complete nmove within move
-                }    
-            }
-            if( !okay )
-            {
-                cprintf( "Convert bestmove=%s->nmove=%s, doesn't match %s\n", move.TerseOut().c_str(), nmove.c_str(), txt );
-                break;
-            }
-            PlayMove( move );
-        }
-    }
-    unsigned long after = GetTickCount();
-    if( complete )
-        cprintf( "Success, elapsed time = %lu\n", after-before );
-    else
-        cprintf( "Didn't complete\n" );
-}
-
-void ChessEngine::TestInternals()
-{
-    const char *fen = "b3k2r/8/8/8/8/8/8/R3K2R w KQk - 0 1";
-    Move move;
-    Forsyth(fen);
-    cprintf( "Addresses etc.;\n" );
-    cprintf( " this = 0x%p\n",                         this );
-    cprintf( " &white = 0x%p\n",                       &white );
-    cprintf( " &squares[0] = 0x%p\n",                  &squares[0] );
-    cprintf( " &half_move_clock = 0x%p\n",             &half_move_clock );
-    cprintf( " &full_move_count = 0x%p\n",             &full_move_count );
-    cprintf( " size to end of full_move_count = 0x%x\n", (unsigned int)( ((char *)&full_move_count - (char *)this) + sizeof(full_move_count) )  );
-    cprintf( " sizeof(ChessPosition) = 0x%x (should be 4 more than size to end of full_move_count)\n",
-                                                        (unsigned int)sizeof(ChessPosition) );
-    cprintf( " sizeof(Move) = 0x%x\n",                  (unsigned int)sizeof(Move) );
-    for( int i=0; i<6; i++ )
-    {
-        switch(i)
-        {
-            case 0: move.TerseIn(this,"h1h2");    break;
-            case 1: move.TerseIn(this,"a8h1");    break;
-            case 2: move.TerseIn(this,"e1c1");    break;
-            case 3: move.TerseIn(this,"h1a8");    break;
-            case 4: move.TerseIn(this,"c1b1");    break;
-            case 5: move.TerseIn(this,"e8g8");    break;
-        }
-        unsigned char *p = (unsigned char *)DETAIL_ADDR;
-        cprintf( " DETAIL_ADDR = 0x%p\n",  p );
-        cprintf( " DETAIL_ADDR[0] = %02x\n",  p[0] );
-        cprintf( " DETAIL_ADDR[1] = %02x\n",  p[1] );
-        cprintf( " DETAIL_ADDR[2] = %02x\n",  p[2] );
-        cprintf( " DETAIL_ADDR[3] = %02x\n",  p[3] );
-        cprintf( "Before %s: enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
-                " wking=%s, wqueen=%s, bking=%s, bqueen=%s\n",
-            move.TerseOut().c_str(),
-            enpassant_target,
-            wking_square,
-            bking_square,
-            wking ?"true":"false",
-            wqueen?"true":"false",
-            bking ?"true":"false",
-            bqueen?"true":"false" );
-        PushMove(move);        
-        cprintf( "After PushMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
-                " wking=%s, wqueen=%s, bking=%s, bqueen=%s\n",
-            enpassant_target,
-            wking_square,
-            bking_square,
-            wking ?"true":"false",
-            wqueen?"true":"false",
-            bking ?"true":"false",
-            bqueen?"true":"false" );
-        PopMove(move);        
-        cprintf( "After PopMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
-                " wking=%s, wqueen=%s, bking=%s, bqueen=%s\n",
-            enpassant_target,
-            wking_square,
-            bking_square,
-            wking ?"true":"false",
-            wqueen?"true":"false",
-            bking ?"true":"false",
-            bqueen?"true":"false" );
-        PushMove(move);        
-        cprintf( "After PushMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
-                " wking=%s, wqueen=%s, bking=%s, bqueen=%s\n",
-            enpassant_target,
-            wking_square,
-            bking_square,
-            wking ?"true":"false",
-            wqueen?"true":"false",
-            bking ?"true":"false",
-            bqueen?"true":"false" );
-    }
-}
-
-void ChessEngine::TestPosition()
-{    
-    #define BALANCE 4
-    // Fischer-Leopoldi Western Open 1963 - White has a combo winning a rook
-//  const char *fen = "2bqkb1r/N4p2/r2p3p/p2Np2n/1p2P3/1P1QBP2/1PP5/1K1R2R1 w k - 0 25";
-
-    // Mate in 2
-//  const char *fen = "5k2/pp3pnR/q3b1p1/6P1/5P2/1NQ5/rPP3P1/1KR5 b - - 0 1";
-
-    // Close to simplest possible situation
-//  const char *fen = "8/8/6k1/PK6/8/8/8/8 w - - 0 0";
-
-    // Saavedra stalemate
-//  const char *fen = "8/2P5/8/8/3r4/8/2K5/k7 w - - 0 0 moves c7c8q";   //  bestmove d4c4
-
-    // Promote a pawn
-//  const char *fen = "8/8/6k1/PK6/8/8/8/8 w - - 0 0";  //  bestmove a5a6
-
-    // Mate in 2 in a middlegame
-//  const char *fen = "3QN2k\\5prr\\1pp3p1\\7p\\2PPPP1P\\6P1\\pq6\\2R2RK1 w - - 10 39"; //  bestmove e8f6
-
-    // Closer to simplest possible situation ? (mate in 1 by grabbing queen)
-//    const char *fen = "K2N2nk/5qpp/8/8/8/8/8/8 w - - 0 1";
-
-    // A troublesome position
-    const char *fen = "1K6/1P6/8/q7/5k2/8/8/8 b - - 0 1";
-    Forsyth( fen );
-    int material, positional;
-    Planning();
-    EvaluateLeaf(material,positional);
-    Move move;
-    int score;
-    bool only_move;
-    MOVELIST ml;
-    GenLegalMoveListSorted( &ml );
-    int besti;
-    CalculateNextMove( ml, only_move, score, besti, BALANCE, 7 );
-    move = ml.moves[besti];
-    std::string nmove = move.NaturalOut( this );
-    cprintf( "%s", ToDebugStr().c_str() );
-    cprintf( "score=%d, material=%d, positional=%d, move=%s\n", score, material, positional, nmove.c_str() );
-    #if 0   // enable this to test transformed position
-    Transform();
-    EvaluateLeaf(material,positional);
-    CalculateNextMove( only_move, score, move, BALANCE, DEFAULT_DEPTH );
-    std::string nmove = move.NaturalOut(this);
-    dbg_printf( "AFTER Transform(), %s", ToDebugStr().c_str() );
-    dbg_printf( "score=%d, material=%d, positional=%d, move=%s\n", score, material, positional, nmove.c_str() );
-    cprintf( "AFTER Transform(), %s", ToDebugStr().c_str() );
-    cprintf( "score=%d, material=%d, positional=%d, move=%s\n", score, material, positional, nmove.c_str() );
-    #endif
-}
-
-void ChessEngine::TestEnprise()
-{
-    // A position where white attacks a black knight 7 times and black defends it
-    //  6 times
-    //const char *pos = "3q3k/2n5/2prp3/3n2r1/2P1P3/3RN3/B2R4/3Q3K w - - 0 1";
-
-    // Black to play can win material
-    //const char *pos = "2r3k1/2r2b2/8/8/2N5/8/2R5/2R3K1 b - - 0 1";
-
-    // Black to play can wins R+R+N for Q+B
-    const char *pos = "2r3k1/2r2b2/2q5/8/2N5/8/2R5/2R3K1 b - - 0 1";
-    bool okay = Forsyth( pos );
-    if( okay )
-    {
-        int m = (WhiteToPlay() ? EnpriseWhite() : EnpriseBlack());
-        cprintf( "ChessPosition: %s\n", pos );
-        cprintf( "Side to move can win %d centipawns of material in this position\n", m*10 );
-    }
-}
-
-void ChessEngine::Test()
-{    
-    TestInternals();
-    TestGame();
-    //TestPosition();
-    //TestEnprise();
-    //cprintf( "Press Enter\n" );
-    //getchar();
-}
-
-/****************************************************************************
  * Move.cpp Chess classes - Move
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 
 /****************************************************************************
@@ -6948,7 +5761,7 @@ bool Move::NaturalIn( ChessRules *cr, const char *natural_in )
     bool  white=cr->white;
     char  piece=(white?'P':'p');
     bool  default_piece=true;
-    
+
     // Indicate no move found (yet)
     bool okay=true;
 
@@ -7004,37 +5817,66 @@ bool Move::NaturalIn( ChessRules *cr, const char *natural_in )
         }
 
         // Promotion
-        if( strchr(move,'=') )
-        {
-            switch( move[len-1] )
+        if( len>2 )  // We are supporting "ab" to mean Pawn a5xb6 (say), and this test makes sure we don't
+        {            // mix that up with a lower case bishop promotion, and that we don't reject "ef" say
+                     // on the basis that 'F' is not a promotion indication. We've never supported "abQ" say
+                     // as a7xb8=Q, and we still don't so "abb" as a bishop promotion doesn't work, but we
+                     // continue to support "ab=Q", and even "ab=b".
+                     // The test also ensures we can access move[len-2] below
+                     // These comments added when we changed the logic to support "b8Q" and "a7xb8Q", the
+                     // '=' can optionally be omitted in such cases, the first change in this code for many,
+                     // many years.
+            char last = move[len-1];
+            bool is_file = ('1'<=last && last<='8');
+            if( !is_file )
             {
-                case 'q':
-                case 'Q':   promotion='Q';  break;
-                case 'r':
-                case 'R':   promotion='R';  break;
-                case 'b':
-                case 'B':   promotion='B';  break;
-                case 'n':
-                case 'N':   promotion='N';  break;
-                default:    okay = false;   break;
-            }
-            if( okay )
-            {
+                switch( last )
+                {
+                    case 'O':
+                    case 'o':   break;  // Allow castling!
+                    case 'q':
+                    case 'Q':   promotion='Q';  break;
+                    case 'r':
+                    case 'R':   promotion='R';  break;
+                    case 'b':   if( len==3 && '2'<=move[1] && move[1]<='7' )
+                                    break;  // else fall through to promotion - allows say "a5b" as disambiguating
+                                            //  version of "ab" if there's more than one "ab" available! Something
+                                            //  of an ultra refinement
+                    case 'B':   promotion='B';  break;
+                    case 'n':
+                    case 'N':   promotion='N';  break;
+                    default:    okay = false;   break;   // Castling and promotions are the only cases longer than 2
+                                                         //  chars where a non-file ends a move. (Note we still accept
+                                                         //  2 character pawn captures like "ef").
+                }
+                if( promotion )
+                {
+                    switch( move[len-2] )
+                    {
+                        case '=':
+                        case '1':   // we now allow '=' to be omitted, as eg ChessBase mobile seems to (sometimes?)
+                        case '8':   break;
+                        default:    okay = false;   break;
+                    }
+                    if( okay )
+                    {
 
-                // Trim string from end, again
-                move[len-1] = '\0';
-                s = strchr(move,'\0') - 1;
-                while( s>=move && !(isascii(*s) && isalnum(*s)) )
-                    *s-- = '\0';
-                len = (int)strlen(move);
+                        // Trim string from end, again
+                        move[len-1] = '\0';     // Get rid of 'Q', 'N' etc
+                        s = move + len-2;
+                        while( s>=move && !(isascii(*s) && isalnum(*s)) )
+                            *s-- = '\0';    // get rid of '=' but not '1','8'
+                        len = (int)strlen(move);
+                    }
+                }
             }
-        }    
+        }
     }
 
     // Castling
     if( okay )
     {
-        if( 0==strcmpi(move,"oo") || 0==strcmpi(move,"o-o") )
+        if( 0==strcmp_ignore(move,"oo") || 0==strcmp_ignore(move,"o-o") )
         {
             strcpy( move, (white?"e1g1":"e8g8") );
             len       = 4;
@@ -7042,7 +5884,7 @@ bool Move::NaturalIn( ChessRules *cr, const char *natural_in )
             default_piece = false;
             kcastling = true;
         }
-        else if( 0==strcmpi(move,"ooo") || 0==strcmpi(move,"o-o-o") )
+        else if( 0==strcmp_ignore(move,"ooo") || 0==strcmp_ignore(move,"o-o-o") )
         {
             strcpy( move, (white?"e1c1":"e8c8") );
             len       = 4;
@@ -7058,8 +5900,15 @@ bool Move::NaturalIn( ChessRules *cr, const char *natural_in )
         if( len==2 && 'a'<=move[0] && move[0]<='h'
                    && 'a'<=move[1] && move[1]<='h' )
         {
-            src_file = move[0]; // pawn takes pawn
+            src_file = move[0]; // eg "ab" pawn takes pawn
             dst_file = move[1];
+        }
+        else if( len==3 && 'a'<=move[0] && move[0]<='h'
+                        && '2'<=move[1] && move[1]<='7'
+                        && 'a'<=move[2] && move[2]<='h' )
+        {
+            src_file = move[0]; // eg "a3b"  pawn takes pawn
+            dst_file = move[2];
         }
         else if( len>=2 && 'a'<=move[len-2] && move[len-2]<='h'
                         && '1'<=move[len-1] && move[len-1]<='8' )
@@ -7101,7 +5950,7 @@ bool Move::NaturalIn( ChessRules *cr, const char *natural_in )
                             okay = false;
                         break;
                     }
-                }       
+                }
                 if( len>3  && src_file=='\0' )  // not eg "ef4" above
                 {
                     if( '1'<=move[1] && move[1]<='8' )
@@ -7181,7 +6030,7 @@ bool Move::NaturalIn( ChessRules *cr, const char *natural_in )
                 m = &list.moves[i];
                 if( piece     ==   cr->squares[m->src]   &&
                  /* src_file  ==   FILE(m->src) */
-                    src_rank  ==   RANK(m->src)          &&        
+                    src_rank  ==   RANK(m->src)          &&
                     dst_       ==   m->dst
                 )
                 {
@@ -7217,7 +6066,7 @@ bool Move::NaturalIn( ChessRules *cr, const char *natural_in )
                 m = &list.moves[i];
                 if( piece     ==   cr->squares[m->src]      &&
                     src_file  ==   FILE(m->src)             &&
-                 /* src_rank  ==   RANK(m->src) */                  
+                 /* src_rank  ==   RANK(m->src) */
                     dst_file  ==   FILE(m->dst)
                 )
                 {
@@ -7297,6 +6146,8 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
      Handles moves of the following type
      exd8=N
      e8=B
+     exd8N
+     e8B
      exd5
      e4
      Nf3
@@ -7308,23 +6159,23 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
      O-O
      O-O-O
      */
-    
+
 //
     mv.special = NOT_SPECIAL;
     mv.capture = ' ';
     char f = *natural_in++;
-   
+
     // WHITE MOVE
     if( cr->white )
     {
-        
+
         // Pawn move ?
         if( 'a'<=f && f<='h' )
         {
             char r = *natural_in++;
             if( r != 'x')
             {
-                
+
                 // Non capturing, non promoting pawn move
                 if( '3'<= r && r<= '7')
                 {
@@ -7341,8 +6192,10 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                 }
 
                 // Non capturing, promoting pawn move
-                else if( r=='8' && *natural_in++=='=' )
+                else if( r=='8' )
                 {
+                    if( *natural_in == '=' )    // now optional
+                        natural_in++;
                     mv.dst = SQ(f,r);
                     mv.src = SOUTH(mv.dst);
                     if( cr->squares[mv.src]=='P' && cr->squares[mv.dst]==' ')
@@ -7391,7 +6244,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                 if( 'a'<=g && g<='h' )
                 {
                     r = *natural_in++;
-                    
+
                     // Non promoting, capturing pawn move
                     if( '3'<= r && r<= '7')
                     {
@@ -7409,10 +6262,12 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                             found = true;
                         }
                     }
-                    
+
                     // Promoting, capturing pawn move
-                    else if( r=='8' && *natural_in++=='=' )
+                    else if( r=='8' )
                     {
+                        if( *natural_in == '=' )    // now optional
+                            natural_in++;
                         mv.dst = SQ(g,r);
                         mv.src = SQ(f,r-1);
                         if( cr->squares[mv.src]=='P' && IsBlack(cr->squares[mv.dst]) )
@@ -7460,7 +6315,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
         }
         else
         {
-            
+
             // Piece move
             const lte **ray_lookup = queen_lookup;
             switch( f )
@@ -7487,7 +6342,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                     }
                     break;
                 }
-                    
+
                 // King is simple special case - there's only one king so no disambiguation
                 case 'K':
                 {
@@ -7511,7 +6366,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                     }
                     break;
                 }
-                    
+
                 // Other pieces may need to check legality for disambiguation
                 case 'Q':   ray_lookup = queen_lookup;                      // fall through
                 case 'R':   if( f=='R' )    ray_lookup = rook_lookup;       // fall through
@@ -7652,7 +6507,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                                                     }
                                                 }
                                             }
-                                        }    
+                                        }
                                         if( probe==0 && count==1 )
                                             found = true; // done, no need for disambiguation by check
                                     }
@@ -7674,7 +6529,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
             char r = *natural_in++;
             if( r != 'x')
             {
-                
+
                 // Non capturing, non promoting pawn move
                 if( '2'<= r && r<= '6')
                 {
@@ -7689,10 +6544,12 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                         found = (cr->squares[mv.src]=='p');
                     }
                 }
-                
+
                 // Non capturing, promoting pawn move
-                else if( r=='1' && *natural_in++=='=' )
+                else if( r=='1' )
                 {
+                    if( *natural_in == '=' )    // now optional
+                        natural_in++;
                     mv.dst = SQ(f,r);
                     mv.src = NORTH(mv.dst);
                     if( cr->squares[mv.src]=='p' && cr->squares[mv.dst]==' ')
@@ -7741,7 +6598,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                 if( 'a'<=g && g<='h' )
                 {
                     r = *natural_in++;
-                    
+
                     // Non promoting, capturing pawn move
                     if( '2'<= r && r<= '6')
                     {
@@ -7759,10 +6616,12 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                             found = true;
                         }
                     }
-                    
+
                     // Promoting, capturing pawn move
-                    else if( r=='1' && *natural_in++=='=' )
+                    else if( r=='1' )
                     {
+                        if( *natural_in == '=' )    // now optional
+                            natural_in++;
                         mv.dst = SQ(g,r);
                         mv.src = SQ(f,r+1);
                         if( cr->squares[mv.src]=='p' && IsWhite(cr->squares[mv.dst]) )
@@ -7810,7 +6669,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
         }
         else
         {
-            
+
             // Piece move
             const lte **ray_lookup=queen_lookup;
             switch( f )
@@ -7837,7 +6696,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                     }
                     break;
                 }
-                    
+
                 // King is simple special case - there's only one king so no disambiguation
                 case 'K':
                 {
@@ -7861,14 +6720,14 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                     }
                     break;
                 }
-                    
+
                 // Other pieces may need to check legality for disambiguation
                 case 'Q':   ray_lookup = queen_lookup;                      // fall through
                 case 'R':   if( f=='R' )    ray_lookup = rook_lookup;       // fall through
                 case 'B':   if( f=='B' )    ray_lookup = bishop_lookup;     // fall through
                 case 'N':
                 {
-                    char piece = tolower(f);
+                    char piece = static_cast<char>(tolower(f));
                     f = *natural_in++;
                     char src_file='\0';
                     char src_rank='\0';
@@ -8101,22 +6960,22 @@ bool Move::TerseIn( ChessRules *cr, const char *tmove )
  ****************************************************************************/
 std::string Move::NaturalOut( ChessRules *cr )
 {
-    
+
 // Improved algorithm
 
     /* basic procedure is run the following algorithms in turn:
         pawn move     ?
         castling      ?
         Nd2 or Nxd2   ? (loop through all legal moves check if unique)
-        Nbd2 or Nbxd2 ? (loop through all legal moves check if unique)   
+        Nbd2 or Nbxd2 ? (loop through all legal moves check if unique)
         N1d2 or N1xd2 ? (loop through all legal moves check if unique)
         Nb1d2 or Nb1xd2 (fallback if nothing else works)
     */
 
     char nmove[10];
-    nmove[0] = '-';    
-    nmove[1] = '-';    
-    nmove[2] = '\0';    
+    nmove[0] = '-';
+    nmove[1] = '-';
+    nmove[2] = '\0';
     MOVELIST list;
     bool check[MAXMOVES];
     bool mate[MAXMOVES];
@@ -8241,7 +7100,7 @@ std::string Move::NaturalOut( ChessRules *cr )
                     break;
                 }
 
-                // Nbd2 or Nbxd2    
+                // Nbd2 or Nbxd2
                 case ALG_NBD2:
                 {
                     if( t == 'x' )
@@ -8301,7 +7160,7 @@ std::string Move::NaturalOut( ChessRules *cr )
  * Convert to terse string eg "e7e8q"
  ****************************************************************************/
 std::string Move::TerseOut()
-{    
+{
     char tmove[6];
     if( src == dst )   // null move should be "0000" according to UCI spec
     {
@@ -8330,14 +7189,14 @@ std::string Move::TerseOut()
         tmove[5] = '\0';
     }
     return tmove;
-}    
+}
 
 /****************************************************************************
  * PrivateChessDefs.cpp Complement PrivateChessDefs.h by providing a shared instantation of
  *  the automatically generated lookup tables.
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 namespace thc
 {
@@ -8351,7 +7210,7 @@ namespace thc
 #define K 32
 
 // GeneratedLookupTables.h assumes a suitable type lte = lookup tables element
-//  plus a bitmask convention for pieces using identifiers P,R,N,B,Q,K is 
+//  plus a bitmask convention for pieces using identifiers P,R,N,B,Q,K is
 //  defined
 // #include "GeneratedLookupTables.h"
 /****************************************************************************
@@ -8362,685 +7221,685 @@ namespace thc
  *   lte (=lookup table element, a type for the lookup tables, eg int or unsigned char)
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 
 // Queen, up to 8 rays
 static const lte queen_lookup_a1[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)b1 ,(lte)c1 ,(lte)d1 ,(lte)e1 ,(lte)f1 ,(lte)g1 ,(lte)h1 
-    ,(lte)7 ,(lte)a2 ,(lte)a3 ,(lte)a4 ,(lte)a5 ,(lte)a6 ,(lte)a7 ,(lte)a8 
-    ,(lte)7 ,(lte)b2 ,(lte)c3 ,(lte)d4 ,(lte)e5 ,(lte)f6 ,(lte)g7 ,(lte)h8 
+    ,(lte)7 ,(lte)b1 ,(lte)c1 ,(lte)d1 ,(lte)e1 ,(lte)f1 ,(lte)g1 ,(lte)h1
+    ,(lte)7 ,(lte)a2 ,(lte)a3 ,(lte)a4 ,(lte)a5 ,(lte)a6 ,(lte)a7 ,(lte)a8
+    ,(lte)7 ,(lte)b2 ,(lte)c3 ,(lte)d4 ,(lte)e5 ,(lte)f6 ,(lte)g7 ,(lte)h8
 };
 static const lte queen_lookup_a2[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)b2 ,(lte)c2 ,(lte)d2 ,(lte)e2 ,(lte)f2 ,(lte)g2 ,(lte)h2 
-    ,(lte)1 ,(lte)a1 
-    ,(lte)6 ,(lte)a3 ,(lte)a4 ,(lte)a5 ,(lte)a6 ,(lte)a7 ,(lte)a8 
-    ,(lte)6 ,(lte)b3 ,(lte)c4 ,(lte)d5 ,(lte)e6 ,(lte)f7 ,(lte)g8 
-    ,(lte)1 ,(lte)b1 
+    ,(lte)7 ,(lte)b2 ,(lte)c2 ,(lte)d2 ,(lte)e2 ,(lte)f2 ,(lte)g2 ,(lte)h2
+    ,(lte)1 ,(lte)a1
+    ,(lte)6 ,(lte)a3 ,(lte)a4 ,(lte)a5 ,(lte)a6 ,(lte)a7 ,(lte)a8
+    ,(lte)6 ,(lte)b3 ,(lte)c4 ,(lte)d5 ,(lte)e6 ,(lte)f7 ,(lte)g8
+    ,(lte)1 ,(lte)b1
 };
 static const lte queen_lookup_a3[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)b3 ,(lte)c3 ,(lte)d3 ,(lte)e3 ,(lte)f3 ,(lte)g3 ,(lte)h3 
-    ,(lte)2 ,(lte)a2 ,(lte)a1 
-    ,(lte)5 ,(lte)a4 ,(lte)a5 ,(lte)a6 ,(lte)a7 ,(lte)a8 
-    ,(lte)5 ,(lte)b4 ,(lte)c5 ,(lte)d6 ,(lte)e7 ,(lte)f8 
-    ,(lte)2 ,(lte)b2 ,(lte)c1 
+    ,(lte)7 ,(lte)b3 ,(lte)c3 ,(lte)d3 ,(lte)e3 ,(lte)f3 ,(lte)g3 ,(lte)h3
+    ,(lte)2 ,(lte)a2 ,(lte)a1
+    ,(lte)5 ,(lte)a4 ,(lte)a5 ,(lte)a6 ,(lte)a7 ,(lte)a8
+    ,(lte)5 ,(lte)b4 ,(lte)c5 ,(lte)d6 ,(lte)e7 ,(lte)f8
+    ,(lte)2 ,(lte)b2 ,(lte)c1
 };
 static const lte queen_lookup_a4[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)b4 ,(lte)c4 ,(lte)d4 ,(lte)e4 ,(lte)f4 ,(lte)g4 ,(lte)h4 
-    ,(lte)3 ,(lte)a3 ,(lte)a2 ,(lte)a1 
-    ,(lte)4 ,(lte)a5 ,(lte)a6 ,(lte)a7 ,(lte)a8 
-    ,(lte)4 ,(lte)b5 ,(lte)c6 ,(lte)d7 ,(lte)e8 
-    ,(lte)3 ,(lte)b3 ,(lte)c2 ,(lte)d1 
+    ,(lte)7 ,(lte)b4 ,(lte)c4 ,(lte)d4 ,(lte)e4 ,(lte)f4 ,(lte)g4 ,(lte)h4
+    ,(lte)3 ,(lte)a3 ,(lte)a2 ,(lte)a1
+    ,(lte)4 ,(lte)a5 ,(lte)a6 ,(lte)a7 ,(lte)a8
+    ,(lte)4 ,(lte)b5 ,(lte)c6 ,(lte)d7 ,(lte)e8
+    ,(lte)3 ,(lte)b3 ,(lte)c2 ,(lte)d1
 };
 static const lte queen_lookup_a5[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)b5 ,(lte)c5 ,(lte)d5 ,(lte)e5 ,(lte)f5 ,(lte)g5 ,(lte)h5 
-    ,(lte)4 ,(lte)a4 ,(lte)a3 ,(lte)a2 ,(lte)a1 
-    ,(lte)3 ,(lte)a6 ,(lte)a7 ,(lte)a8 
-    ,(lte)3 ,(lte)b6 ,(lte)c7 ,(lte)d8 
-    ,(lte)4 ,(lte)b4 ,(lte)c3 ,(lte)d2 ,(lte)e1 
+    ,(lte)7 ,(lte)b5 ,(lte)c5 ,(lte)d5 ,(lte)e5 ,(lte)f5 ,(lte)g5 ,(lte)h5
+    ,(lte)4 ,(lte)a4 ,(lte)a3 ,(lte)a2 ,(lte)a1
+    ,(lte)3 ,(lte)a6 ,(lte)a7 ,(lte)a8
+    ,(lte)3 ,(lte)b6 ,(lte)c7 ,(lte)d8
+    ,(lte)4 ,(lte)b4 ,(lte)c3 ,(lte)d2 ,(lte)e1
 };
 static const lte queen_lookup_a6[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)b6 ,(lte)c6 ,(lte)d6 ,(lte)e6 ,(lte)f6 ,(lte)g6 ,(lte)h6 
-    ,(lte)5 ,(lte)a5 ,(lte)a4 ,(lte)a3 ,(lte)a2 ,(lte)a1 
-    ,(lte)2 ,(lte)a7 ,(lte)a8 
-    ,(lte)2 ,(lte)b7 ,(lte)c8 
-    ,(lte)5 ,(lte)b5 ,(lte)c4 ,(lte)d3 ,(lte)e2 ,(lte)f1 
+    ,(lte)7 ,(lte)b6 ,(lte)c6 ,(lte)d6 ,(lte)e6 ,(lte)f6 ,(lte)g6 ,(lte)h6
+    ,(lte)5 ,(lte)a5 ,(lte)a4 ,(lte)a3 ,(lte)a2 ,(lte)a1
+    ,(lte)2 ,(lte)a7 ,(lte)a8
+    ,(lte)2 ,(lte)b7 ,(lte)c8
+    ,(lte)5 ,(lte)b5 ,(lte)c4 ,(lte)d3 ,(lte)e2 ,(lte)f1
 };
 static const lte queen_lookup_a7[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)b7 ,(lte)c7 ,(lte)d7 ,(lte)e7 ,(lte)f7 ,(lte)g7 ,(lte)h7 
-    ,(lte)6 ,(lte)a6 ,(lte)a5 ,(lte)a4 ,(lte)a3 ,(lte)a2 ,(lte)a1 
-    ,(lte)1 ,(lte)a8 
-    ,(lte)1 ,(lte)b8 
-    ,(lte)6 ,(lte)b6 ,(lte)c5 ,(lte)d4 ,(lte)e3 ,(lte)f2 ,(lte)g1 
+    ,(lte)7 ,(lte)b7 ,(lte)c7 ,(lte)d7 ,(lte)e7 ,(lte)f7 ,(lte)g7 ,(lte)h7
+    ,(lte)6 ,(lte)a6 ,(lte)a5 ,(lte)a4 ,(lte)a3 ,(lte)a2 ,(lte)a1
+    ,(lte)1 ,(lte)a8
+    ,(lte)1 ,(lte)b8
+    ,(lte)6 ,(lte)b6 ,(lte)c5 ,(lte)d4 ,(lte)e3 ,(lte)f2 ,(lte)g1
 };
 static const lte queen_lookup_a8[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)b8 ,(lte)c8 ,(lte)d8 ,(lte)e8 ,(lte)f8 ,(lte)g8 ,(lte)h8 
-    ,(lte)7 ,(lte)a7 ,(lte)a6 ,(lte)a5 ,(lte)a4 ,(lte)a3 ,(lte)a2 ,(lte)a1 
-    ,(lte)7 ,(lte)b7 ,(lte)c6 ,(lte)d5 ,(lte)e4 ,(lte)f3 ,(lte)g2 ,(lte)h1 
+    ,(lte)7 ,(lte)b8 ,(lte)c8 ,(lte)d8 ,(lte)e8 ,(lte)f8 ,(lte)g8 ,(lte)h8
+    ,(lte)7 ,(lte)a7 ,(lte)a6 ,(lte)a5 ,(lte)a4 ,(lte)a3 ,(lte)a2 ,(lte)a1
+    ,(lte)7 ,(lte)b7 ,(lte)c6 ,(lte)d5 ,(lte)e4 ,(lte)f3 ,(lte)g2 ,(lte)h1
 };
 static const lte queen_lookup_b1[] =
 {
 (lte)5
-    ,(lte)1 ,(lte)a1 
-    ,(lte)6 ,(lte)c1 ,(lte)d1 ,(lte)e1 ,(lte)f1 ,(lte)g1 ,(lte)h1 
-    ,(lte)7 ,(lte)b2 ,(lte)b3 ,(lte)b4 ,(lte)b5 ,(lte)b6 ,(lte)b7 ,(lte)b8 
-    ,(lte)1 ,(lte)a2 
-    ,(lte)6 ,(lte)c2 ,(lte)d3 ,(lte)e4 ,(lte)f5 ,(lte)g6 ,(lte)h7 
+    ,(lte)1 ,(lte)a1
+    ,(lte)6 ,(lte)c1 ,(lte)d1 ,(lte)e1 ,(lte)f1 ,(lte)g1 ,(lte)h1
+    ,(lte)7 ,(lte)b2 ,(lte)b3 ,(lte)b4 ,(lte)b5 ,(lte)b6 ,(lte)b7 ,(lte)b8
+    ,(lte)1 ,(lte)a2
+    ,(lte)6 ,(lte)c2 ,(lte)d3 ,(lte)e4 ,(lte)f5 ,(lte)g6 ,(lte)h7
 };
 static const lte queen_lookup_b2[] =
 {
 (lte)8
-    ,(lte)1 ,(lte)a2 
-    ,(lte)6 ,(lte)c2 ,(lte)d2 ,(lte)e2 ,(lte)f2 ,(lte)g2 ,(lte)h2 
-    ,(lte)1 ,(lte)b1 
-    ,(lte)6 ,(lte)b3 ,(lte)b4 ,(lte)b5 ,(lte)b6 ,(lte)b7 ,(lte)b8 
-    ,(lte)1 ,(lte)a1 
-    ,(lte)1 ,(lte)a3 
-    ,(lte)6 ,(lte)c3 ,(lte)d4 ,(lte)e5 ,(lte)f6 ,(lte)g7 ,(lte)h8 
-    ,(lte)1 ,(lte)c1 
+    ,(lte)1 ,(lte)a2
+    ,(lte)6 ,(lte)c2 ,(lte)d2 ,(lte)e2 ,(lte)f2 ,(lte)g2 ,(lte)h2
+    ,(lte)1 ,(lte)b1
+    ,(lte)6 ,(lte)b3 ,(lte)b4 ,(lte)b5 ,(lte)b6 ,(lte)b7 ,(lte)b8
+    ,(lte)1 ,(lte)a1
+    ,(lte)1 ,(lte)a3
+    ,(lte)6 ,(lte)c3 ,(lte)d4 ,(lte)e5 ,(lte)f6 ,(lte)g7 ,(lte)h8
+    ,(lte)1 ,(lte)c1
 };
 static const lte queen_lookup_b3[] =
 {
 (lte)8
-    ,(lte)1 ,(lte)a3 
-    ,(lte)6 ,(lte)c3 ,(lte)d3 ,(lte)e3 ,(lte)f3 ,(lte)g3 ,(lte)h3 
-    ,(lte)2 ,(lte)b2 ,(lte)b1 
-    ,(lte)5 ,(lte)b4 ,(lte)b5 ,(lte)b6 ,(lte)b7 ,(lte)b8 
-    ,(lte)1 ,(lte)a2 
-    ,(lte)1 ,(lte)a4 
-    ,(lte)5 ,(lte)c4 ,(lte)d5 ,(lte)e6 ,(lte)f7 ,(lte)g8 
-    ,(lte)2 ,(lte)c2 ,(lte)d1 
+    ,(lte)1 ,(lte)a3
+    ,(lte)6 ,(lte)c3 ,(lte)d3 ,(lte)e3 ,(lte)f3 ,(lte)g3 ,(lte)h3
+    ,(lte)2 ,(lte)b2 ,(lte)b1
+    ,(lte)5 ,(lte)b4 ,(lte)b5 ,(lte)b6 ,(lte)b7 ,(lte)b8
+    ,(lte)1 ,(lte)a2
+    ,(lte)1 ,(lte)a4
+    ,(lte)5 ,(lte)c4 ,(lte)d5 ,(lte)e6 ,(lte)f7 ,(lte)g8
+    ,(lte)2 ,(lte)c2 ,(lte)d1
 };
 static const lte queen_lookup_b4[] =
 {
 (lte)8
-    ,(lte)1 ,(lte)a4 
-    ,(lte)6 ,(lte)c4 ,(lte)d4 ,(lte)e4 ,(lte)f4 ,(lte)g4 ,(lte)h4 
-    ,(lte)3 ,(lte)b3 ,(lte)b2 ,(lte)b1 
-    ,(lte)4 ,(lte)b5 ,(lte)b6 ,(lte)b7 ,(lte)b8 
-    ,(lte)1 ,(lte)a3 
-    ,(lte)1 ,(lte)a5 
-    ,(lte)4 ,(lte)c5 ,(lte)d6 ,(lte)e7 ,(lte)f8 
-    ,(lte)3 ,(lte)c3 ,(lte)d2 ,(lte)e1 
+    ,(lte)1 ,(lte)a4
+    ,(lte)6 ,(lte)c4 ,(lte)d4 ,(lte)e4 ,(lte)f4 ,(lte)g4 ,(lte)h4
+    ,(lte)3 ,(lte)b3 ,(lte)b2 ,(lte)b1
+    ,(lte)4 ,(lte)b5 ,(lte)b6 ,(lte)b7 ,(lte)b8
+    ,(lte)1 ,(lte)a3
+    ,(lte)1 ,(lte)a5
+    ,(lte)4 ,(lte)c5 ,(lte)d6 ,(lte)e7 ,(lte)f8
+    ,(lte)3 ,(lte)c3 ,(lte)d2 ,(lte)e1
 };
 static const lte queen_lookup_b5[] =
 {
 (lte)8
-    ,(lte)1 ,(lte)a5 
-    ,(lte)6 ,(lte)c5 ,(lte)d5 ,(lte)e5 ,(lte)f5 ,(lte)g5 ,(lte)h5 
-    ,(lte)4 ,(lte)b4 ,(lte)b3 ,(lte)b2 ,(lte)b1 
-    ,(lte)3 ,(lte)b6 ,(lte)b7 ,(lte)b8 
-    ,(lte)1 ,(lte)a4 
-    ,(lte)1 ,(lte)a6 
-    ,(lte)3 ,(lte)c6 ,(lte)d7 ,(lte)e8 
-    ,(lte)4 ,(lte)c4 ,(lte)d3 ,(lte)e2 ,(lte)f1 
+    ,(lte)1 ,(lte)a5
+    ,(lte)6 ,(lte)c5 ,(lte)d5 ,(lte)e5 ,(lte)f5 ,(lte)g5 ,(lte)h5
+    ,(lte)4 ,(lte)b4 ,(lte)b3 ,(lte)b2 ,(lte)b1
+    ,(lte)3 ,(lte)b6 ,(lte)b7 ,(lte)b8
+    ,(lte)1 ,(lte)a4
+    ,(lte)1 ,(lte)a6
+    ,(lte)3 ,(lte)c6 ,(lte)d7 ,(lte)e8
+    ,(lte)4 ,(lte)c4 ,(lte)d3 ,(lte)e2 ,(lte)f1
 };
 static const lte queen_lookup_b6[] =
 {
 (lte)8
-    ,(lte)1 ,(lte)a6 
-    ,(lte)6 ,(lte)c6 ,(lte)d6 ,(lte)e6 ,(lte)f6 ,(lte)g6 ,(lte)h6 
-    ,(lte)5 ,(lte)b5 ,(lte)b4 ,(lte)b3 ,(lte)b2 ,(lte)b1 
-    ,(lte)2 ,(lte)b7 ,(lte)b8 
-    ,(lte)1 ,(lte)a5 
-    ,(lte)1 ,(lte)a7 
-    ,(lte)2 ,(lte)c7 ,(lte)d8 
-    ,(lte)5 ,(lte)c5 ,(lte)d4 ,(lte)e3 ,(lte)f2 ,(lte)g1 
+    ,(lte)1 ,(lte)a6
+    ,(lte)6 ,(lte)c6 ,(lte)d6 ,(lte)e6 ,(lte)f6 ,(lte)g6 ,(lte)h6
+    ,(lte)5 ,(lte)b5 ,(lte)b4 ,(lte)b3 ,(lte)b2 ,(lte)b1
+    ,(lte)2 ,(lte)b7 ,(lte)b8
+    ,(lte)1 ,(lte)a5
+    ,(lte)1 ,(lte)a7
+    ,(lte)2 ,(lte)c7 ,(lte)d8
+    ,(lte)5 ,(lte)c5 ,(lte)d4 ,(lte)e3 ,(lte)f2 ,(lte)g1
 };
 static const lte queen_lookup_b7[] =
 {
 (lte)8
-    ,(lte)1 ,(lte)a7 
-    ,(lte)6 ,(lte)c7 ,(lte)d7 ,(lte)e7 ,(lte)f7 ,(lte)g7 ,(lte)h7 
-    ,(lte)6 ,(lte)b6 ,(lte)b5 ,(lte)b4 ,(lte)b3 ,(lte)b2 ,(lte)b1 
-    ,(lte)1 ,(lte)b8 
-    ,(lte)1 ,(lte)a6 
-    ,(lte)1 ,(lte)a8 
-    ,(lte)1 ,(lte)c8 
-    ,(lte)6 ,(lte)c6 ,(lte)d5 ,(lte)e4 ,(lte)f3 ,(lte)g2 ,(lte)h1 
+    ,(lte)1 ,(lte)a7
+    ,(lte)6 ,(lte)c7 ,(lte)d7 ,(lte)e7 ,(lte)f7 ,(lte)g7 ,(lte)h7
+    ,(lte)6 ,(lte)b6 ,(lte)b5 ,(lte)b4 ,(lte)b3 ,(lte)b2 ,(lte)b1
+    ,(lte)1 ,(lte)b8
+    ,(lte)1 ,(lte)a6
+    ,(lte)1 ,(lte)a8
+    ,(lte)1 ,(lte)c8
+    ,(lte)6 ,(lte)c6 ,(lte)d5 ,(lte)e4 ,(lte)f3 ,(lte)g2 ,(lte)h1
 };
 static const lte queen_lookup_b8[] =
 {
 (lte)5
-    ,(lte)1 ,(lte)a8 
-    ,(lte)6 ,(lte)c8 ,(lte)d8 ,(lte)e8 ,(lte)f8 ,(lte)g8 ,(lte)h8 
-    ,(lte)7 ,(lte)b7 ,(lte)b6 ,(lte)b5 ,(lte)b4 ,(lte)b3 ,(lte)b2 ,(lte)b1 
-    ,(lte)1 ,(lte)a7 
-    ,(lte)6 ,(lte)c7 ,(lte)d6 ,(lte)e5 ,(lte)f4 ,(lte)g3 ,(lte)h2 
+    ,(lte)1 ,(lte)a8
+    ,(lte)6 ,(lte)c8 ,(lte)d8 ,(lte)e8 ,(lte)f8 ,(lte)g8 ,(lte)h8
+    ,(lte)7 ,(lte)b7 ,(lte)b6 ,(lte)b5 ,(lte)b4 ,(lte)b3 ,(lte)b2 ,(lte)b1
+    ,(lte)1 ,(lte)a7
+    ,(lte)6 ,(lte)c7 ,(lte)d6 ,(lte)e5 ,(lte)f4 ,(lte)g3 ,(lte)h2
 };
 static const lte queen_lookup_c1[] =
 {
 (lte)5
-    ,(lte)2 ,(lte)b1 ,(lte)a1 
-    ,(lte)5 ,(lte)d1 ,(lte)e1 ,(lte)f1 ,(lte)g1 ,(lte)h1 
-    ,(lte)7 ,(lte)c2 ,(lte)c3 ,(lte)c4 ,(lte)c5 ,(lte)c6 ,(lte)c7 ,(lte)c8 
-    ,(lte)2 ,(lte)b2 ,(lte)a3 
-    ,(lte)5 ,(lte)d2 ,(lte)e3 ,(lte)f4 ,(lte)g5 ,(lte)h6 
+    ,(lte)2 ,(lte)b1 ,(lte)a1
+    ,(lte)5 ,(lte)d1 ,(lte)e1 ,(lte)f1 ,(lte)g1 ,(lte)h1
+    ,(lte)7 ,(lte)c2 ,(lte)c3 ,(lte)c4 ,(lte)c5 ,(lte)c6 ,(lte)c7 ,(lte)c8
+    ,(lte)2 ,(lte)b2 ,(lte)a3
+    ,(lte)5 ,(lte)d2 ,(lte)e3 ,(lte)f4 ,(lte)g5 ,(lte)h6
 };
 static const lte queen_lookup_c2[] =
 {
 (lte)8
-    ,(lte)2 ,(lte)b2 ,(lte)a2 
-    ,(lte)5 ,(lte)d2 ,(lte)e2 ,(lte)f2 ,(lte)g2 ,(lte)h2 
-    ,(lte)1 ,(lte)c1 
-    ,(lte)6 ,(lte)c3 ,(lte)c4 ,(lte)c5 ,(lte)c6 ,(lte)c7 ,(lte)c8 
-    ,(lte)1 ,(lte)b1 
-    ,(lte)2 ,(lte)b3 ,(lte)a4 
-    ,(lte)5 ,(lte)d3 ,(lte)e4 ,(lte)f5 ,(lte)g6 ,(lte)h7 
-    ,(lte)1 ,(lte)d1 
+    ,(lte)2 ,(lte)b2 ,(lte)a2
+    ,(lte)5 ,(lte)d2 ,(lte)e2 ,(lte)f2 ,(lte)g2 ,(lte)h2
+    ,(lte)1 ,(lte)c1
+    ,(lte)6 ,(lte)c3 ,(lte)c4 ,(lte)c5 ,(lte)c6 ,(lte)c7 ,(lte)c8
+    ,(lte)1 ,(lte)b1
+    ,(lte)2 ,(lte)b3 ,(lte)a4
+    ,(lte)5 ,(lte)d3 ,(lte)e4 ,(lte)f5 ,(lte)g6 ,(lte)h7
+    ,(lte)1 ,(lte)d1
 };
 static const lte queen_lookup_c3[] =
 {
 (lte)8
-    ,(lte)2 ,(lte)b3 ,(lte)a3 
-    ,(lte)5 ,(lte)d3 ,(lte)e3 ,(lte)f3 ,(lte)g3 ,(lte)h3 
-    ,(lte)2 ,(lte)c2 ,(lte)c1 
-    ,(lte)5 ,(lte)c4 ,(lte)c5 ,(lte)c6 ,(lte)c7 ,(lte)c8 
-    ,(lte)2 ,(lte)b2 ,(lte)a1 
-    ,(lte)2 ,(lte)b4 ,(lte)a5 
-    ,(lte)5 ,(lte)d4 ,(lte)e5 ,(lte)f6 ,(lte)g7 ,(lte)h8 
-    ,(lte)2 ,(lte)d2 ,(lte)e1 
+    ,(lte)2 ,(lte)b3 ,(lte)a3
+    ,(lte)5 ,(lte)d3 ,(lte)e3 ,(lte)f3 ,(lte)g3 ,(lte)h3
+    ,(lte)2 ,(lte)c2 ,(lte)c1
+    ,(lte)5 ,(lte)c4 ,(lte)c5 ,(lte)c6 ,(lte)c7 ,(lte)c8
+    ,(lte)2 ,(lte)b2 ,(lte)a1
+    ,(lte)2 ,(lte)b4 ,(lte)a5
+    ,(lte)5 ,(lte)d4 ,(lte)e5 ,(lte)f6 ,(lte)g7 ,(lte)h8
+    ,(lte)2 ,(lte)d2 ,(lte)e1
 };
 static const lte queen_lookup_c4[] =
 {
 (lte)8
-    ,(lte)2 ,(lte)b4 ,(lte)a4 
-    ,(lte)5 ,(lte)d4 ,(lte)e4 ,(lte)f4 ,(lte)g4 ,(lte)h4 
-    ,(lte)3 ,(lte)c3 ,(lte)c2 ,(lte)c1 
-    ,(lte)4 ,(lte)c5 ,(lte)c6 ,(lte)c7 ,(lte)c8 
-    ,(lte)2 ,(lte)b3 ,(lte)a2 
-    ,(lte)2 ,(lte)b5 ,(lte)a6 
-    ,(lte)4 ,(lte)d5 ,(lte)e6 ,(lte)f7 ,(lte)g8 
-    ,(lte)3 ,(lte)d3 ,(lte)e2 ,(lte)f1 
+    ,(lte)2 ,(lte)b4 ,(lte)a4
+    ,(lte)5 ,(lte)d4 ,(lte)e4 ,(lte)f4 ,(lte)g4 ,(lte)h4
+    ,(lte)3 ,(lte)c3 ,(lte)c2 ,(lte)c1
+    ,(lte)4 ,(lte)c5 ,(lte)c6 ,(lte)c7 ,(lte)c8
+    ,(lte)2 ,(lte)b3 ,(lte)a2
+    ,(lte)2 ,(lte)b5 ,(lte)a6
+    ,(lte)4 ,(lte)d5 ,(lte)e6 ,(lte)f7 ,(lte)g8
+    ,(lte)3 ,(lte)d3 ,(lte)e2 ,(lte)f1
 };
 static const lte queen_lookup_c5[] =
 {
 (lte)8
-    ,(lte)2 ,(lte)b5 ,(lte)a5 
-    ,(lte)5 ,(lte)d5 ,(lte)e5 ,(lte)f5 ,(lte)g5 ,(lte)h5 
-    ,(lte)4 ,(lte)c4 ,(lte)c3 ,(lte)c2 ,(lte)c1 
-    ,(lte)3 ,(lte)c6 ,(lte)c7 ,(lte)c8 
-    ,(lte)2 ,(lte)b4 ,(lte)a3 
-    ,(lte)2 ,(lte)b6 ,(lte)a7 
-    ,(lte)3 ,(lte)d6 ,(lte)e7 ,(lte)f8 
-    ,(lte)4 ,(lte)d4 ,(lte)e3 ,(lte)f2 ,(lte)g1 
+    ,(lte)2 ,(lte)b5 ,(lte)a5
+    ,(lte)5 ,(lte)d5 ,(lte)e5 ,(lte)f5 ,(lte)g5 ,(lte)h5
+    ,(lte)4 ,(lte)c4 ,(lte)c3 ,(lte)c2 ,(lte)c1
+    ,(lte)3 ,(lte)c6 ,(lte)c7 ,(lte)c8
+    ,(lte)2 ,(lte)b4 ,(lte)a3
+    ,(lte)2 ,(lte)b6 ,(lte)a7
+    ,(lte)3 ,(lte)d6 ,(lte)e7 ,(lte)f8
+    ,(lte)4 ,(lte)d4 ,(lte)e3 ,(lte)f2 ,(lte)g1
 };
 static const lte queen_lookup_c6[] =
 {
 (lte)8
-    ,(lte)2 ,(lte)b6 ,(lte)a6 
-    ,(lte)5 ,(lte)d6 ,(lte)e6 ,(lte)f6 ,(lte)g6 ,(lte)h6 
-    ,(lte)5 ,(lte)c5 ,(lte)c4 ,(lte)c3 ,(lte)c2 ,(lte)c1 
-    ,(lte)2 ,(lte)c7 ,(lte)c8 
-    ,(lte)2 ,(lte)b5 ,(lte)a4 
-    ,(lte)2 ,(lte)b7 ,(lte)a8 
-    ,(lte)2 ,(lte)d7 ,(lte)e8 
-    ,(lte)5 ,(lte)d5 ,(lte)e4 ,(lte)f3 ,(lte)g2 ,(lte)h1 
+    ,(lte)2 ,(lte)b6 ,(lte)a6
+    ,(lte)5 ,(lte)d6 ,(lte)e6 ,(lte)f6 ,(lte)g6 ,(lte)h6
+    ,(lte)5 ,(lte)c5 ,(lte)c4 ,(lte)c3 ,(lte)c2 ,(lte)c1
+    ,(lte)2 ,(lte)c7 ,(lte)c8
+    ,(lte)2 ,(lte)b5 ,(lte)a4
+    ,(lte)2 ,(lte)b7 ,(lte)a8
+    ,(lte)2 ,(lte)d7 ,(lte)e8
+    ,(lte)5 ,(lte)d5 ,(lte)e4 ,(lte)f3 ,(lte)g2 ,(lte)h1
 };
 static const lte queen_lookup_c7[] =
 {
 (lte)8
-    ,(lte)2 ,(lte)b7 ,(lte)a7 
-    ,(lte)5 ,(lte)d7 ,(lte)e7 ,(lte)f7 ,(lte)g7 ,(lte)h7 
-    ,(lte)6 ,(lte)c6 ,(lte)c5 ,(lte)c4 ,(lte)c3 ,(lte)c2 ,(lte)c1 
-    ,(lte)1 ,(lte)c8 
-    ,(lte)2 ,(lte)b6 ,(lte)a5 
-    ,(lte)1 ,(lte)b8 
-    ,(lte)1 ,(lte)d8 
-    ,(lte)5 ,(lte)d6 ,(lte)e5 ,(lte)f4 ,(lte)g3 ,(lte)h2 
+    ,(lte)2 ,(lte)b7 ,(lte)a7
+    ,(lte)5 ,(lte)d7 ,(lte)e7 ,(lte)f7 ,(lte)g7 ,(lte)h7
+    ,(lte)6 ,(lte)c6 ,(lte)c5 ,(lte)c4 ,(lte)c3 ,(lte)c2 ,(lte)c1
+    ,(lte)1 ,(lte)c8
+    ,(lte)2 ,(lte)b6 ,(lte)a5
+    ,(lte)1 ,(lte)b8
+    ,(lte)1 ,(lte)d8
+    ,(lte)5 ,(lte)d6 ,(lte)e5 ,(lte)f4 ,(lte)g3 ,(lte)h2
 };
 static const lte queen_lookup_c8[] =
 {
 (lte)5
-    ,(lte)2 ,(lte)b8 ,(lte)a8 
-    ,(lte)5 ,(lte)d8 ,(lte)e8 ,(lte)f8 ,(lte)g8 ,(lte)h8 
-    ,(lte)7 ,(lte)c7 ,(lte)c6 ,(lte)c5 ,(lte)c4 ,(lte)c3 ,(lte)c2 ,(lte)c1 
-    ,(lte)2 ,(lte)b7 ,(lte)a6 
-    ,(lte)5 ,(lte)d7 ,(lte)e6 ,(lte)f5 ,(lte)g4 ,(lte)h3 
+    ,(lte)2 ,(lte)b8 ,(lte)a8
+    ,(lte)5 ,(lte)d8 ,(lte)e8 ,(lte)f8 ,(lte)g8 ,(lte)h8
+    ,(lte)7 ,(lte)c7 ,(lte)c6 ,(lte)c5 ,(lte)c4 ,(lte)c3 ,(lte)c2 ,(lte)c1
+    ,(lte)2 ,(lte)b7 ,(lte)a6
+    ,(lte)5 ,(lte)d7 ,(lte)e6 ,(lte)f5 ,(lte)g4 ,(lte)h3
 };
 static const lte queen_lookup_d1[] =
 {
 (lte)5
-    ,(lte)3 ,(lte)c1 ,(lte)b1 ,(lte)a1 
-    ,(lte)4 ,(lte)e1 ,(lte)f1 ,(lte)g1 ,(lte)h1 
-    ,(lte)7 ,(lte)d2 ,(lte)d3 ,(lte)d4 ,(lte)d5 ,(lte)d6 ,(lte)d7 ,(lte)d8 
-    ,(lte)3 ,(lte)c2 ,(lte)b3 ,(lte)a4 
-    ,(lte)4 ,(lte)e2 ,(lte)f3 ,(lte)g4 ,(lte)h5 
+    ,(lte)3 ,(lte)c1 ,(lte)b1 ,(lte)a1
+    ,(lte)4 ,(lte)e1 ,(lte)f1 ,(lte)g1 ,(lte)h1
+    ,(lte)7 ,(lte)d2 ,(lte)d3 ,(lte)d4 ,(lte)d5 ,(lte)d6 ,(lte)d7 ,(lte)d8
+    ,(lte)3 ,(lte)c2 ,(lte)b3 ,(lte)a4
+    ,(lte)4 ,(lte)e2 ,(lte)f3 ,(lte)g4 ,(lte)h5
 };
 static const lte queen_lookup_d2[] =
 {
 (lte)8
-    ,(lte)3 ,(lte)c2 ,(lte)b2 ,(lte)a2 
-    ,(lte)4 ,(lte)e2 ,(lte)f2 ,(lte)g2 ,(lte)h2 
-    ,(lte)1 ,(lte)d1 
-    ,(lte)6 ,(lte)d3 ,(lte)d4 ,(lte)d5 ,(lte)d6 ,(lte)d7 ,(lte)d8 
-    ,(lte)1 ,(lte)c1 
-    ,(lte)3 ,(lte)c3 ,(lte)b4 ,(lte)a5 
-    ,(lte)4 ,(lte)e3 ,(lte)f4 ,(lte)g5 ,(lte)h6 
-    ,(lte)1 ,(lte)e1 
+    ,(lte)3 ,(lte)c2 ,(lte)b2 ,(lte)a2
+    ,(lte)4 ,(lte)e2 ,(lte)f2 ,(lte)g2 ,(lte)h2
+    ,(lte)1 ,(lte)d1
+    ,(lte)6 ,(lte)d3 ,(lte)d4 ,(lte)d5 ,(lte)d6 ,(lte)d7 ,(lte)d8
+    ,(lte)1 ,(lte)c1
+    ,(lte)3 ,(lte)c3 ,(lte)b4 ,(lte)a5
+    ,(lte)4 ,(lte)e3 ,(lte)f4 ,(lte)g5 ,(lte)h6
+    ,(lte)1 ,(lte)e1
 };
 static const lte queen_lookup_d3[] =
 {
 (lte)8
-    ,(lte)3 ,(lte)c3 ,(lte)b3 ,(lte)a3 
-    ,(lte)4 ,(lte)e3 ,(lte)f3 ,(lte)g3 ,(lte)h3 
-    ,(lte)2 ,(lte)d2 ,(lte)d1 
-    ,(lte)5 ,(lte)d4 ,(lte)d5 ,(lte)d6 ,(lte)d7 ,(lte)d8 
-    ,(lte)2 ,(lte)c2 ,(lte)b1 
-    ,(lte)3 ,(lte)c4 ,(lte)b5 ,(lte)a6 
-    ,(lte)4 ,(lte)e4 ,(lte)f5 ,(lte)g6 ,(lte)h7 
-    ,(lte)2 ,(lte)e2 ,(lte)f1 
+    ,(lte)3 ,(lte)c3 ,(lte)b3 ,(lte)a3
+    ,(lte)4 ,(lte)e3 ,(lte)f3 ,(lte)g3 ,(lte)h3
+    ,(lte)2 ,(lte)d2 ,(lte)d1
+    ,(lte)5 ,(lte)d4 ,(lte)d5 ,(lte)d6 ,(lte)d7 ,(lte)d8
+    ,(lte)2 ,(lte)c2 ,(lte)b1
+    ,(lte)3 ,(lte)c4 ,(lte)b5 ,(lte)a6
+    ,(lte)4 ,(lte)e4 ,(lte)f5 ,(lte)g6 ,(lte)h7
+    ,(lte)2 ,(lte)e2 ,(lte)f1
 };
 static const lte queen_lookup_d4[] =
 {
 (lte)8
-    ,(lte)3 ,(lte)c4 ,(lte)b4 ,(lte)a4 
-    ,(lte)4 ,(lte)e4 ,(lte)f4 ,(lte)g4 ,(lte)h4 
-    ,(lte)3 ,(lte)d3 ,(lte)d2 ,(lte)d1 
-    ,(lte)4 ,(lte)d5 ,(lte)d6 ,(lte)d7 ,(lte)d8 
-    ,(lte)3 ,(lte)c3 ,(lte)b2 ,(lte)a1 
-    ,(lte)3 ,(lte)c5 ,(lte)b6 ,(lte)a7 
-    ,(lte)4 ,(lte)e5 ,(lte)f6 ,(lte)g7 ,(lte)h8 
-    ,(lte)3 ,(lte)e3 ,(lte)f2 ,(lte)g1 
+    ,(lte)3 ,(lte)c4 ,(lte)b4 ,(lte)a4
+    ,(lte)4 ,(lte)e4 ,(lte)f4 ,(lte)g4 ,(lte)h4
+    ,(lte)3 ,(lte)d3 ,(lte)d2 ,(lte)d1
+    ,(lte)4 ,(lte)d5 ,(lte)d6 ,(lte)d7 ,(lte)d8
+    ,(lte)3 ,(lte)c3 ,(lte)b2 ,(lte)a1
+    ,(lte)3 ,(lte)c5 ,(lte)b6 ,(lte)a7
+    ,(lte)4 ,(lte)e5 ,(lte)f6 ,(lte)g7 ,(lte)h8
+    ,(lte)3 ,(lte)e3 ,(lte)f2 ,(lte)g1
 };
 static const lte queen_lookup_d5[] =
 {
 (lte)8
-    ,(lte)3 ,(lte)c5 ,(lte)b5 ,(lte)a5 
-    ,(lte)4 ,(lte)e5 ,(lte)f5 ,(lte)g5 ,(lte)h5 
-    ,(lte)4 ,(lte)d4 ,(lte)d3 ,(lte)d2 ,(lte)d1 
-    ,(lte)3 ,(lte)d6 ,(lte)d7 ,(lte)d8 
-    ,(lte)3 ,(lte)c4 ,(lte)b3 ,(lte)a2 
-    ,(lte)3 ,(lte)c6 ,(lte)b7 ,(lte)a8 
-    ,(lte)3 ,(lte)e6 ,(lte)f7 ,(lte)g8 
-    ,(lte)4 ,(lte)e4 ,(lte)f3 ,(lte)g2 ,(lte)h1 
+    ,(lte)3 ,(lte)c5 ,(lte)b5 ,(lte)a5
+    ,(lte)4 ,(lte)e5 ,(lte)f5 ,(lte)g5 ,(lte)h5
+    ,(lte)4 ,(lte)d4 ,(lte)d3 ,(lte)d2 ,(lte)d1
+    ,(lte)3 ,(lte)d6 ,(lte)d7 ,(lte)d8
+    ,(lte)3 ,(lte)c4 ,(lte)b3 ,(lte)a2
+    ,(lte)3 ,(lte)c6 ,(lte)b7 ,(lte)a8
+    ,(lte)3 ,(lte)e6 ,(lte)f7 ,(lte)g8
+    ,(lte)4 ,(lte)e4 ,(lte)f3 ,(lte)g2 ,(lte)h1
 };
 static const lte queen_lookup_d6[] =
 {
 (lte)8
-    ,(lte)3 ,(lte)c6 ,(lte)b6 ,(lte)a6 
-    ,(lte)4 ,(lte)e6 ,(lte)f6 ,(lte)g6 ,(lte)h6 
-    ,(lte)5 ,(lte)d5 ,(lte)d4 ,(lte)d3 ,(lte)d2 ,(lte)d1 
-    ,(lte)2 ,(lte)d7 ,(lte)d8 
-    ,(lte)3 ,(lte)c5 ,(lte)b4 ,(lte)a3 
-    ,(lte)2 ,(lte)c7 ,(lte)b8 
-    ,(lte)2 ,(lte)e7 ,(lte)f8 
-    ,(lte)4 ,(lte)e5 ,(lte)f4 ,(lte)g3 ,(lte)h2 
+    ,(lte)3 ,(lte)c6 ,(lte)b6 ,(lte)a6
+    ,(lte)4 ,(lte)e6 ,(lte)f6 ,(lte)g6 ,(lte)h6
+    ,(lte)5 ,(lte)d5 ,(lte)d4 ,(lte)d3 ,(lte)d2 ,(lte)d1
+    ,(lte)2 ,(lte)d7 ,(lte)d8
+    ,(lte)3 ,(lte)c5 ,(lte)b4 ,(lte)a3
+    ,(lte)2 ,(lte)c7 ,(lte)b8
+    ,(lte)2 ,(lte)e7 ,(lte)f8
+    ,(lte)4 ,(lte)e5 ,(lte)f4 ,(lte)g3 ,(lte)h2
 };
 static const lte queen_lookup_d7[] =
 {
 (lte)8
-    ,(lte)3 ,(lte)c7 ,(lte)b7 ,(lte)a7 
-    ,(lte)4 ,(lte)e7 ,(lte)f7 ,(lte)g7 ,(lte)h7 
-    ,(lte)6 ,(lte)d6 ,(lte)d5 ,(lte)d4 ,(lte)d3 ,(lte)d2 ,(lte)d1 
-    ,(lte)1 ,(lte)d8 
-    ,(lte)3 ,(lte)c6 ,(lte)b5 ,(lte)a4 
-    ,(lte)1 ,(lte)c8 
-    ,(lte)1 ,(lte)e8 
-    ,(lte)4 ,(lte)e6 ,(lte)f5 ,(lte)g4 ,(lte)h3 
+    ,(lte)3 ,(lte)c7 ,(lte)b7 ,(lte)a7
+    ,(lte)4 ,(lte)e7 ,(lte)f7 ,(lte)g7 ,(lte)h7
+    ,(lte)6 ,(lte)d6 ,(lte)d5 ,(lte)d4 ,(lte)d3 ,(lte)d2 ,(lte)d1
+    ,(lte)1 ,(lte)d8
+    ,(lte)3 ,(lte)c6 ,(lte)b5 ,(lte)a4
+    ,(lte)1 ,(lte)c8
+    ,(lte)1 ,(lte)e8
+    ,(lte)4 ,(lte)e6 ,(lte)f5 ,(lte)g4 ,(lte)h3
 };
 static const lte queen_lookup_d8[] =
 {
 (lte)5
-    ,(lte)3 ,(lte)c8 ,(lte)b8 ,(lte)a8 
-    ,(lte)4 ,(lte)e8 ,(lte)f8 ,(lte)g8 ,(lte)h8 
-    ,(lte)7 ,(lte)d7 ,(lte)d6 ,(lte)d5 ,(lte)d4 ,(lte)d3 ,(lte)d2 ,(lte)d1 
-    ,(lte)3 ,(lte)c7 ,(lte)b6 ,(lte)a5 
-    ,(lte)4 ,(lte)e7 ,(lte)f6 ,(lte)g5 ,(lte)h4 
+    ,(lte)3 ,(lte)c8 ,(lte)b8 ,(lte)a8
+    ,(lte)4 ,(lte)e8 ,(lte)f8 ,(lte)g8 ,(lte)h8
+    ,(lte)7 ,(lte)d7 ,(lte)d6 ,(lte)d5 ,(lte)d4 ,(lte)d3 ,(lte)d2 ,(lte)d1
+    ,(lte)3 ,(lte)c7 ,(lte)b6 ,(lte)a5
+    ,(lte)4 ,(lte)e7 ,(lte)f6 ,(lte)g5 ,(lte)h4
 };
 static const lte queen_lookup_e1[] =
 {
 (lte)5
-    ,(lte)4 ,(lte)d1 ,(lte)c1 ,(lte)b1 ,(lte)a1 
-    ,(lte)3 ,(lte)f1 ,(lte)g1 ,(lte)h1 
-    ,(lte)7 ,(lte)e2 ,(lte)e3 ,(lte)e4 ,(lte)e5 ,(lte)e6 ,(lte)e7 ,(lte)e8 
-    ,(lte)4 ,(lte)d2 ,(lte)c3 ,(lte)b4 ,(lte)a5 
-    ,(lte)3 ,(lte)f2 ,(lte)g3 ,(lte)h4 
+    ,(lte)4 ,(lte)d1 ,(lte)c1 ,(lte)b1 ,(lte)a1
+    ,(lte)3 ,(lte)f1 ,(lte)g1 ,(lte)h1
+    ,(lte)7 ,(lte)e2 ,(lte)e3 ,(lte)e4 ,(lte)e5 ,(lte)e6 ,(lte)e7 ,(lte)e8
+    ,(lte)4 ,(lte)d2 ,(lte)c3 ,(lte)b4 ,(lte)a5
+    ,(lte)3 ,(lte)f2 ,(lte)g3 ,(lte)h4
 };
 static const lte queen_lookup_e2[] =
 {
 (lte)8
-    ,(lte)4 ,(lte)d2 ,(lte)c2 ,(lte)b2 ,(lte)a2 
-    ,(lte)3 ,(lte)f2 ,(lte)g2 ,(lte)h2 
-    ,(lte)1 ,(lte)e1 
-    ,(lte)6 ,(lte)e3 ,(lte)e4 ,(lte)e5 ,(lte)e6 ,(lte)e7 ,(lte)e8 
-    ,(lte)1 ,(lte)d1 
-    ,(lte)4 ,(lte)d3 ,(lte)c4 ,(lte)b5 ,(lte)a6 
-    ,(lte)3 ,(lte)f3 ,(lte)g4 ,(lte)h5 
-    ,(lte)1 ,(lte)f1 
+    ,(lte)4 ,(lte)d2 ,(lte)c2 ,(lte)b2 ,(lte)a2
+    ,(lte)3 ,(lte)f2 ,(lte)g2 ,(lte)h2
+    ,(lte)1 ,(lte)e1
+    ,(lte)6 ,(lte)e3 ,(lte)e4 ,(lte)e5 ,(lte)e6 ,(lte)e7 ,(lte)e8
+    ,(lte)1 ,(lte)d1
+    ,(lte)4 ,(lte)d3 ,(lte)c4 ,(lte)b5 ,(lte)a6
+    ,(lte)3 ,(lte)f3 ,(lte)g4 ,(lte)h5
+    ,(lte)1 ,(lte)f1
 };
 static const lte queen_lookup_e3[] =
 {
 (lte)8
-    ,(lte)4 ,(lte)d3 ,(lte)c3 ,(lte)b3 ,(lte)a3 
-    ,(lte)3 ,(lte)f3 ,(lte)g3 ,(lte)h3 
-    ,(lte)2 ,(lte)e2 ,(lte)e1 
-    ,(lte)5 ,(lte)e4 ,(lte)e5 ,(lte)e6 ,(lte)e7 ,(lte)e8 
-    ,(lte)2 ,(lte)d2 ,(lte)c1 
-    ,(lte)4 ,(lte)d4 ,(lte)c5 ,(lte)b6 ,(lte)a7 
-    ,(lte)3 ,(lte)f4 ,(lte)g5 ,(lte)h6 
-    ,(lte)2 ,(lte)f2 ,(lte)g1 
+    ,(lte)4 ,(lte)d3 ,(lte)c3 ,(lte)b3 ,(lte)a3
+    ,(lte)3 ,(lte)f3 ,(lte)g3 ,(lte)h3
+    ,(lte)2 ,(lte)e2 ,(lte)e1
+    ,(lte)5 ,(lte)e4 ,(lte)e5 ,(lte)e6 ,(lte)e7 ,(lte)e8
+    ,(lte)2 ,(lte)d2 ,(lte)c1
+    ,(lte)4 ,(lte)d4 ,(lte)c5 ,(lte)b6 ,(lte)a7
+    ,(lte)3 ,(lte)f4 ,(lte)g5 ,(lte)h6
+    ,(lte)2 ,(lte)f2 ,(lte)g1
 };
 static const lte queen_lookup_e4[] =
 {
 (lte)8
-    ,(lte)4 ,(lte)d4 ,(lte)c4 ,(lte)b4 ,(lte)a4 
-    ,(lte)3 ,(lte)f4 ,(lte)g4 ,(lte)h4 
-    ,(lte)3 ,(lte)e3 ,(lte)e2 ,(lte)e1 
-    ,(lte)4 ,(lte)e5 ,(lte)e6 ,(lte)e7 ,(lte)e8 
-    ,(lte)3 ,(lte)d3 ,(lte)c2 ,(lte)b1 
-    ,(lte)4 ,(lte)d5 ,(lte)c6 ,(lte)b7 ,(lte)a8 
-    ,(lte)3 ,(lte)f5 ,(lte)g6 ,(lte)h7 
-    ,(lte)3 ,(lte)f3 ,(lte)g2 ,(lte)h1 
+    ,(lte)4 ,(lte)d4 ,(lte)c4 ,(lte)b4 ,(lte)a4
+    ,(lte)3 ,(lte)f4 ,(lte)g4 ,(lte)h4
+    ,(lte)3 ,(lte)e3 ,(lte)e2 ,(lte)e1
+    ,(lte)4 ,(lte)e5 ,(lte)e6 ,(lte)e7 ,(lte)e8
+    ,(lte)3 ,(lte)d3 ,(lte)c2 ,(lte)b1
+    ,(lte)4 ,(lte)d5 ,(lte)c6 ,(lte)b7 ,(lte)a8
+    ,(lte)3 ,(lte)f5 ,(lte)g6 ,(lte)h7
+    ,(lte)3 ,(lte)f3 ,(lte)g2 ,(lte)h1
 };
 static const lte queen_lookup_e5[] =
 {
 (lte)8
-    ,(lte)4 ,(lte)d5 ,(lte)c5 ,(lte)b5 ,(lte)a5 
-    ,(lte)3 ,(lte)f5 ,(lte)g5 ,(lte)h5 
-    ,(lte)4 ,(lte)e4 ,(lte)e3 ,(lte)e2 ,(lte)e1 
-    ,(lte)3 ,(lte)e6 ,(lte)e7 ,(lte)e8 
-    ,(lte)4 ,(lte)d4 ,(lte)c3 ,(lte)b2 ,(lte)a1 
-    ,(lte)3 ,(lte)d6 ,(lte)c7 ,(lte)b8 
-    ,(lte)3 ,(lte)f6 ,(lte)g7 ,(lte)h8 
-    ,(lte)3 ,(lte)f4 ,(lte)g3 ,(lte)h2 
+    ,(lte)4 ,(lte)d5 ,(lte)c5 ,(lte)b5 ,(lte)a5
+    ,(lte)3 ,(lte)f5 ,(lte)g5 ,(lte)h5
+    ,(lte)4 ,(lte)e4 ,(lte)e3 ,(lte)e2 ,(lte)e1
+    ,(lte)3 ,(lte)e6 ,(lte)e7 ,(lte)e8
+    ,(lte)4 ,(lte)d4 ,(lte)c3 ,(lte)b2 ,(lte)a1
+    ,(lte)3 ,(lte)d6 ,(lte)c7 ,(lte)b8
+    ,(lte)3 ,(lte)f6 ,(lte)g7 ,(lte)h8
+    ,(lte)3 ,(lte)f4 ,(lte)g3 ,(lte)h2
 };
 static const lte queen_lookup_e6[] =
 {
 (lte)8
-    ,(lte)4 ,(lte)d6 ,(lte)c6 ,(lte)b6 ,(lte)a6 
-    ,(lte)3 ,(lte)f6 ,(lte)g6 ,(lte)h6 
-    ,(lte)5 ,(lte)e5 ,(lte)e4 ,(lte)e3 ,(lte)e2 ,(lte)e1 
-    ,(lte)2 ,(lte)e7 ,(lte)e8 
-    ,(lte)4 ,(lte)d5 ,(lte)c4 ,(lte)b3 ,(lte)a2 
-    ,(lte)2 ,(lte)d7 ,(lte)c8 
-    ,(lte)2 ,(lte)f7 ,(lte)g8 
-    ,(lte)3 ,(lte)f5 ,(lte)g4 ,(lte)h3 
+    ,(lte)4 ,(lte)d6 ,(lte)c6 ,(lte)b6 ,(lte)a6
+    ,(lte)3 ,(lte)f6 ,(lte)g6 ,(lte)h6
+    ,(lte)5 ,(lte)e5 ,(lte)e4 ,(lte)e3 ,(lte)e2 ,(lte)e1
+    ,(lte)2 ,(lte)e7 ,(lte)e8
+    ,(lte)4 ,(lte)d5 ,(lte)c4 ,(lte)b3 ,(lte)a2
+    ,(lte)2 ,(lte)d7 ,(lte)c8
+    ,(lte)2 ,(lte)f7 ,(lte)g8
+    ,(lte)3 ,(lte)f5 ,(lte)g4 ,(lte)h3
 };
 static const lte queen_lookup_e7[] =
 {
 (lte)8
-    ,(lte)4 ,(lte)d7 ,(lte)c7 ,(lte)b7 ,(lte)a7 
-    ,(lte)3 ,(lte)f7 ,(lte)g7 ,(lte)h7 
-    ,(lte)6 ,(lte)e6 ,(lte)e5 ,(lte)e4 ,(lte)e3 ,(lte)e2 ,(lte)e1 
-    ,(lte)1 ,(lte)e8 
-    ,(lte)4 ,(lte)d6 ,(lte)c5 ,(lte)b4 ,(lte)a3 
-    ,(lte)1 ,(lte)d8 
-    ,(lte)1 ,(lte)f8 
-    ,(lte)3 ,(lte)f6 ,(lte)g5 ,(lte)h4 
+    ,(lte)4 ,(lte)d7 ,(lte)c7 ,(lte)b7 ,(lte)a7
+    ,(lte)3 ,(lte)f7 ,(lte)g7 ,(lte)h7
+    ,(lte)6 ,(lte)e6 ,(lte)e5 ,(lte)e4 ,(lte)e3 ,(lte)e2 ,(lte)e1
+    ,(lte)1 ,(lte)e8
+    ,(lte)4 ,(lte)d6 ,(lte)c5 ,(lte)b4 ,(lte)a3
+    ,(lte)1 ,(lte)d8
+    ,(lte)1 ,(lte)f8
+    ,(lte)3 ,(lte)f6 ,(lte)g5 ,(lte)h4
 };
 static const lte queen_lookup_e8[] =
 {
 (lte)5
-    ,(lte)4 ,(lte)d8 ,(lte)c8 ,(lte)b8 ,(lte)a8 
-    ,(lte)3 ,(lte)f8 ,(lte)g8 ,(lte)h8 
-    ,(lte)7 ,(lte)e7 ,(lte)e6 ,(lte)e5 ,(lte)e4 ,(lte)e3 ,(lte)e2 ,(lte)e1 
-    ,(lte)4 ,(lte)d7 ,(lte)c6 ,(lte)b5 ,(lte)a4 
-    ,(lte)3 ,(lte)f7 ,(lte)g6 ,(lte)h5 
+    ,(lte)4 ,(lte)d8 ,(lte)c8 ,(lte)b8 ,(lte)a8
+    ,(lte)3 ,(lte)f8 ,(lte)g8 ,(lte)h8
+    ,(lte)7 ,(lte)e7 ,(lte)e6 ,(lte)e5 ,(lte)e4 ,(lte)e3 ,(lte)e2 ,(lte)e1
+    ,(lte)4 ,(lte)d7 ,(lte)c6 ,(lte)b5 ,(lte)a4
+    ,(lte)3 ,(lte)f7 ,(lte)g6 ,(lte)h5
 };
 static const lte queen_lookup_f1[] =
 {
 (lte)5
-    ,(lte)5 ,(lte)e1 ,(lte)d1 ,(lte)c1 ,(lte)b1 ,(lte)a1 
-    ,(lte)2 ,(lte)g1 ,(lte)h1 
-    ,(lte)7 ,(lte)f2 ,(lte)f3 ,(lte)f4 ,(lte)f5 ,(lte)f6 ,(lte)f7 ,(lte)f8 
-    ,(lte)5 ,(lte)e2 ,(lte)d3 ,(lte)c4 ,(lte)b5 ,(lte)a6 
-    ,(lte)2 ,(lte)g2 ,(lte)h3 
+    ,(lte)5 ,(lte)e1 ,(lte)d1 ,(lte)c1 ,(lte)b1 ,(lte)a1
+    ,(lte)2 ,(lte)g1 ,(lte)h1
+    ,(lte)7 ,(lte)f2 ,(lte)f3 ,(lte)f4 ,(lte)f5 ,(lte)f6 ,(lte)f7 ,(lte)f8
+    ,(lte)5 ,(lte)e2 ,(lte)d3 ,(lte)c4 ,(lte)b5 ,(lte)a6
+    ,(lte)2 ,(lte)g2 ,(lte)h3
 };
 static const lte queen_lookup_f2[] =
 {
 (lte)8
-    ,(lte)5 ,(lte)e2 ,(lte)d2 ,(lte)c2 ,(lte)b2 ,(lte)a2 
-    ,(lte)2 ,(lte)g2 ,(lte)h2 
-    ,(lte)1 ,(lte)f1 
-    ,(lte)6 ,(lte)f3 ,(lte)f4 ,(lte)f5 ,(lte)f6 ,(lte)f7 ,(lte)f8 
-    ,(lte)1 ,(lte)e1 
-    ,(lte)5 ,(lte)e3 ,(lte)d4 ,(lte)c5 ,(lte)b6 ,(lte)a7 
-    ,(lte)2 ,(lte)g3 ,(lte)h4 
-    ,(lte)1 ,(lte)g1 
+    ,(lte)5 ,(lte)e2 ,(lte)d2 ,(lte)c2 ,(lte)b2 ,(lte)a2
+    ,(lte)2 ,(lte)g2 ,(lte)h2
+    ,(lte)1 ,(lte)f1
+    ,(lte)6 ,(lte)f3 ,(lte)f4 ,(lte)f5 ,(lte)f6 ,(lte)f7 ,(lte)f8
+    ,(lte)1 ,(lte)e1
+    ,(lte)5 ,(lte)e3 ,(lte)d4 ,(lte)c5 ,(lte)b6 ,(lte)a7
+    ,(lte)2 ,(lte)g3 ,(lte)h4
+    ,(lte)1 ,(lte)g1
 };
 static const lte queen_lookup_f3[] =
 {
 (lte)8
-    ,(lte)5 ,(lte)e3 ,(lte)d3 ,(lte)c3 ,(lte)b3 ,(lte)a3 
-    ,(lte)2 ,(lte)g3 ,(lte)h3 
-    ,(lte)2 ,(lte)f2 ,(lte)f1 
-    ,(lte)5 ,(lte)f4 ,(lte)f5 ,(lte)f6 ,(lte)f7 ,(lte)f8 
-    ,(lte)2 ,(lte)e2 ,(lte)d1 
-    ,(lte)5 ,(lte)e4 ,(lte)d5 ,(lte)c6 ,(lte)b7 ,(lte)a8 
-    ,(lte)2 ,(lte)g4 ,(lte)h5 
-    ,(lte)2 ,(lte)g2 ,(lte)h1 
+    ,(lte)5 ,(lte)e3 ,(lte)d3 ,(lte)c3 ,(lte)b3 ,(lte)a3
+    ,(lte)2 ,(lte)g3 ,(lte)h3
+    ,(lte)2 ,(lte)f2 ,(lte)f1
+    ,(lte)5 ,(lte)f4 ,(lte)f5 ,(lte)f6 ,(lte)f7 ,(lte)f8
+    ,(lte)2 ,(lte)e2 ,(lte)d1
+    ,(lte)5 ,(lte)e4 ,(lte)d5 ,(lte)c6 ,(lte)b7 ,(lte)a8
+    ,(lte)2 ,(lte)g4 ,(lte)h5
+    ,(lte)2 ,(lte)g2 ,(lte)h1
 };
 static const lte queen_lookup_f4[] =
 {
 (lte)8
-    ,(lte)5 ,(lte)e4 ,(lte)d4 ,(lte)c4 ,(lte)b4 ,(lte)a4 
-    ,(lte)2 ,(lte)g4 ,(lte)h4 
-    ,(lte)3 ,(lte)f3 ,(lte)f2 ,(lte)f1 
-    ,(lte)4 ,(lte)f5 ,(lte)f6 ,(lte)f7 ,(lte)f8 
-    ,(lte)3 ,(lte)e3 ,(lte)d2 ,(lte)c1 
-    ,(lte)4 ,(lte)e5 ,(lte)d6 ,(lte)c7 ,(lte)b8 
-    ,(lte)2 ,(lte)g5 ,(lte)h6 
-    ,(lte)2 ,(lte)g3 ,(lte)h2 
+    ,(lte)5 ,(lte)e4 ,(lte)d4 ,(lte)c4 ,(lte)b4 ,(lte)a4
+    ,(lte)2 ,(lte)g4 ,(lte)h4
+    ,(lte)3 ,(lte)f3 ,(lte)f2 ,(lte)f1
+    ,(lte)4 ,(lte)f5 ,(lte)f6 ,(lte)f7 ,(lte)f8
+    ,(lte)3 ,(lte)e3 ,(lte)d2 ,(lte)c1
+    ,(lte)4 ,(lte)e5 ,(lte)d6 ,(lte)c7 ,(lte)b8
+    ,(lte)2 ,(lte)g5 ,(lte)h6
+    ,(lte)2 ,(lte)g3 ,(lte)h2
 };
 static const lte queen_lookup_f5[] =
 {
 (lte)8
-    ,(lte)5 ,(lte)e5 ,(lte)d5 ,(lte)c5 ,(lte)b5 ,(lte)a5 
-    ,(lte)2 ,(lte)g5 ,(lte)h5 
-    ,(lte)4 ,(lte)f4 ,(lte)f3 ,(lte)f2 ,(lte)f1 
-    ,(lte)3 ,(lte)f6 ,(lte)f7 ,(lte)f8 
-    ,(lte)4 ,(lte)e4 ,(lte)d3 ,(lte)c2 ,(lte)b1 
-    ,(lte)3 ,(lte)e6 ,(lte)d7 ,(lte)c8 
-    ,(lte)2 ,(lte)g6 ,(lte)h7 
-    ,(lte)2 ,(lte)g4 ,(lte)h3 
+    ,(lte)5 ,(lte)e5 ,(lte)d5 ,(lte)c5 ,(lte)b5 ,(lte)a5
+    ,(lte)2 ,(lte)g5 ,(lte)h5
+    ,(lte)4 ,(lte)f4 ,(lte)f3 ,(lte)f2 ,(lte)f1
+    ,(lte)3 ,(lte)f6 ,(lte)f7 ,(lte)f8
+    ,(lte)4 ,(lte)e4 ,(lte)d3 ,(lte)c2 ,(lte)b1
+    ,(lte)3 ,(lte)e6 ,(lte)d7 ,(lte)c8
+    ,(lte)2 ,(lte)g6 ,(lte)h7
+    ,(lte)2 ,(lte)g4 ,(lte)h3
 };
 static const lte queen_lookup_f6[] =
 {
 (lte)8
-    ,(lte)5 ,(lte)e6 ,(lte)d6 ,(lte)c6 ,(lte)b6 ,(lte)a6 
-    ,(lte)2 ,(lte)g6 ,(lte)h6 
-    ,(lte)5 ,(lte)f5 ,(lte)f4 ,(lte)f3 ,(lte)f2 ,(lte)f1 
-    ,(lte)2 ,(lte)f7 ,(lte)f8 
-    ,(lte)5 ,(lte)e5 ,(lte)d4 ,(lte)c3 ,(lte)b2 ,(lte)a1 
-    ,(lte)2 ,(lte)e7 ,(lte)d8 
-    ,(lte)2 ,(lte)g7 ,(lte)h8 
-    ,(lte)2 ,(lte)g5 ,(lte)h4 
+    ,(lte)5 ,(lte)e6 ,(lte)d6 ,(lte)c6 ,(lte)b6 ,(lte)a6
+    ,(lte)2 ,(lte)g6 ,(lte)h6
+    ,(lte)5 ,(lte)f5 ,(lte)f4 ,(lte)f3 ,(lte)f2 ,(lte)f1
+    ,(lte)2 ,(lte)f7 ,(lte)f8
+    ,(lte)5 ,(lte)e5 ,(lte)d4 ,(lte)c3 ,(lte)b2 ,(lte)a1
+    ,(lte)2 ,(lte)e7 ,(lte)d8
+    ,(lte)2 ,(lte)g7 ,(lte)h8
+    ,(lte)2 ,(lte)g5 ,(lte)h4
 };
 static const lte queen_lookup_f7[] =
 {
 (lte)8
-    ,(lte)5 ,(lte)e7 ,(lte)d7 ,(lte)c7 ,(lte)b7 ,(lte)a7 
-    ,(lte)2 ,(lte)g7 ,(lte)h7 
-    ,(lte)6 ,(lte)f6 ,(lte)f5 ,(lte)f4 ,(lte)f3 ,(lte)f2 ,(lte)f1 
-    ,(lte)1 ,(lte)f8 
-    ,(lte)5 ,(lte)e6 ,(lte)d5 ,(lte)c4 ,(lte)b3 ,(lte)a2 
-    ,(lte)1 ,(lte)e8 
-    ,(lte)1 ,(lte)g8 
-    ,(lte)2 ,(lte)g6 ,(lte)h5 
+    ,(lte)5 ,(lte)e7 ,(lte)d7 ,(lte)c7 ,(lte)b7 ,(lte)a7
+    ,(lte)2 ,(lte)g7 ,(lte)h7
+    ,(lte)6 ,(lte)f6 ,(lte)f5 ,(lte)f4 ,(lte)f3 ,(lte)f2 ,(lte)f1
+    ,(lte)1 ,(lte)f8
+    ,(lte)5 ,(lte)e6 ,(lte)d5 ,(lte)c4 ,(lte)b3 ,(lte)a2
+    ,(lte)1 ,(lte)e8
+    ,(lte)1 ,(lte)g8
+    ,(lte)2 ,(lte)g6 ,(lte)h5
 };
 static const lte queen_lookup_f8[] =
 {
 (lte)5
-    ,(lte)5 ,(lte)e8 ,(lte)d8 ,(lte)c8 ,(lte)b8 ,(lte)a8 
-    ,(lte)2 ,(lte)g8 ,(lte)h8 
-    ,(lte)7 ,(lte)f7 ,(lte)f6 ,(lte)f5 ,(lte)f4 ,(lte)f3 ,(lte)f2 ,(lte)f1 
-    ,(lte)5 ,(lte)e7 ,(lte)d6 ,(lte)c5 ,(lte)b4 ,(lte)a3 
-    ,(lte)2 ,(lte)g7 ,(lte)h6 
+    ,(lte)5 ,(lte)e8 ,(lte)d8 ,(lte)c8 ,(lte)b8 ,(lte)a8
+    ,(lte)2 ,(lte)g8 ,(lte)h8
+    ,(lte)7 ,(lte)f7 ,(lte)f6 ,(lte)f5 ,(lte)f4 ,(lte)f3 ,(lte)f2 ,(lte)f1
+    ,(lte)5 ,(lte)e7 ,(lte)d6 ,(lte)c5 ,(lte)b4 ,(lte)a3
+    ,(lte)2 ,(lte)g7 ,(lte)h6
 };
 static const lte queen_lookup_g1[] =
 {
 (lte)5
-    ,(lte)6 ,(lte)f1 ,(lte)e1 ,(lte)d1 ,(lte)c1 ,(lte)b1 ,(lte)a1 
-    ,(lte)1 ,(lte)h1 
-    ,(lte)7 ,(lte)g2 ,(lte)g3 ,(lte)g4 ,(lte)g5 ,(lte)g6 ,(lte)g7 ,(lte)g8 
-    ,(lte)6 ,(lte)f2 ,(lte)e3 ,(lte)d4 ,(lte)c5 ,(lte)b6 ,(lte)a7 
-    ,(lte)1 ,(lte)h2 
+    ,(lte)6 ,(lte)f1 ,(lte)e1 ,(lte)d1 ,(lte)c1 ,(lte)b1 ,(lte)a1
+    ,(lte)1 ,(lte)h1
+    ,(lte)7 ,(lte)g2 ,(lte)g3 ,(lte)g4 ,(lte)g5 ,(lte)g6 ,(lte)g7 ,(lte)g8
+    ,(lte)6 ,(lte)f2 ,(lte)e3 ,(lte)d4 ,(lte)c5 ,(lte)b6 ,(lte)a7
+    ,(lte)1 ,(lte)h2
 };
 static const lte queen_lookup_g2[] =
 {
 (lte)8
-    ,(lte)6 ,(lte)f2 ,(lte)e2 ,(lte)d2 ,(lte)c2 ,(lte)b2 ,(lte)a2 
-    ,(lte)1 ,(lte)h2 
-    ,(lte)1 ,(lte)g1 
-    ,(lte)6 ,(lte)g3 ,(lte)g4 ,(lte)g5 ,(lte)g6 ,(lte)g7 ,(lte)g8 
-    ,(lte)1 ,(lte)f1 
-    ,(lte)6 ,(lte)f3 ,(lte)e4 ,(lte)d5 ,(lte)c6 ,(lte)b7 ,(lte)a8 
-    ,(lte)1 ,(lte)h3 
-    ,(lte)1 ,(lte)h1 
+    ,(lte)6 ,(lte)f2 ,(lte)e2 ,(lte)d2 ,(lte)c2 ,(lte)b2 ,(lte)a2
+    ,(lte)1 ,(lte)h2
+    ,(lte)1 ,(lte)g1
+    ,(lte)6 ,(lte)g3 ,(lte)g4 ,(lte)g5 ,(lte)g6 ,(lte)g7 ,(lte)g8
+    ,(lte)1 ,(lte)f1
+    ,(lte)6 ,(lte)f3 ,(lte)e4 ,(lte)d5 ,(lte)c6 ,(lte)b7 ,(lte)a8
+    ,(lte)1 ,(lte)h3
+    ,(lte)1 ,(lte)h1
 };
 static const lte queen_lookup_g3[] =
 {
 (lte)8
-    ,(lte)6 ,(lte)f3 ,(lte)e3 ,(lte)d3 ,(lte)c3 ,(lte)b3 ,(lte)a3 
-    ,(lte)1 ,(lte)h3 
-    ,(lte)2 ,(lte)g2 ,(lte)g1 
-    ,(lte)5 ,(lte)g4 ,(lte)g5 ,(lte)g6 ,(lte)g7 ,(lte)g8 
-    ,(lte)2 ,(lte)f2 ,(lte)e1 
-    ,(lte)5 ,(lte)f4 ,(lte)e5 ,(lte)d6 ,(lte)c7 ,(lte)b8 
-    ,(lte)1 ,(lte)h4 
-    ,(lte)1 ,(lte)h2 
+    ,(lte)6 ,(lte)f3 ,(lte)e3 ,(lte)d3 ,(lte)c3 ,(lte)b3 ,(lte)a3
+    ,(lte)1 ,(lte)h3
+    ,(lte)2 ,(lte)g2 ,(lte)g1
+    ,(lte)5 ,(lte)g4 ,(lte)g5 ,(lte)g6 ,(lte)g7 ,(lte)g8
+    ,(lte)2 ,(lte)f2 ,(lte)e1
+    ,(lte)5 ,(lte)f4 ,(lte)e5 ,(lte)d6 ,(lte)c7 ,(lte)b8
+    ,(lte)1 ,(lte)h4
+    ,(lte)1 ,(lte)h2
 };
 static const lte queen_lookup_g4[] =
 {
 (lte)8
-    ,(lte)6 ,(lte)f4 ,(lte)e4 ,(lte)d4 ,(lte)c4 ,(lte)b4 ,(lte)a4 
-    ,(lte)1 ,(lte)h4 
-    ,(lte)3 ,(lte)g3 ,(lte)g2 ,(lte)g1 
-    ,(lte)4 ,(lte)g5 ,(lte)g6 ,(lte)g7 ,(lte)g8 
-    ,(lte)3 ,(lte)f3 ,(lte)e2 ,(lte)d1 
-    ,(lte)4 ,(lte)f5 ,(lte)e6 ,(lte)d7 ,(lte)c8 
-    ,(lte)1 ,(lte)h5 
-    ,(lte)1 ,(lte)h3 
+    ,(lte)6 ,(lte)f4 ,(lte)e4 ,(lte)d4 ,(lte)c4 ,(lte)b4 ,(lte)a4
+    ,(lte)1 ,(lte)h4
+    ,(lte)3 ,(lte)g3 ,(lte)g2 ,(lte)g1
+    ,(lte)4 ,(lte)g5 ,(lte)g6 ,(lte)g7 ,(lte)g8
+    ,(lte)3 ,(lte)f3 ,(lte)e2 ,(lte)d1
+    ,(lte)4 ,(lte)f5 ,(lte)e6 ,(lte)d7 ,(lte)c8
+    ,(lte)1 ,(lte)h5
+    ,(lte)1 ,(lte)h3
 };
 static const lte queen_lookup_g5[] =
 {
 (lte)8
-    ,(lte)6 ,(lte)f5 ,(lte)e5 ,(lte)d5 ,(lte)c5 ,(lte)b5 ,(lte)a5 
-    ,(lte)1 ,(lte)h5 
-    ,(lte)4 ,(lte)g4 ,(lte)g3 ,(lte)g2 ,(lte)g1 
-    ,(lte)3 ,(lte)g6 ,(lte)g7 ,(lte)g8 
-    ,(lte)4 ,(lte)f4 ,(lte)e3 ,(lte)d2 ,(lte)c1 
-    ,(lte)3 ,(lte)f6 ,(lte)e7 ,(lte)d8 
-    ,(lte)1 ,(lte)h6 
-    ,(lte)1 ,(lte)h4 
+    ,(lte)6 ,(lte)f5 ,(lte)e5 ,(lte)d5 ,(lte)c5 ,(lte)b5 ,(lte)a5
+    ,(lte)1 ,(lte)h5
+    ,(lte)4 ,(lte)g4 ,(lte)g3 ,(lte)g2 ,(lte)g1
+    ,(lte)3 ,(lte)g6 ,(lte)g7 ,(lte)g8
+    ,(lte)4 ,(lte)f4 ,(lte)e3 ,(lte)d2 ,(lte)c1
+    ,(lte)3 ,(lte)f6 ,(lte)e7 ,(lte)d8
+    ,(lte)1 ,(lte)h6
+    ,(lte)1 ,(lte)h4
 };
 static const lte queen_lookup_g6[] =
 {
 (lte)8
-    ,(lte)6 ,(lte)f6 ,(lte)e6 ,(lte)d6 ,(lte)c6 ,(lte)b6 ,(lte)a6 
-    ,(lte)1 ,(lte)h6 
-    ,(lte)5 ,(lte)g5 ,(lte)g4 ,(lte)g3 ,(lte)g2 ,(lte)g1 
-    ,(lte)2 ,(lte)g7 ,(lte)g8 
-    ,(lte)5 ,(lte)f5 ,(lte)e4 ,(lte)d3 ,(lte)c2 ,(lte)b1 
-    ,(lte)2 ,(lte)f7 ,(lte)e8 
-    ,(lte)1 ,(lte)h7 
-    ,(lte)1 ,(lte)h5 
+    ,(lte)6 ,(lte)f6 ,(lte)e6 ,(lte)d6 ,(lte)c6 ,(lte)b6 ,(lte)a6
+    ,(lte)1 ,(lte)h6
+    ,(lte)5 ,(lte)g5 ,(lte)g4 ,(lte)g3 ,(lte)g2 ,(lte)g1
+    ,(lte)2 ,(lte)g7 ,(lte)g8
+    ,(lte)5 ,(lte)f5 ,(lte)e4 ,(lte)d3 ,(lte)c2 ,(lte)b1
+    ,(lte)2 ,(lte)f7 ,(lte)e8
+    ,(lte)1 ,(lte)h7
+    ,(lte)1 ,(lte)h5
 };
 static const lte queen_lookup_g7[] =
 {
 (lte)8
-    ,(lte)6 ,(lte)f7 ,(lte)e7 ,(lte)d7 ,(lte)c7 ,(lte)b7 ,(lte)a7 
-    ,(lte)1 ,(lte)h7 
-    ,(lte)6 ,(lte)g6 ,(lte)g5 ,(lte)g4 ,(lte)g3 ,(lte)g2 ,(lte)g1 
-    ,(lte)1 ,(lte)g8 
-    ,(lte)6 ,(lte)f6 ,(lte)e5 ,(lte)d4 ,(lte)c3 ,(lte)b2 ,(lte)a1 
-    ,(lte)1 ,(lte)f8 
-    ,(lte)1 ,(lte)h8 
-    ,(lte)1 ,(lte)h6 
+    ,(lte)6 ,(lte)f7 ,(lte)e7 ,(lte)d7 ,(lte)c7 ,(lte)b7 ,(lte)a7
+    ,(lte)1 ,(lte)h7
+    ,(lte)6 ,(lte)g6 ,(lte)g5 ,(lte)g4 ,(lte)g3 ,(lte)g2 ,(lte)g1
+    ,(lte)1 ,(lte)g8
+    ,(lte)6 ,(lte)f6 ,(lte)e5 ,(lte)d4 ,(lte)c3 ,(lte)b2 ,(lte)a1
+    ,(lte)1 ,(lte)f8
+    ,(lte)1 ,(lte)h8
+    ,(lte)1 ,(lte)h6
 };
 static const lte queen_lookup_g8[] =
 {
 (lte)5
-    ,(lte)6 ,(lte)f8 ,(lte)e8 ,(lte)d8 ,(lte)c8 ,(lte)b8 ,(lte)a8 
-    ,(lte)1 ,(lte)h8 
-    ,(lte)7 ,(lte)g7 ,(lte)g6 ,(lte)g5 ,(lte)g4 ,(lte)g3 ,(lte)g2 ,(lte)g1 
-    ,(lte)6 ,(lte)f7 ,(lte)e6 ,(lte)d5 ,(lte)c4 ,(lte)b3 ,(lte)a2 
-    ,(lte)1 ,(lte)h7 
+    ,(lte)6 ,(lte)f8 ,(lte)e8 ,(lte)d8 ,(lte)c8 ,(lte)b8 ,(lte)a8
+    ,(lte)1 ,(lte)h8
+    ,(lte)7 ,(lte)g7 ,(lte)g6 ,(lte)g5 ,(lte)g4 ,(lte)g3 ,(lte)g2 ,(lte)g1
+    ,(lte)6 ,(lte)f7 ,(lte)e6 ,(lte)d5 ,(lte)c4 ,(lte)b3 ,(lte)a2
+    ,(lte)1 ,(lte)h7
 };
 static const lte queen_lookup_h1[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)g1 ,(lte)f1 ,(lte)e1 ,(lte)d1 ,(lte)c1 ,(lte)b1 ,(lte)a1 
-    ,(lte)7 ,(lte)h2 ,(lte)h3 ,(lte)h4 ,(lte)h5 ,(lte)h6 ,(lte)h7 ,(lte)h8 
-    ,(lte)7 ,(lte)g2 ,(lte)f3 ,(lte)e4 ,(lte)d5 ,(lte)c6 ,(lte)b7 ,(lte)a8 
+    ,(lte)7 ,(lte)g1 ,(lte)f1 ,(lte)e1 ,(lte)d1 ,(lte)c1 ,(lte)b1 ,(lte)a1
+    ,(lte)7 ,(lte)h2 ,(lte)h3 ,(lte)h4 ,(lte)h5 ,(lte)h6 ,(lte)h7 ,(lte)h8
+    ,(lte)7 ,(lte)g2 ,(lte)f3 ,(lte)e4 ,(lte)d5 ,(lte)c6 ,(lte)b7 ,(lte)a8
 };
 static const lte queen_lookup_h2[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)g2 ,(lte)f2 ,(lte)e2 ,(lte)d2 ,(lte)c2 ,(lte)b2 ,(lte)a2 
-    ,(lte)1 ,(lte)h1 
-    ,(lte)6 ,(lte)h3 ,(lte)h4 ,(lte)h5 ,(lte)h6 ,(lte)h7 ,(lte)h8 
-    ,(lte)1 ,(lte)g1 
-    ,(lte)6 ,(lte)g3 ,(lte)f4 ,(lte)e5 ,(lte)d6 ,(lte)c7 ,(lte)b8 
+    ,(lte)7 ,(lte)g2 ,(lte)f2 ,(lte)e2 ,(lte)d2 ,(lte)c2 ,(lte)b2 ,(lte)a2
+    ,(lte)1 ,(lte)h1
+    ,(lte)6 ,(lte)h3 ,(lte)h4 ,(lte)h5 ,(lte)h6 ,(lte)h7 ,(lte)h8
+    ,(lte)1 ,(lte)g1
+    ,(lte)6 ,(lte)g3 ,(lte)f4 ,(lte)e5 ,(lte)d6 ,(lte)c7 ,(lte)b8
 };
 static const lte queen_lookup_h3[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)g3 ,(lte)f3 ,(lte)e3 ,(lte)d3 ,(lte)c3 ,(lte)b3 ,(lte)a3 
-    ,(lte)2 ,(lte)h2 ,(lte)h1 
-    ,(lte)5 ,(lte)h4 ,(lte)h5 ,(lte)h6 ,(lte)h7 ,(lte)h8 
-    ,(lte)2 ,(lte)g2 ,(lte)f1 
-    ,(lte)5 ,(lte)g4 ,(lte)f5 ,(lte)e6 ,(lte)d7 ,(lte)c8 
+    ,(lte)7 ,(lte)g3 ,(lte)f3 ,(lte)e3 ,(lte)d3 ,(lte)c3 ,(lte)b3 ,(lte)a3
+    ,(lte)2 ,(lte)h2 ,(lte)h1
+    ,(lte)5 ,(lte)h4 ,(lte)h5 ,(lte)h6 ,(lte)h7 ,(lte)h8
+    ,(lte)2 ,(lte)g2 ,(lte)f1
+    ,(lte)5 ,(lte)g4 ,(lte)f5 ,(lte)e6 ,(lte)d7 ,(lte)c8
 };
 static const lte queen_lookup_h4[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)g4 ,(lte)f4 ,(lte)e4 ,(lte)d4 ,(lte)c4 ,(lte)b4 ,(lte)a4 
-    ,(lte)3 ,(lte)h3 ,(lte)h2 ,(lte)h1 
-    ,(lte)4 ,(lte)h5 ,(lte)h6 ,(lte)h7 ,(lte)h8 
-    ,(lte)3 ,(lte)g3 ,(lte)f2 ,(lte)e1 
-    ,(lte)4 ,(lte)g5 ,(lte)f6 ,(lte)e7 ,(lte)d8 
+    ,(lte)7 ,(lte)g4 ,(lte)f4 ,(lte)e4 ,(lte)d4 ,(lte)c4 ,(lte)b4 ,(lte)a4
+    ,(lte)3 ,(lte)h3 ,(lte)h2 ,(lte)h1
+    ,(lte)4 ,(lte)h5 ,(lte)h6 ,(lte)h7 ,(lte)h8
+    ,(lte)3 ,(lte)g3 ,(lte)f2 ,(lte)e1
+    ,(lte)4 ,(lte)g5 ,(lte)f6 ,(lte)e7 ,(lte)d8
 };
 static const lte queen_lookup_h5[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)g5 ,(lte)f5 ,(lte)e5 ,(lte)d5 ,(lte)c5 ,(lte)b5 ,(lte)a5 
-    ,(lte)4 ,(lte)h4 ,(lte)h3 ,(lte)h2 ,(lte)h1 
-    ,(lte)3 ,(lte)h6 ,(lte)h7 ,(lte)h8 
-    ,(lte)4 ,(lte)g4 ,(lte)f3 ,(lte)e2 ,(lte)d1 
-    ,(lte)3 ,(lte)g6 ,(lte)f7 ,(lte)e8 
+    ,(lte)7 ,(lte)g5 ,(lte)f5 ,(lte)e5 ,(lte)d5 ,(lte)c5 ,(lte)b5 ,(lte)a5
+    ,(lte)4 ,(lte)h4 ,(lte)h3 ,(lte)h2 ,(lte)h1
+    ,(lte)3 ,(lte)h6 ,(lte)h7 ,(lte)h8
+    ,(lte)4 ,(lte)g4 ,(lte)f3 ,(lte)e2 ,(lte)d1
+    ,(lte)3 ,(lte)g6 ,(lte)f7 ,(lte)e8
 };
 static const lte queen_lookup_h6[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)g6 ,(lte)f6 ,(lte)e6 ,(lte)d6 ,(lte)c6 ,(lte)b6 ,(lte)a6 
-    ,(lte)5 ,(lte)h5 ,(lte)h4 ,(lte)h3 ,(lte)h2 ,(lte)h1 
-    ,(lte)2 ,(lte)h7 ,(lte)h8 
-    ,(lte)5 ,(lte)g5 ,(lte)f4 ,(lte)e3 ,(lte)d2 ,(lte)c1 
-    ,(lte)2 ,(lte)g7 ,(lte)f8 
+    ,(lte)7 ,(lte)g6 ,(lte)f6 ,(lte)e6 ,(lte)d6 ,(lte)c6 ,(lte)b6 ,(lte)a6
+    ,(lte)5 ,(lte)h5 ,(lte)h4 ,(lte)h3 ,(lte)h2 ,(lte)h1
+    ,(lte)2 ,(lte)h7 ,(lte)h8
+    ,(lte)5 ,(lte)g5 ,(lte)f4 ,(lte)e3 ,(lte)d2 ,(lte)c1
+    ,(lte)2 ,(lte)g7 ,(lte)f8
 };
 static const lte queen_lookup_h7[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)g7 ,(lte)f7 ,(lte)e7 ,(lte)d7 ,(lte)c7 ,(lte)b7 ,(lte)a7 
-    ,(lte)6 ,(lte)h6 ,(lte)h5 ,(lte)h4 ,(lte)h3 ,(lte)h2 ,(lte)h1 
-    ,(lte)1 ,(lte)h8 
-    ,(lte)6 ,(lte)g6 ,(lte)f5 ,(lte)e4 ,(lte)d3 ,(lte)c2 ,(lte)b1 
-    ,(lte)1 ,(lte)g8 
+    ,(lte)7 ,(lte)g7 ,(lte)f7 ,(lte)e7 ,(lte)d7 ,(lte)c7 ,(lte)b7 ,(lte)a7
+    ,(lte)6 ,(lte)h6 ,(lte)h5 ,(lte)h4 ,(lte)h3 ,(lte)h2 ,(lte)h1
+    ,(lte)1 ,(lte)h8
+    ,(lte)6 ,(lte)g6 ,(lte)f5 ,(lte)e4 ,(lte)d3 ,(lte)c2 ,(lte)b1
+    ,(lte)1 ,(lte)g8
 };
 static const lte queen_lookup_h8[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)g8 ,(lte)f8 ,(lte)e8 ,(lte)d8 ,(lte)c8 ,(lte)b8 ,(lte)a8 
-    ,(lte)7 ,(lte)h7 ,(lte)h6 ,(lte)h5 ,(lte)h4 ,(lte)h3 ,(lte)h2 ,(lte)h1 
-    ,(lte)7 ,(lte)g7 ,(lte)f6 ,(lte)e5 ,(lte)d4 ,(lte)c3 ,(lte)b2 ,(lte)a1 
+    ,(lte)7 ,(lte)g8 ,(lte)f8 ,(lte)e8 ,(lte)d8 ,(lte)c8 ,(lte)b8 ,(lte)a8
+    ,(lte)7 ,(lte)h7 ,(lte)h6 ,(lte)h5 ,(lte)h4 ,(lte)h3 ,(lte)h2 ,(lte)h1
+    ,(lte)7 ,(lte)g7 ,(lte)f6 ,(lte)e5 ,(lte)d4 ,(lte)c3 ,(lte)b2 ,(lte)a1
 };
 
 // queen_lookup
@@ -9116,482 +7975,482 @@ const lte *queen_lookup[] =
 static const lte rook_lookup_a1[] =
 {
 (lte)2
-    ,(lte)7 ,(lte)b1 ,(lte)c1 ,(lte)d1 ,(lte)e1 ,(lte)f1 ,(lte)g1 ,(lte)h1 
-    ,(lte)7 ,(lte)a2 ,(lte)a3 ,(lte)a4 ,(lte)a5 ,(lte)a6 ,(lte)a7 ,(lte)a8 
+    ,(lte)7 ,(lte)b1 ,(lte)c1 ,(lte)d1 ,(lte)e1 ,(lte)f1 ,(lte)g1 ,(lte)h1
+    ,(lte)7 ,(lte)a2 ,(lte)a3 ,(lte)a4 ,(lte)a5 ,(lte)a6 ,(lte)a7 ,(lte)a8
 };
 static const lte rook_lookup_a2[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)b2 ,(lte)c2 ,(lte)d2 ,(lte)e2 ,(lte)f2 ,(lte)g2 ,(lte)h2 
-    ,(lte)1 ,(lte)a1 
-    ,(lte)6 ,(lte)a3 ,(lte)a4 ,(lte)a5 ,(lte)a6 ,(lte)a7 ,(lte)a8 
+    ,(lte)7 ,(lte)b2 ,(lte)c2 ,(lte)d2 ,(lte)e2 ,(lte)f2 ,(lte)g2 ,(lte)h2
+    ,(lte)1 ,(lte)a1
+    ,(lte)6 ,(lte)a3 ,(lte)a4 ,(lte)a5 ,(lte)a6 ,(lte)a7 ,(lte)a8
 };
 static const lte rook_lookup_a3[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)b3 ,(lte)c3 ,(lte)d3 ,(lte)e3 ,(lte)f3 ,(lte)g3 ,(lte)h3 
-    ,(lte)2 ,(lte)a2 ,(lte)a1 
-    ,(lte)5 ,(lte)a4 ,(lte)a5 ,(lte)a6 ,(lte)a7 ,(lte)a8 
+    ,(lte)7 ,(lte)b3 ,(lte)c3 ,(lte)d3 ,(lte)e3 ,(lte)f3 ,(lte)g3 ,(lte)h3
+    ,(lte)2 ,(lte)a2 ,(lte)a1
+    ,(lte)5 ,(lte)a4 ,(lte)a5 ,(lte)a6 ,(lte)a7 ,(lte)a8
 };
 static const lte rook_lookup_a4[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)b4 ,(lte)c4 ,(lte)d4 ,(lte)e4 ,(lte)f4 ,(lte)g4 ,(lte)h4 
-    ,(lte)3 ,(lte)a3 ,(lte)a2 ,(lte)a1 
-    ,(lte)4 ,(lte)a5 ,(lte)a6 ,(lte)a7 ,(lte)a8 
+    ,(lte)7 ,(lte)b4 ,(lte)c4 ,(lte)d4 ,(lte)e4 ,(lte)f4 ,(lte)g4 ,(lte)h4
+    ,(lte)3 ,(lte)a3 ,(lte)a2 ,(lte)a1
+    ,(lte)4 ,(lte)a5 ,(lte)a6 ,(lte)a7 ,(lte)a8
 };
 static const lte rook_lookup_a5[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)b5 ,(lte)c5 ,(lte)d5 ,(lte)e5 ,(lte)f5 ,(lte)g5 ,(lte)h5 
-    ,(lte)4 ,(lte)a4 ,(lte)a3 ,(lte)a2 ,(lte)a1 
-    ,(lte)3 ,(lte)a6 ,(lte)a7 ,(lte)a8 
+    ,(lte)7 ,(lte)b5 ,(lte)c5 ,(lte)d5 ,(lte)e5 ,(lte)f5 ,(lte)g5 ,(lte)h5
+    ,(lte)4 ,(lte)a4 ,(lte)a3 ,(lte)a2 ,(lte)a1
+    ,(lte)3 ,(lte)a6 ,(lte)a7 ,(lte)a8
 };
 static const lte rook_lookup_a6[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)b6 ,(lte)c6 ,(lte)d6 ,(lte)e6 ,(lte)f6 ,(lte)g6 ,(lte)h6 
-    ,(lte)5 ,(lte)a5 ,(lte)a4 ,(lte)a3 ,(lte)a2 ,(lte)a1 
-    ,(lte)2 ,(lte)a7 ,(lte)a8 
+    ,(lte)7 ,(lte)b6 ,(lte)c6 ,(lte)d6 ,(lte)e6 ,(lte)f6 ,(lte)g6 ,(lte)h6
+    ,(lte)5 ,(lte)a5 ,(lte)a4 ,(lte)a3 ,(lte)a2 ,(lte)a1
+    ,(lte)2 ,(lte)a7 ,(lte)a8
 };
 static const lte rook_lookup_a7[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)b7 ,(lte)c7 ,(lte)d7 ,(lte)e7 ,(lte)f7 ,(lte)g7 ,(lte)h7 
-    ,(lte)6 ,(lte)a6 ,(lte)a5 ,(lte)a4 ,(lte)a3 ,(lte)a2 ,(lte)a1 
-    ,(lte)1 ,(lte)a8 
+    ,(lte)7 ,(lte)b7 ,(lte)c7 ,(lte)d7 ,(lte)e7 ,(lte)f7 ,(lte)g7 ,(lte)h7
+    ,(lte)6 ,(lte)a6 ,(lte)a5 ,(lte)a4 ,(lte)a3 ,(lte)a2 ,(lte)a1
+    ,(lte)1 ,(lte)a8
 };
 static const lte rook_lookup_a8[] =
 {
 (lte)2
-    ,(lte)7 ,(lte)b8 ,(lte)c8 ,(lte)d8 ,(lte)e8 ,(lte)f8 ,(lte)g8 ,(lte)h8 
-    ,(lte)7 ,(lte)a7 ,(lte)a6 ,(lte)a5 ,(lte)a4 ,(lte)a3 ,(lte)a2 ,(lte)a1 
+    ,(lte)7 ,(lte)b8 ,(lte)c8 ,(lte)d8 ,(lte)e8 ,(lte)f8 ,(lte)g8 ,(lte)h8
+    ,(lte)7 ,(lte)a7 ,(lte)a6 ,(lte)a5 ,(lte)a4 ,(lte)a3 ,(lte)a2 ,(lte)a1
 };
 static const lte rook_lookup_b1[] =
 {
 (lte)3
-    ,(lte)1 ,(lte)a1 
-    ,(lte)6 ,(lte)c1 ,(lte)d1 ,(lte)e1 ,(lte)f1 ,(lte)g1 ,(lte)h1 
-    ,(lte)7 ,(lte)b2 ,(lte)b3 ,(lte)b4 ,(lte)b5 ,(lte)b6 ,(lte)b7 ,(lte)b8 
+    ,(lte)1 ,(lte)a1
+    ,(lte)6 ,(lte)c1 ,(lte)d1 ,(lte)e1 ,(lte)f1 ,(lte)g1 ,(lte)h1
+    ,(lte)7 ,(lte)b2 ,(lte)b3 ,(lte)b4 ,(lte)b5 ,(lte)b6 ,(lte)b7 ,(lte)b8
 };
 static const lte rook_lookup_b2[] =
 {
 (lte)4
-    ,(lte)1 ,(lte)a2 
-    ,(lte)6 ,(lte)c2 ,(lte)d2 ,(lte)e2 ,(lte)f2 ,(lte)g2 ,(lte)h2 
-    ,(lte)1 ,(lte)b1 
-    ,(lte)6 ,(lte)b3 ,(lte)b4 ,(lte)b5 ,(lte)b6 ,(lte)b7 ,(lte)b8 
+    ,(lte)1 ,(lte)a2
+    ,(lte)6 ,(lte)c2 ,(lte)d2 ,(lte)e2 ,(lte)f2 ,(lte)g2 ,(lte)h2
+    ,(lte)1 ,(lte)b1
+    ,(lte)6 ,(lte)b3 ,(lte)b4 ,(lte)b5 ,(lte)b6 ,(lte)b7 ,(lte)b8
 };
 static const lte rook_lookup_b3[] =
 {
 (lte)4
-    ,(lte)1 ,(lte)a3 
-    ,(lte)6 ,(lte)c3 ,(lte)d3 ,(lte)e3 ,(lte)f3 ,(lte)g3 ,(lte)h3 
-    ,(lte)2 ,(lte)b2 ,(lte)b1 
-    ,(lte)5 ,(lte)b4 ,(lte)b5 ,(lte)b6 ,(lte)b7 ,(lte)b8 
+    ,(lte)1 ,(lte)a3
+    ,(lte)6 ,(lte)c3 ,(lte)d3 ,(lte)e3 ,(lte)f3 ,(lte)g3 ,(lte)h3
+    ,(lte)2 ,(lte)b2 ,(lte)b1
+    ,(lte)5 ,(lte)b4 ,(lte)b5 ,(lte)b6 ,(lte)b7 ,(lte)b8
 };
 static const lte rook_lookup_b4[] =
 {
 (lte)4
-    ,(lte)1 ,(lte)a4 
-    ,(lte)6 ,(lte)c4 ,(lte)d4 ,(lte)e4 ,(lte)f4 ,(lte)g4 ,(lte)h4 
-    ,(lte)3 ,(lte)b3 ,(lte)b2 ,(lte)b1 
-    ,(lte)4 ,(lte)b5 ,(lte)b6 ,(lte)b7 ,(lte)b8 
+    ,(lte)1 ,(lte)a4
+    ,(lte)6 ,(lte)c4 ,(lte)d4 ,(lte)e4 ,(lte)f4 ,(lte)g4 ,(lte)h4
+    ,(lte)3 ,(lte)b3 ,(lte)b2 ,(lte)b1
+    ,(lte)4 ,(lte)b5 ,(lte)b6 ,(lte)b7 ,(lte)b8
 };
 static const lte rook_lookup_b5[] =
 {
 (lte)4
-    ,(lte)1 ,(lte)a5 
-    ,(lte)6 ,(lte)c5 ,(lte)d5 ,(lte)e5 ,(lte)f5 ,(lte)g5 ,(lte)h5 
-    ,(lte)4 ,(lte)b4 ,(lte)b3 ,(lte)b2 ,(lte)b1 
-    ,(lte)3 ,(lte)b6 ,(lte)b7 ,(lte)b8 
+    ,(lte)1 ,(lte)a5
+    ,(lte)6 ,(lte)c5 ,(lte)d5 ,(lte)e5 ,(lte)f5 ,(lte)g5 ,(lte)h5
+    ,(lte)4 ,(lte)b4 ,(lte)b3 ,(lte)b2 ,(lte)b1
+    ,(lte)3 ,(lte)b6 ,(lte)b7 ,(lte)b8
 };
 static const lte rook_lookup_b6[] =
 {
 (lte)4
-    ,(lte)1 ,(lte)a6 
-    ,(lte)6 ,(lte)c6 ,(lte)d6 ,(lte)e6 ,(lte)f6 ,(lte)g6 ,(lte)h6 
-    ,(lte)5 ,(lte)b5 ,(lte)b4 ,(lte)b3 ,(lte)b2 ,(lte)b1 
-    ,(lte)2 ,(lte)b7 ,(lte)b8 
+    ,(lte)1 ,(lte)a6
+    ,(lte)6 ,(lte)c6 ,(lte)d6 ,(lte)e6 ,(lte)f6 ,(lte)g6 ,(lte)h6
+    ,(lte)5 ,(lte)b5 ,(lte)b4 ,(lte)b3 ,(lte)b2 ,(lte)b1
+    ,(lte)2 ,(lte)b7 ,(lte)b8
 };
 static const lte rook_lookup_b7[] =
 {
 (lte)4
-    ,(lte)1 ,(lte)a7 
-    ,(lte)6 ,(lte)c7 ,(lte)d7 ,(lte)e7 ,(lte)f7 ,(lte)g7 ,(lte)h7 
-    ,(lte)6 ,(lte)b6 ,(lte)b5 ,(lte)b4 ,(lte)b3 ,(lte)b2 ,(lte)b1 
-    ,(lte)1 ,(lte)b8 
+    ,(lte)1 ,(lte)a7
+    ,(lte)6 ,(lte)c7 ,(lte)d7 ,(lte)e7 ,(lte)f7 ,(lte)g7 ,(lte)h7
+    ,(lte)6 ,(lte)b6 ,(lte)b5 ,(lte)b4 ,(lte)b3 ,(lte)b2 ,(lte)b1
+    ,(lte)1 ,(lte)b8
 };
 static const lte rook_lookup_b8[] =
 {
 (lte)3
-    ,(lte)1 ,(lte)a8 
-    ,(lte)6 ,(lte)c8 ,(lte)d8 ,(lte)e8 ,(lte)f8 ,(lte)g8 ,(lte)h8 
-    ,(lte)7 ,(lte)b7 ,(lte)b6 ,(lte)b5 ,(lte)b4 ,(lte)b3 ,(lte)b2 ,(lte)b1 
+    ,(lte)1 ,(lte)a8
+    ,(lte)6 ,(lte)c8 ,(lte)d8 ,(lte)e8 ,(lte)f8 ,(lte)g8 ,(lte)h8
+    ,(lte)7 ,(lte)b7 ,(lte)b6 ,(lte)b5 ,(lte)b4 ,(lte)b3 ,(lte)b2 ,(lte)b1
 };
 static const lte rook_lookup_c1[] =
 {
 (lte)3
-    ,(lte)2 ,(lte)b1 ,(lte)a1 
-    ,(lte)5 ,(lte)d1 ,(lte)e1 ,(lte)f1 ,(lte)g1 ,(lte)h1 
-    ,(lte)7 ,(lte)c2 ,(lte)c3 ,(lte)c4 ,(lte)c5 ,(lte)c6 ,(lte)c7 ,(lte)c8 
+    ,(lte)2 ,(lte)b1 ,(lte)a1
+    ,(lte)5 ,(lte)d1 ,(lte)e1 ,(lte)f1 ,(lte)g1 ,(lte)h1
+    ,(lte)7 ,(lte)c2 ,(lte)c3 ,(lte)c4 ,(lte)c5 ,(lte)c6 ,(lte)c7 ,(lte)c8
 };
 static const lte rook_lookup_c2[] =
 {
 (lte)4
-    ,(lte)2 ,(lte)b2 ,(lte)a2 
-    ,(lte)5 ,(lte)d2 ,(lte)e2 ,(lte)f2 ,(lte)g2 ,(lte)h2 
-    ,(lte)1 ,(lte)c1 
-    ,(lte)6 ,(lte)c3 ,(lte)c4 ,(lte)c5 ,(lte)c6 ,(lte)c7 ,(lte)c8 
+    ,(lte)2 ,(lte)b2 ,(lte)a2
+    ,(lte)5 ,(lte)d2 ,(lte)e2 ,(lte)f2 ,(lte)g2 ,(lte)h2
+    ,(lte)1 ,(lte)c1
+    ,(lte)6 ,(lte)c3 ,(lte)c4 ,(lte)c5 ,(lte)c6 ,(lte)c7 ,(lte)c8
 };
 static const lte rook_lookup_c3[] =
 {
 (lte)4
-    ,(lte)2 ,(lte)b3 ,(lte)a3 
-    ,(lte)5 ,(lte)d3 ,(lte)e3 ,(lte)f3 ,(lte)g3 ,(lte)h3 
-    ,(lte)2 ,(lte)c2 ,(lte)c1 
-    ,(lte)5 ,(lte)c4 ,(lte)c5 ,(lte)c6 ,(lte)c7 ,(lte)c8 
+    ,(lte)2 ,(lte)b3 ,(lte)a3
+    ,(lte)5 ,(lte)d3 ,(lte)e3 ,(lte)f3 ,(lte)g3 ,(lte)h3
+    ,(lte)2 ,(lte)c2 ,(lte)c1
+    ,(lte)5 ,(lte)c4 ,(lte)c5 ,(lte)c6 ,(lte)c7 ,(lte)c8
 };
 static const lte rook_lookup_c4[] =
 {
 (lte)4
-    ,(lte)2 ,(lte)b4 ,(lte)a4 
-    ,(lte)5 ,(lte)d4 ,(lte)e4 ,(lte)f4 ,(lte)g4 ,(lte)h4 
-    ,(lte)3 ,(lte)c3 ,(lte)c2 ,(lte)c1 
-    ,(lte)4 ,(lte)c5 ,(lte)c6 ,(lte)c7 ,(lte)c8 
+    ,(lte)2 ,(lte)b4 ,(lte)a4
+    ,(lte)5 ,(lte)d4 ,(lte)e4 ,(lte)f4 ,(lte)g4 ,(lte)h4
+    ,(lte)3 ,(lte)c3 ,(lte)c2 ,(lte)c1
+    ,(lte)4 ,(lte)c5 ,(lte)c6 ,(lte)c7 ,(lte)c8
 };
 static const lte rook_lookup_c5[] =
 {
 (lte)4
-    ,(lte)2 ,(lte)b5 ,(lte)a5 
-    ,(lte)5 ,(lte)d5 ,(lte)e5 ,(lte)f5 ,(lte)g5 ,(lte)h5 
-    ,(lte)4 ,(lte)c4 ,(lte)c3 ,(lte)c2 ,(lte)c1 
-    ,(lte)3 ,(lte)c6 ,(lte)c7 ,(lte)c8 
+    ,(lte)2 ,(lte)b5 ,(lte)a5
+    ,(lte)5 ,(lte)d5 ,(lte)e5 ,(lte)f5 ,(lte)g5 ,(lte)h5
+    ,(lte)4 ,(lte)c4 ,(lte)c3 ,(lte)c2 ,(lte)c1
+    ,(lte)3 ,(lte)c6 ,(lte)c7 ,(lte)c8
 };
 static const lte rook_lookup_c6[] =
 {
 (lte)4
-    ,(lte)2 ,(lte)b6 ,(lte)a6 
-    ,(lte)5 ,(lte)d6 ,(lte)e6 ,(lte)f6 ,(lte)g6 ,(lte)h6 
-    ,(lte)5 ,(lte)c5 ,(lte)c4 ,(lte)c3 ,(lte)c2 ,(lte)c1 
-    ,(lte)2 ,(lte)c7 ,(lte)c8 
+    ,(lte)2 ,(lte)b6 ,(lte)a6
+    ,(lte)5 ,(lte)d6 ,(lte)e6 ,(lte)f6 ,(lte)g6 ,(lte)h6
+    ,(lte)5 ,(lte)c5 ,(lte)c4 ,(lte)c3 ,(lte)c2 ,(lte)c1
+    ,(lte)2 ,(lte)c7 ,(lte)c8
 };
 static const lte rook_lookup_c7[] =
 {
 (lte)4
-    ,(lte)2 ,(lte)b7 ,(lte)a7 
-    ,(lte)5 ,(lte)d7 ,(lte)e7 ,(lte)f7 ,(lte)g7 ,(lte)h7 
-    ,(lte)6 ,(lte)c6 ,(lte)c5 ,(lte)c4 ,(lte)c3 ,(lte)c2 ,(lte)c1 
-    ,(lte)1 ,(lte)c8 
+    ,(lte)2 ,(lte)b7 ,(lte)a7
+    ,(lte)5 ,(lte)d7 ,(lte)e7 ,(lte)f7 ,(lte)g7 ,(lte)h7
+    ,(lte)6 ,(lte)c6 ,(lte)c5 ,(lte)c4 ,(lte)c3 ,(lte)c2 ,(lte)c1
+    ,(lte)1 ,(lte)c8
 };
 static const lte rook_lookup_c8[] =
 {
 (lte)3
-    ,(lte)2 ,(lte)b8 ,(lte)a8 
-    ,(lte)5 ,(lte)d8 ,(lte)e8 ,(lte)f8 ,(lte)g8 ,(lte)h8 
-    ,(lte)7 ,(lte)c7 ,(lte)c6 ,(lte)c5 ,(lte)c4 ,(lte)c3 ,(lte)c2 ,(lte)c1 
+    ,(lte)2 ,(lte)b8 ,(lte)a8
+    ,(lte)5 ,(lte)d8 ,(lte)e8 ,(lte)f8 ,(lte)g8 ,(lte)h8
+    ,(lte)7 ,(lte)c7 ,(lte)c6 ,(lte)c5 ,(lte)c4 ,(lte)c3 ,(lte)c2 ,(lte)c1
 };
 static const lte rook_lookup_d1[] =
 {
 (lte)3
-    ,(lte)3 ,(lte)c1 ,(lte)b1 ,(lte)a1 
-    ,(lte)4 ,(lte)e1 ,(lte)f1 ,(lte)g1 ,(lte)h1 
-    ,(lte)7 ,(lte)d2 ,(lte)d3 ,(lte)d4 ,(lte)d5 ,(lte)d6 ,(lte)d7 ,(lte)d8 
+    ,(lte)3 ,(lte)c1 ,(lte)b1 ,(lte)a1
+    ,(lte)4 ,(lte)e1 ,(lte)f1 ,(lte)g1 ,(lte)h1
+    ,(lte)7 ,(lte)d2 ,(lte)d3 ,(lte)d4 ,(lte)d5 ,(lte)d6 ,(lte)d7 ,(lte)d8
 };
 static const lte rook_lookup_d2[] =
 {
 (lte)4
-    ,(lte)3 ,(lte)c2 ,(lte)b2 ,(lte)a2 
-    ,(lte)4 ,(lte)e2 ,(lte)f2 ,(lte)g2 ,(lte)h2 
-    ,(lte)1 ,(lte)d1 
-    ,(lte)6 ,(lte)d3 ,(lte)d4 ,(lte)d5 ,(lte)d6 ,(lte)d7 ,(lte)d8 
+    ,(lte)3 ,(lte)c2 ,(lte)b2 ,(lte)a2
+    ,(lte)4 ,(lte)e2 ,(lte)f2 ,(lte)g2 ,(lte)h2
+    ,(lte)1 ,(lte)d1
+    ,(lte)6 ,(lte)d3 ,(lte)d4 ,(lte)d5 ,(lte)d6 ,(lte)d7 ,(lte)d8
 };
 static const lte rook_lookup_d3[] =
 {
 (lte)4
-    ,(lte)3 ,(lte)c3 ,(lte)b3 ,(lte)a3 
-    ,(lte)4 ,(lte)e3 ,(lte)f3 ,(lte)g3 ,(lte)h3 
-    ,(lte)2 ,(lte)d2 ,(lte)d1 
-    ,(lte)5 ,(lte)d4 ,(lte)d5 ,(lte)d6 ,(lte)d7 ,(lte)d8 
+    ,(lte)3 ,(lte)c3 ,(lte)b3 ,(lte)a3
+    ,(lte)4 ,(lte)e3 ,(lte)f3 ,(lte)g3 ,(lte)h3
+    ,(lte)2 ,(lte)d2 ,(lte)d1
+    ,(lte)5 ,(lte)d4 ,(lte)d5 ,(lte)d6 ,(lte)d7 ,(lte)d8
 };
 static const lte rook_lookup_d4[] =
 {
 (lte)4
-    ,(lte)3 ,(lte)c4 ,(lte)b4 ,(lte)a4 
-    ,(lte)4 ,(lte)e4 ,(lte)f4 ,(lte)g4 ,(lte)h4 
-    ,(lte)3 ,(lte)d3 ,(lte)d2 ,(lte)d1 
-    ,(lte)4 ,(lte)d5 ,(lte)d6 ,(lte)d7 ,(lte)d8 
+    ,(lte)3 ,(lte)c4 ,(lte)b4 ,(lte)a4
+    ,(lte)4 ,(lte)e4 ,(lte)f4 ,(lte)g4 ,(lte)h4
+    ,(lte)3 ,(lte)d3 ,(lte)d2 ,(lte)d1
+    ,(lte)4 ,(lte)d5 ,(lte)d6 ,(lte)d7 ,(lte)d8
 };
 static const lte rook_lookup_d5[] =
 {
 (lte)4
-    ,(lte)3 ,(lte)c5 ,(lte)b5 ,(lte)a5 
-    ,(lte)4 ,(lte)e5 ,(lte)f5 ,(lte)g5 ,(lte)h5 
-    ,(lte)4 ,(lte)d4 ,(lte)d3 ,(lte)d2 ,(lte)d1 
-    ,(lte)3 ,(lte)d6 ,(lte)d7 ,(lte)d8 
+    ,(lte)3 ,(lte)c5 ,(lte)b5 ,(lte)a5
+    ,(lte)4 ,(lte)e5 ,(lte)f5 ,(lte)g5 ,(lte)h5
+    ,(lte)4 ,(lte)d4 ,(lte)d3 ,(lte)d2 ,(lte)d1
+    ,(lte)3 ,(lte)d6 ,(lte)d7 ,(lte)d8
 };
 static const lte rook_lookup_d6[] =
 {
 (lte)4
-    ,(lte)3 ,(lte)c6 ,(lte)b6 ,(lte)a6 
-    ,(lte)4 ,(lte)e6 ,(lte)f6 ,(lte)g6 ,(lte)h6 
-    ,(lte)5 ,(lte)d5 ,(lte)d4 ,(lte)d3 ,(lte)d2 ,(lte)d1 
-    ,(lte)2 ,(lte)d7 ,(lte)d8 
+    ,(lte)3 ,(lte)c6 ,(lte)b6 ,(lte)a6
+    ,(lte)4 ,(lte)e6 ,(lte)f6 ,(lte)g6 ,(lte)h6
+    ,(lte)5 ,(lte)d5 ,(lte)d4 ,(lte)d3 ,(lte)d2 ,(lte)d1
+    ,(lte)2 ,(lte)d7 ,(lte)d8
 };
 static const lte rook_lookup_d7[] =
 {
 (lte)4
-    ,(lte)3 ,(lte)c7 ,(lte)b7 ,(lte)a7 
-    ,(lte)4 ,(lte)e7 ,(lte)f7 ,(lte)g7 ,(lte)h7 
-    ,(lte)6 ,(lte)d6 ,(lte)d5 ,(lte)d4 ,(lte)d3 ,(lte)d2 ,(lte)d1 
-    ,(lte)1 ,(lte)d8 
+    ,(lte)3 ,(lte)c7 ,(lte)b7 ,(lte)a7
+    ,(lte)4 ,(lte)e7 ,(lte)f7 ,(lte)g7 ,(lte)h7
+    ,(lte)6 ,(lte)d6 ,(lte)d5 ,(lte)d4 ,(lte)d3 ,(lte)d2 ,(lte)d1
+    ,(lte)1 ,(lte)d8
 };
 static const lte rook_lookup_d8[] =
 {
 (lte)3
-    ,(lte)3 ,(lte)c8 ,(lte)b8 ,(lte)a8 
-    ,(lte)4 ,(lte)e8 ,(lte)f8 ,(lte)g8 ,(lte)h8 
-    ,(lte)7 ,(lte)d7 ,(lte)d6 ,(lte)d5 ,(lte)d4 ,(lte)d3 ,(lte)d2 ,(lte)d1 
+    ,(lte)3 ,(lte)c8 ,(lte)b8 ,(lte)a8
+    ,(lte)4 ,(lte)e8 ,(lte)f8 ,(lte)g8 ,(lte)h8
+    ,(lte)7 ,(lte)d7 ,(lte)d6 ,(lte)d5 ,(lte)d4 ,(lte)d3 ,(lte)d2 ,(lte)d1
 };
 static const lte rook_lookup_e1[] =
 {
 (lte)3
-    ,(lte)4 ,(lte)d1 ,(lte)c1 ,(lte)b1 ,(lte)a1 
-    ,(lte)3 ,(lte)f1 ,(lte)g1 ,(lte)h1 
-    ,(lte)7 ,(lte)e2 ,(lte)e3 ,(lte)e4 ,(lte)e5 ,(lte)e6 ,(lte)e7 ,(lte)e8 
+    ,(lte)4 ,(lte)d1 ,(lte)c1 ,(lte)b1 ,(lte)a1
+    ,(lte)3 ,(lte)f1 ,(lte)g1 ,(lte)h1
+    ,(lte)7 ,(lte)e2 ,(lte)e3 ,(lte)e4 ,(lte)e5 ,(lte)e6 ,(lte)e7 ,(lte)e8
 };
 static const lte rook_lookup_e2[] =
 {
 (lte)4
-    ,(lte)4 ,(lte)d2 ,(lte)c2 ,(lte)b2 ,(lte)a2 
-    ,(lte)3 ,(lte)f2 ,(lte)g2 ,(lte)h2 
-    ,(lte)1 ,(lte)e1 
-    ,(lte)6 ,(lte)e3 ,(lte)e4 ,(lte)e5 ,(lte)e6 ,(lte)e7 ,(lte)e8 
+    ,(lte)4 ,(lte)d2 ,(lte)c2 ,(lte)b2 ,(lte)a2
+    ,(lte)3 ,(lte)f2 ,(lte)g2 ,(lte)h2
+    ,(lte)1 ,(lte)e1
+    ,(lte)6 ,(lte)e3 ,(lte)e4 ,(lte)e5 ,(lte)e6 ,(lte)e7 ,(lte)e8
 };
 static const lte rook_lookup_e3[] =
 {
 (lte)4
-    ,(lte)4 ,(lte)d3 ,(lte)c3 ,(lte)b3 ,(lte)a3 
-    ,(lte)3 ,(lte)f3 ,(lte)g3 ,(lte)h3 
-    ,(lte)2 ,(lte)e2 ,(lte)e1 
-    ,(lte)5 ,(lte)e4 ,(lte)e5 ,(lte)e6 ,(lte)e7 ,(lte)e8 
+    ,(lte)4 ,(lte)d3 ,(lte)c3 ,(lte)b3 ,(lte)a3
+    ,(lte)3 ,(lte)f3 ,(lte)g3 ,(lte)h3
+    ,(lte)2 ,(lte)e2 ,(lte)e1
+    ,(lte)5 ,(lte)e4 ,(lte)e5 ,(lte)e6 ,(lte)e7 ,(lte)e8
 };
 static const lte rook_lookup_e4[] =
 {
 (lte)4
-    ,(lte)4 ,(lte)d4 ,(lte)c4 ,(lte)b4 ,(lte)a4 
-    ,(lte)3 ,(lte)f4 ,(lte)g4 ,(lte)h4 
-    ,(lte)3 ,(lte)e3 ,(lte)e2 ,(lte)e1 
-    ,(lte)4 ,(lte)e5 ,(lte)e6 ,(lte)e7 ,(lte)e8 
+    ,(lte)4 ,(lte)d4 ,(lte)c4 ,(lte)b4 ,(lte)a4
+    ,(lte)3 ,(lte)f4 ,(lte)g4 ,(lte)h4
+    ,(lte)3 ,(lte)e3 ,(lte)e2 ,(lte)e1
+    ,(lte)4 ,(lte)e5 ,(lte)e6 ,(lte)e7 ,(lte)e8
 };
 static const lte rook_lookup_e5[] =
 {
 (lte)4
-    ,(lte)4 ,(lte)d5 ,(lte)c5 ,(lte)b5 ,(lte)a5 
-    ,(lte)3 ,(lte)f5 ,(lte)g5 ,(lte)h5 
-    ,(lte)4 ,(lte)e4 ,(lte)e3 ,(lte)e2 ,(lte)e1 
-    ,(lte)3 ,(lte)e6 ,(lte)e7 ,(lte)e8 
+    ,(lte)4 ,(lte)d5 ,(lte)c5 ,(lte)b5 ,(lte)a5
+    ,(lte)3 ,(lte)f5 ,(lte)g5 ,(lte)h5
+    ,(lte)4 ,(lte)e4 ,(lte)e3 ,(lte)e2 ,(lte)e1
+    ,(lte)3 ,(lte)e6 ,(lte)e7 ,(lte)e8
 };
 static const lte rook_lookup_e6[] =
 {
 (lte)4
-    ,(lte)4 ,(lte)d6 ,(lte)c6 ,(lte)b6 ,(lte)a6 
-    ,(lte)3 ,(lte)f6 ,(lte)g6 ,(lte)h6 
-    ,(lte)5 ,(lte)e5 ,(lte)e4 ,(lte)e3 ,(lte)e2 ,(lte)e1 
-    ,(lte)2 ,(lte)e7 ,(lte)e8 
+    ,(lte)4 ,(lte)d6 ,(lte)c6 ,(lte)b6 ,(lte)a6
+    ,(lte)3 ,(lte)f6 ,(lte)g6 ,(lte)h6
+    ,(lte)5 ,(lte)e5 ,(lte)e4 ,(lte)e3 ,(lte)e2 ,(lte)e1
+    ,(lte)2 ,(lte)e7 ,(lte)e8
 };
 static const lte rook_lookup_e7[] =
 {
 (lte)4
-    ,(lte)4 ,(lte)d7 ,(lte)c7 ,(lte)b7 ,(lte)a7 
-    ,(lte)3 ,(lte)f7 ,(lte)g7 ,(lte)h7 
-    ,(lte)6 ,(lte)e6 ,(lte)e5 ,(lte)e4 ,(lte)e3 ,(lte)e2 ,(lte)e1 
-    ,(lte)1 ,(lte)e8 
+    ,(lte)4 ,(lte)d7 ,(lte)c7 ,(lte)b7 ,(lte)a7
+    ,(lte)3 ,(lte)f7 ,(lte)g7 ,(lte)h7
+    ,(lte)6 ,(lte)e6 ,(lte)e5 ,(lte)e4 ,(lte)e3 ,(lte)e2 ,(lte)e1
+    ,(lte)1 ,(lte)e8
 };
 static const lte rook_lookup_e8[] =
 {
 (lte)3
-    ,(lte)4 ,(lte)d8 ,(lte)c8 ,(lte)b8 ,(lte)a8 
-    ,(lte)3 ,(lte)f8 ,(lte)g8 ,(lte)h8 
-    ,(lte)7 ,(lte)e7 ,(lte)e6 ,(lte)e5 ,(lte)e4 ,(lte)e3 ,(lte)e2 ,(lte)e1 
+    ,(lte)4 ,(lte)d8 ,(lte)c8 ,(lte)b8 ,(lte)a8
+    ,(lte)3 ,(lte)f8 ,(lte)g8 ,(lte)h8
+    ,(lte)7 ,(lte)e7 ,(lte)e6 ,(lte)e5 ,(lte)e4 ,(lte)e3 ,(lte)e2 ,(lte)e1
 };
 static const lte rook_lookup_f1[] =
 {
 (lte)3
-    ,(lte)5 ,(lte)e1 ,(lte)d1 ,(lte)c1 ,(lte)b1 ,(lte)a1 
-    ,(lte)2 ,(lte)g1 ,(lte)h1 
-    ,(lte)7 ,(lte)f2 ,(lte)f3 ,(lte)f4 ,(lte)f5 ,(lte)f6 ,(lte)f7 ,(lte)f8 
+    ,(lte)5 ,(lte)e1 ,(lte)d1 ,(lte)c1 ,(lte)b1 ,(lte)a1
+    ,(lte)2 ,(lte)g1 ,(lte)h1
+    ,(lte)7 ,(lte)f2 ,(lte)f3 ,(lte)f4 ,(lte)f5 ,(lte)f6 ,(lte)f7 ,(lte)f8
 };
 static const lte rook_lookup_f2[] =
 {
 (lte)4
-    ,(lte)5 ,(lte)e2 ,(lte)d2 ,(lte)c2 ,(lte)b2 ,(lte)a2 
-    ,(lte)2 ,(lte)g2 ,(lte)h2 
-    ,(lte)1 ,(lte)f1 
-    ,(lte)6 ,(lte)f3 ,(lte)f4 ,(lte)f5 ,(lte)f6 ,(lte)f7 ,(lte)f8 
+    ,(lte)5 ,(lte)e2 ,(lte)d2 ,(lte)c2 ,(lte)b2 ,(lte)a2
+    ,(lte)2 ,(lte)g2 ,(lte)h2
+    ,(lte)1 ,(lte)f1
+    ,(lte)6 ,(lte)f3 ,(lte)f4 ,(lte)f5 ,(lte)f6 ,(lte)f7 ,(lte)f8
 };
 static const lte rook_lookup_f3[] =
 {
 (lte)4
-    ,(lte)5 ,(lte)e3 ,(lte)d3 ,(lte)c3 ,(lte)b3 ,(lte)a3 
-    ,(lte)2 ,(lte)g3 ,(lte)h3 
-    ,(lte)2 ,(lte)f2 ,(lte)f1 
-    ,(lte)5 ,(lte)f4 ,(lte)f5 ,(lte)f6 ,(lte)f7 ,(lte)f8 
+    ,(lte)5 ,(lte)e3 ,(lte)d3 ,(lte)c3 ,(lte)b3 ,(lte)a3
+    ,(lte)2 ,(lte)g3 ,(lte)h3
+    ,(lte)2 ,(lte)f2 ,(lte)f1
+    ,(lte)5 ,(lte)f4 ,(lte)f5 ,(lte)f6 ,(lte)f7 ,(lte)f8
 };
 static const lte rook_lookup_f4[] =
 {
 (lte)4
-    ,(lte)5 ,(lte)e4 ,(lte)d4 ,(lte)c4 ,(lte)b4 ,(lte)a4 
-    ,(lte)2 ,(lte)g4 ,(lte)h4 
-    ,(lte)3 ,(lte)f3 ,(lte)f2 ,(lte)f1 
-    ,(lte)4 ,(lte)f5 ,(lte)f6 ,(lte)f7 ,(lte)f8 
+    ,(lte)5 ,(lte)e4 ,(lte)d4 ,(lte)c4 ,(lte)b4 ,(lte)a4
+    ,(lte)2 ,(lte)g4 ,(lte)h4
+    ,(lte)3 ,(lte)f3 ,(lte)f2 ,(lte)f1
+    ,(lte)4 ,(lte)f5 ,(lte)f6 ,(lte)f7 ,(lte)f8
 };
 static const lte rook_lookup_f5[] =
 {
 (lte)4
-    ,(lte)5 ,(lte)e5 ,(lte)d5 ,(lte)c5 ,(lte)b5 ,(lte)a5 
-    ,(lte)2 ,(lte)g5 ,(lte)h5 
-    ,(lte)4 ,(lte)f4 ,(lte)f3 ,(lte)f2 ,(lte)f1 
-    ,(lte)3 ,(lte)f6 ,(lte)f7 ,(lte)f8 
+    ,(lte)5 ,(lte)e5 ,(lte)d5 ,(lte)c5 ,(lte)b5 ,(lte)a5
+    ,(lte)2 ,(lte)g5 ,(lte)h5
+    ,(lte)4 ,(lte)f4 ,(lte)f3 ,(lte)f2 ,(lte)f1
+    ,(lte)3 ,(lte)f6 ,(lte)f7 ,(lte)f8
 };
 static const lte rook_lookup_f6[] =
 {
 (lte)4
-    ,(lte)5 ,(lte)e6 ,(lte)d6 ,(lte)c6 ,(lte)b6 ,(lte)a6 
-    ,(lte)2 ,(lte)g6 ,(lte)h6 
-    ,(lte)5 ,(lte)f5 ,(lte)f4 ,(lte)f3 ,(lte)f2 ,(lte)f1 
-    ,(lte)2 ,(lte)f7 ,(lte)f8 
+    ,(lte)5 ,(lte)e6 ,(lte)d6 ,(lte)c6 ,(lte)b6 ,(lte)a6
+    ,(lte)2 ,(lte)g6 ,(lte)h6
+    ,(lte)5 ,(lte)f5 ,(lte)f4 ,(lte)f3 ,(lte)f2 ,(lte)f1
+    ,(lte)2 ,(lte)f7 ,(lte)f8
 };
 static const lte rook_lookup_f7[] =
 {
 (lte)4
-    ,(lte)5 ,(lte)e7 ,(lte)d7 ,(lte)c7 ,(lte)b7 ,(lte)a7 
-    ,(lte)2 ,(lte)g7 ,(lte)h7 
-    ,(lte)6 ,(lte)f6 ,(lte)f5 ,(lte)f4 ,(lte)f3 ,(lte)f2 ,(lte)f1 
-    ,(lte)1 ,(lte)f8 
+    ,(lte)5 ,(lte)e7 ,(lte)d7 ,(lte)c7 ,(lte)b7 ,(lte)a7
+    ,(lte)2 ,(lte)g7 ,(lte)h7
+    ,(lte)6 ,(lte)f6 ,(lte)f5 ,(lte)f4 ,(lte)f3 ,(lte)f2 ,(lte)f1
+    ,(lte)1 ,(lte)f8
 };
 static const lte rook_lookup_f8[] =
 {
 (lte)3
-    ,(lte)5 ,(lte)e8 ,(lte)d8 ,(lte)c8 ,(lte)b8 ,(lte)a8 
-    ,(lte)2 ,(lte)g8 ,(lte)h8 
-    ,(lte)7 ,(lte)f7 ,(lte)f6 ,(lte)f5 ,(lte)f4 ,(lte)f3 ,(lte)f2 ,(lte)f1 
+    ,(lte)5 ,(lte)e8 ,(lte)d8 ,(lte)c8 ,(lte)b8 ,(lte)a8
+    ,(lte)2 ,(lte)g8 ,(lte)h8
+    ,(lte)7 ,(lte)f7 ,(lte)f6 ,(lte)f5 ,(lte)f4 ,(lte)f3 ,(lte)f2 ,(lte)f1
 };
 static const lte rook_lookup_g1[] =
 {
 (lte)3
-    ,(lte)6 ,(lte)f1 ,(lte)e1 ,(lte)d1 ,(lte)c1 ,(lte)b1 ,(lte)a1 
-    ,(lte)1 ,(lte)h1 
-    ,(lte)7 ,(lte)g2 ,(lte)g3 ,(lte)g4 ,(lte)g5 ,(lte)g6 ,(lte)g7 ,(lte)g8 
+    ,(lte)6 ,(lte)f1 ,(lte)e1 ,(lte)d1 ,(lte)c1 ,(lte)b1 ,(lte)a1
+    ,(lte)1 ,(lte)h1
+    ,(lte)7 ,(lte)g2 ,(lte)g3 ,(lte)g4 ,(lte)g5 ,(lte)g6 ,(lte)g7 ,(lte)g8
 };
 static const lte rook_lookup_g2[] =
 {
 (lte)4
-    ,(lte)6 ,(lte)f2 ,(lte)e2 ,(lte)d2 ,(lte)c2 ,(lte)b2 ,(lte)a2 
-    ,(lte)1 ,(lte)h2 
-    ,(lte)1 ,(lte)g1 
-    ,(lte)6 ,(lte)g3 ,(lte)g4 ,(lte)g5 ,(lte)g6 ,(lte)g7 ,(lte)g8 
+    ,(lte)6 ,(lte)f2 ,(lte)e2 ,(lte)d2 ,(lte)c2 ,(lte)b2 ,(lte)a2
+    ,(lte)1 ,(lte)h2
+    ,(lte)1 ,(lte)g1
+    ,(lte)6 ,(lte)g3 ,(lte)g4 ,(lte)g5 ,(lte)g6 ,(lte)g7 ,(lte)g8
 };
 static const lte rook_lookup_g3[] =
 {
 (lte)4
-    ,(lte)6 ,(lte)f3 ,(lte)e3 ,(lte)d3 ,(lte)c3 ,(lte)b3 ,(lte)a3 
-    ,(lte)1 ,(lte)h3 
-    ,(lte)2 ,(lte)g2 ,(lte)g1 
-    ,(lte)5 ,(lte)g4 ,(lte)g5 ,(lte)g6 ,(lte)g7 ,(lte)g8 
+    ,(lte)6 ,(lte)f3 ,(lte)e3 ,(lte)d3 ,(lte)c3 ,(lte)b3 ,(lte)a3
+    ,(lte)1 ,(lte)h3
+    ,(lte)2 ,(lte)g2 ,(lte)g1
+    ,(lte)5 ,(lte)g4 ,(lte)g5 ,(lte)g6 ,(lte)g7 ,(lte)g8
 };
 static const lte rook_lookup_g4[] =
 {
 (lte)4
-    ,(lte)6 ,(lte)f4 ,(lte)e4 ,(lte)d4 ,(lte)c4 ,(lte)b4 ,(lte)a4 
-    ,(lte)1 ,(lte)h4 
-    ,(lte)3 ,(lte)g3 ,(lte)g2 ,(lte)g1 
-    ,(lte)4 ,(lte)g5 ,(lte)g6 ,(lte)g7 ,(lte)g8 
+    ,(lte)6 ,(lte)f4 ,(lte)e4 ,(lte)d4 ,(lte)c4 ,(lte)b4 ,(lte)a4
+    ,(lte)1 ,(lte)h4
+    ,(lte)3 ,(lte)g3 ,(lte)g2 ,(lte)g1
+    ,(lte)4 ,(lte)g5 ,(lte)g6 ,(lte)g7 ,(lte)g8
 };
 static const lte rook_lookup_g5[] =
 {
 (lte)4
-    ,(lte)6 ,(lte)f5 ,(lte)e5 ,(lte)d5 ,(lte)c5 ,(lte)b5 ,(lte)a5 
-    ,(lte)1 ,(lte)h5 
-    ,(lte)4 ,(lte)g4 ,(lte)g3 ,(lte)g2 ,(lte)g1 
-    ,(lte)3 ,(lte)g6 ,(lte)g7 ,(lte)g8 
+    ,(lte)6 ,(lte)f5 ,(lte)e5 ,(lte)d5 ,(lte)c5 ,(lte)b5 ,(lte)a5
+    ,(lte)1 ,(lte)h5
+    ,(lte)4 ,(lte)g4 ,(lte)g3 ,(lte)g2 ,(lte)g1
+    ,(lte)3 ,(lte)g6 ,(lte)g7 ,(lte)g8
 };
 static const lte rook_lookup_g6[] =
 {
 (lte)4
-    ,(lte)6 ,(lte)f6 ,(lte)e6 ,(lte)d6 ,(lte)c6 ,(lte)b6 ,(lte)a6 
-    ,(lte)1 ,(lte)h6 
-    ,(lte)5 ,(lte)g5 ,(lte)g4 ,(lte)g3 ,(lte)g2 ,(lte)g1 
-    ,(lte)2 ,(lte)g7 ,(lte)g8 
+    ,(lte)6 ,(lte)f6 ,(lte)e6 ,(lte)d6 ,(lte)c6 ,(lte)b6 ,(lte)a6
+    ,(lte)1 ,(lte)h6
+    ,(lte)5 ,(lte)g5 ,(lte)g4 ,(lte)g3 ,(lte)g2 ,(lte)g1
+    ,(lte)2 ,(lte)g7 ,(lte)g8
 };
 static const lte rook_lookup_g7[] =
 {
 (lte)4
-    ,(lte)6 ,(lte)f7 ,(lte)e7 ,(lte)d7 ,(lte)c7 ,(lte)b7 ,(lte)a7 
-    ,(lte)1 ,(lte)h7 
-    ,(lte)6 ,(lte)g6 ,(lte)g5 ,(lte)g4 ,(lte)g3 ,(lte)g2 ,(lte)g1 
-    ,(lte)1 ,(lte)g8 
+    ,(lte)6 ,(lte)f7 ,(lte)e7 ,(lte)d7 ,(lte)c7 ,(lte)b7 ,(lte)a7
+    ,(lte)1 ,(lte)h7
+    ,(lte)6 ,(lte)g6 ,(lte)g5 ,(lte)g4 ,(lte)g3 ,(lte)g2 ,(lte)g1
+    ,(lte)1 ,(lte)g8
 };
 static const lte rook_lookup_g8[] =
 {
 (lte)3
-    ,(lte)6 ,(lte)f8 ,(lte)e8 ,(lte)d8 ,(lte)c8 ,(lte)b8 ,(lte)a8 
-    ,(lte)1 ,(lte)h8 
-    ,(lte)7 ,(lte)g7 ,(lte)g6 ,(lte)g5 ,(lte)g4 ,(lte)g3 ,(lte)g2 ,(lte)g1 
+    ,(lte)6 ,(lte)f8 ,(lte)e8 ,(lte)d8 ,(lte)c8 ,(lte)b8 ,(lte)a8
+    ,(lte)1 ,(lte)h8
+    ,(lte)7 ,(lte)g7 ,(lte)g6 ,(lte)g5 ,(lte)g4 ,(lte)g3 ,(lte)g2 ,(lte)g1
 };
 static const lte rook_lookup_h1[] =
 {
 (lte)2
-    ,(lte)7 ,(lte)g1 ,(lte)f1 ,(lte)e1 ,(lte)d1 ,(lte)c1 ,(lte)b1 ,(lte)a1 
-    ,(lte)7 ,(lte)h2 ,(lte)h3 ,(lte)h4 ,(lte)h5 ,(lte)h6 ,(lte)h7 ,(lte)h8 
+    ,(lte)7 ,(lte)g1 ,(lte)f1 ,(lte)e1 ,(lte)d1 ,(lte)c1 ,(lte)b1 ,(lte)a1
+    ,(lte)7 ,(lte)h2 ,(lte)h3 ,(lte)h4 ,(lte)h5 ,(lte)h6 ,(lte)h7 ,(lte)h8
 };
 static const lte rook_lookup_h2[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)g2 ,(lte)f2 ,(lte)e2 ,(lte)d2 ,(lte)c2 ,(lte)b2 ,(lte)a2 
-    ,(lte)1 ,(lte)h1 
-    ,(lte)6 ,(lte)h3 ,(lte)h4 ,(lte)h5 ,(lte)h6 ,(lte)h7 ,(lte)h8 
+    ,(lte)7 ,(lte)g2 ,(lte)f2 ,(lte)e2 ,(lte)d2 ,(lte)c2 ,(lte)b2 ,(lte)a2
+    ,(lte)1 ,(lte)h1
+    ,(lte)6 ,(lte)h3 ,(lte)h4 ,(lte)h5 ,(lte)h6 ,(lte)h7 ,(lte)h8
 };
 static const lte rook_lookup_h3[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)g3 ,(lte)f3 ,(lte)e3 ,(lte)d3 ,(lte)c3 ,(lte)b3 ,(lte)a3 
-    ,(lte)2 ,(lte)h2 ,(lte)h1 
-    ,(lte)5 ,(lte)h4 ,(lte)h5 ,(lte)h6 ,(lte)h7 ,(lte)h8 
+    ,(lte)7 ,(lte)g3 ,(lte)f3 ,(lte)e3 ,(lte)d3 ,(lte)c3 ,(lte)b3 ,(lte)a3
+    ,(lte)2 ,(lte)h2 ,(lte)h1
+    ,(lte)5 ,(lte)h4 ,(lte)h5 ,(lte)h6 ,(lte)h7 ,(lte)h8
 };
 static const lte rook_lookup_h4[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)g4 ,(lte)f4 ,(lte)e4 ,(lte)d4 ,(lte)c4 ,(lte)b4 ,(lte)a4 
-    ,(lte)3 ,(lte)h3 ,(lte)h2 ,(lte)h1 
-    ,(lte)4 ,(lte)h5 ,(lte)h6 ,(lte)h7 ,(lte)h8 
+    ,(lte)7 ,(lte)g4 ,(lte)f4 ,(lte)e4 ,(lte)d4 ,(lte)c4 ,(lte)b4 ,(lte)a4
+    ,(lte)3 ,(lte)h3 ,(lte)h2 ,(lte)h1
+    ,(lte)4 ,(lte)h5 ,(lte)h6 ,(lte)h7 ,(lte)h8
 };
 static const lte rook_lookup_h5[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)g5 ,(lte)f5 ,(lte)e5 ,(lte)d5 ,(lte)c5 ,(lte)b5 ,(lte)a5 
-    ,(lte)4 ,(lte)h4 ,(lte)h3 ,(lte)h2 ,(lte)h1 
-    ,(lte)3 ,(lte)h6 ,(lte)h7 ,(lte)h8 
+    ,(lte)7 ,(lte)g5 ,(lte)f5 ,(lte)e5 ,(lte)d5 ,(lte)c5 ,(lte)b5 ,(lte)a5
+    ,(lte)4 ,(lte)h4 ,(lte)h3 ,(lte)h2 ,(lte)h1
+    ,(lte)3 ,(lte)h6 ,(lte)h7 ,(lte)h8
 };
 static const lte rook_lookup_h6[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)g6 ,(lte)f6 ,(lte)e6 ,(lte)d6 ,(lte)c6 ,(lte)b6 ,(lte)a6 
-    ,(lte)5 ,(lte)h5 ,(lte)h4 ,(lte)h3 ,(lte)h2 ,(lte)h1 
-    ,(lte)2 ,(lte)h7 ,(lte)h8 
+    ,(lte)7 ,(lte)g6 ,(lte)f6 ,(lte)e6 ,(lte)d6 ,(lte)c6 ,(lte)b6 ,(lte)a6
+    ,(lte)5 ,(lte)h5 ,(lte)h4 ,(lte)h3 ,(lte)h2 ,(lte)h1
+    ,(lte)2 ,(lte)h7 ,(lte)h8
 };
 static const lte rook_lookup_h7[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)g7 ,(lte)f7 ,(lte)e7 ,(lte)d7 ,(lte)c7 ,(lte)b7 ,(lte)a7 
-    ,(lte)6 ,(lte)h6 ,(lte)h5 ,(lte)h4 ,(lte)h3 ,(lte)h2 ,(lte)h1 
-    ,(lte)1 ,(lte)h8 
+    ,(lte)7 ,(lte)g7 ,(lte)f7 ,(lte)e7 ,(lte)d7 ,(lte)c7 ,(lte)b7 ,(lte)a7
+    ,(lte)6 ,(lte)h6 ,(lte)h5 ,(lte)h4 ,(lte)h3 ,(lte)h2 ,(lte)h1
+    ,(lte)1 ,(lte)h8
 };
 static const lte rook_lookup_h8[] =
 {
 (lte)2
-    ,(lte)7 ,(lte)g8 ,(lte)f8 ,(lte)e8 ,(lte)d8 ,(lte)c8 ,(lte)b8 ,(lte)a8 
-    ,(lte)7 ,(lte)h7 ,(lte)h6 ,(lte)h5 ,(lte)h4 ,(lte)h3 ,(lte)h2 ,(lte)h1 
+    ,(lte)7 ,(lte)g8 ,(lte)f8 ,(lte)e8 ,(lte)d8 ,(lte)c8 ,(lte)b8 ,(lte)a8
+    ,(lte)7 ,(lte)h7 ,(lte)h6 ,(lte)h5 ,(lte)h4 ,(lte)h3 ,(lte)h2 ,(lte)h1
 };
 
 // rook_lookup
@@ -9667,454 +8526,454 @@ const lte *rook_lookup[] =
 static const lte bishop_lookup_a1[] =
 {
 (lte)1
-    ,(lte)7 ,(lte)b2 ,(lte)c3 ,(lte)d4 ,(lte)e5 ,(lte)f6 ,(lte)g7 ,(lte)h8 
+    ,(lte)7 ,(lte)b2 ,(lte)c3 ,(lte)d4 ,(lte)e5 ,(lte)f6 ,(lte)g7 ,(lte)h8
 };
 static const lte bishop_lookup_a2[] =
 {
 (lte)2
-    ,(lte)6 ,(lte)b3 ,(lte)c4 ,(lte)d5 ,(lte)e6 ,(lte)f7 ,(lte)g8 
-    ,(lte)1 ,(lte)b1 
+    ,(lte)6 ,(lte)b3 ,(lte)c4 ,(lte)d5 ,(lte)e6 ,(lte)f7 ,(lte)g8
+    ,(lte)1 ,(lte)b1
 };
 static const lte bishop_lookup_a3[] =
 {
 (lte)2
-    ,(lte)5 ,(lte)b4 ,(lte)c5 ,(lte)d6 ,(lte)e7 ,(lte)f8 
-    ,(lte)2 ,(lte)b2 ,(lte)c1 
+    ,(lte)5 ,(lte)b4 ,(lte)c5 ,(lte)d6 ,(lte)e7 ,(lte)f8
+    ,(lte)2 ,(lte)b2 ,(lte)c1
 };
 static const lte bishop_lookup_a4[] =
 {
 (lte)2
-    ,(lte)4 ,(lte)b5 ,(lte)c6 ,(lte)d7 ,(lte)e8 
-    ,(lte)3 ,(lte)b3 ,(lte)c2 ,(lte)d1 
+    ,(lte)4 ,(lte)b5 ,(lte)c6 ,(lte)d7 ,(lte)e8
+    ,(lte)3 ,(lte)b3 ,(lte)c2 ,(lte)d1
 };
 static const lte bishop_lookup_a5[] =
 {
 (lte)2
-    ,(lte)3 ,(lte)b6 ,(lte)c7 ,(lte)d8 
-    ,(lte)4 ,(lte)b4 ,(lte)c3 ,(lte)d2 ,(lte)e1 
+    ,(lte)3 ,(lte)b6 ,(lte)c7 ,(lte)d8
+    ,(lte)4 ,(lte)b4 ,(lte)c3 ,(lte)d2 ,(lte)e1
 };
 static const lte bishop_lookup_a6[] =
 {
 (lte)2
-    ,(lte)2 ,(lte)b7 ,(lte)c8 
-    ,(lte)5 ,(lte)b5 ,(lte)c4 ,(lte)d3 ,(lte)e2 ,(lte)f1 
+    ,(lte)2 ,(lte)b7 ,(lte)c8
+    ,(lte)5 ,(lte)b5 ,(lte)c4 ,(lte)d3 ,(lte)e2 ,(lte)f1
 };
 static const lte bishop_lookup_a7[] =
 {
 (lte)2
-    ,(lte)1 ,(lte)b8 
-    ,(lte)6 ,(lte)b6 ,(lte)c5 ,(lte)d4 ,(lte)e3 ,(lte)f2 ,(lte)g1 
+    ,(lte)1 ,(lte)b8
+    ,(lte)6 ,(lte)b6 ,(lte)c5 ,(lte)d4 ,(lte)e3 ,(lte)f2 ,(lte)g1
 };
 static const lte bishop_lookup_a8[] =
 {
 (lte)1
-    ,(lte)7 ,(lte)b7 ,(lte)c6 ,(lte)d5 ,(lte)e4 ,(lte)f3 ,(lte)g2 ,(lte)h1 
+    ,(lte)7 ,(lte)b7 ,(lte)c6 ,(lte)d5 ,(lte)e4 ,(lte)f3 ,(lte)g2 ,(lte)h1
 };
 static const lte bishop_lookup_b1[] =
 {
 (lte)2
-    ,(lte)1 ,(lte)a2 
-    ,(lte)6 ,(lte)c2 ,(lte)d3 ,(lte)e4 ,(lte)f5 ,(lte)g6 ,(lte)h7 
+    ,(lte)1 ,(lte)a2
+    ,(lte)6 ,(lte)c2 ,(lte)d3 ,(lte)e4 ,(lte)f5 ,(lte)g6 ,(lte)h7
 };
 static const lte bishop_lookup_b2[] =
 {
 (lte)4
-    ,(lte)1 ,(lte)a1 
-    ,(lte)1 ,(lte)a3 
-    ,(lte)6 ,(lte)c3 ,(lte)d4 ,(lte)e5 ,(lte)f6 ,(lte)g7 ,(lte)h8 
-    ,(lte)1 ,(lte)c1 
+    ,(lte)1 ,(lte)a1
+    ,(lte)1 ,(lte)a3
+    ,(lte)6 ,(lte)c3 ,(lte)d4 ,(lte)e5 ,(lte)f6 ,(lte)g7 ,(lte)h8
+    ,(lte)1 ,(lte)c1
 };
 static const lte bishop_lookup_b3[] =
 {
 (lte)4
-    ,(lte)1 ,(lte)a2 
-    ,(lte)1 ,(lte)a4 
-    ,(lte)5 ,(lte)c4 ,(lte)d5 ,(lte)e6 ,(lte)f7 ,(lte)g8 
-    ,(lte)2 ,(lte)c2 ,(lte)d1 
+    ,(lte)1 ,(lte)a2
+    ,(lte)1 ,(lte)a4
+    ,(lte)5 ,(lte)c4 ,(lte)d5 ,(lte)e6 ,(lte)f7 ,(lte)g8
+    ,(lte)2 ,(lte)c2 ,(lte)d1
 };
 static const lte bishop_lookup_b4[] =
 {
 (lte)4
-    ,(lte)1 ,(lte)a3 
-    ,(lte)1 ,(lte)a5 
-    ,(lte)4 ,(lte)c5 ,(lte)d6 ,(lte)e7 ,(lte)f8 
-    ,(lte)3 ,(lte)c3 ,(lte)d2 ,(lte)e1 
+    ,(lte)1 ,(lte)a3
+    ,(lte)1 ,(lte)a5
+    ,(lte)4 ,(lte)c5 ,(lte)d6 ,(lte)e7 ,(lte)f8
+    ,(lte)3 ,(lte)c3 ,(lte)d2 ,(lte)e1
 };
 static const lte bishop_lookup_b5[] =
 {
 (lte)4
-    ,(lte)1 ,(lte)a4 
-    ,(lte)1 ,(lte)a6 
-    ,(lte)3 ,(lte)c6 ,(lte)d7 ,(lte)e8 
-    ,(lte)4 ,(lte)c4 ,(lte)d3 ,(lte)e2 ,(lte)f1 
+    ,(lte)1 ,(lte)a4
+    ,(lte)1 ,(lte)a6
+    ,(lte)3 ,(lte)c6 ,(lte)d7 ,(lte)e8
+    ,(lte)4 ,(lte)c4 ,(lte)d3 ,(lte)e2 ,(lte)f1
 };
 static const lte bishop_lookup_b6[] =
 {
 (lte)4
-    ,(lte)1 ,(lte)a5 
-    ,(lte)1 ,(lte)a7 
-    ,(lte)2 ,(lte)c7 ,(lte)d8 
-    ,(lte)5 ,(lte)c5 ,(lte)d4 ,(lte)e3 ,(lte)f2 ,(lte)g1 
+    ,(lte)1 ,(lte)a5
+    ,(lte)1 ,(lte)a7
+    ,(lte)2 ,(lte)c7 ,(lte)d8
+    ,(lte)5 ,(lte)c5 ,(lte)d4 ,(lte)e3 ,(lte)f2 ,(lte)g1
 };
 static const lte bishop_lookup_b7[] =
 {
 (lte)4
-    ,(lte)1 ,(lte)a6 
-    ,(lte)1 ,(lte)a8 
-    ,(lte)1 ,(lte)c8 
-    ,(lte)6 ,(lte)c6 ,(lte)d5 ,(lte)e4 ,(lte)f3 ,(lte)g2 ,(lte)h1 
+    ,(lte)1 ,(lte)a6
+    ,(lte)1 ,(lte)a8
+    ,(lte)1 ,(lte)c8
+    ,(lte)6 ,(lte)c6 ,(lte)d5 ,(lte)e4 ,(lte)f3 ,(lte)g2 ,(lte)h1
 };
 static const lte bishop_lookup_b8[] =
 {
 (lte)2
-    ,(lte)1 ,(lte)a7 
-    ,(lte)6 ,(lte)c7 ,(lte)d6 ,(lte)e5 ,(lte)f4 ,(lte)g3 ,(lte)h2 
+    ,(lte)1 ,(lte)a7
+    ,(lte)6 ,(lte)c7 ,(lte)d6 ,(lte)e5 ,(lte)f4 ,(lte)g3 ,(lte)h2
 };
 static const lte bishop_lookup_c1[] =
 {
 (lte)2
-    ,(lte)2 ,(lte)b2 ,(lte)a3 
-    ,(lte)5 ,(lte)d2 ,(lte)e3 ,(lte)f4 ,(lte)g5 ,(lte)h6 
+    ,(lte)2 ,(lte)b2 ,(lte)a3
+    ,(lte)5 ,(lte)d2 ,(lte)e3 ,(lte)f4 ,(lte)g5 ,(lte)h6
 };
 static const lte bishop_lookup_c2[] =
 {
 (lte)4
-    ,(lte)1 ,(lte)b1 
-    ,(lte)2 ,(lte)b3 ,(lte)a4 
-    ,(lte)5 ,(lte)d3 ,(lte)e4 ,(lte)f5 ,(lte)g6 ,(lte)h7 
-    ,(lte)1 ,(lte)d1 
+    ,(lte)1 ,(lte)b1
+    ,(lte)2 ,(lte)b3 ,(lte)a4
+    ,(lte)5 ,(lte)d3 ,(lte)e4 ,(lte)f5 ,(lte)g6 ,(lte)h7
+    ,(lte)1 ,(lte)d1
 };
 static const lte bishop_lookup_c3[] =
 {
 (lte)4
-    ,(lte)2 ,(lte)b2 ,(lte)a1 
-    ,(lte)2 ,(lte)b4 ,(lte)a5 
-    ,(lte)5 ,(lte)d4 ,(lte)e5 ,(lte)f6 ,(lte)g7 ,(lte)h8 
-    ,(lte)2 ,(lte)d2 ,(lte)e1 
+    ,(lte)2 ,(lte)b2 ,(lte)a1
+    ,(lte)2 ,(lte)b4 ,(lte)a5
+    ,(lte)5 ,(lte)d4 ,(lte)e5 ,(lte)f6 ,(lte)g7 ,(lte)h8
+    ,(lte)2 ,(lte)d2 ,(lte)e1
 };
 static const lte bishop_lookup_c4[] =
 {
 (lte)4
-    ,(lte)2 ,(lte)b3 ,(lte)a2 
-    ,(lte)2 ,(lte)b5 ,(lte)a6 
-    ,(lte)4 ,(lte)d5 ,(lte)e6 ,(lte)f7 ,(lte)g8 
-    ,(lte)3 ,(lte)d3 ,(lte)e2 ,(lte)f1 
+    ,(lte)2 ,(lte)b3 ,(lte)a2
+    ,(lte)2 ,(lte)b5 ,(lte)a6
+    ,(lte)4 ,(lte)d5 ,(lte)e6 ,(lte)f7 ,(lte)g8
+    ,(lte)3 ,(lte)d3 ,(lte)e2 ,(lte)f1
 };
 static const lte bishop_lookup_c5[] =
 {
 (lte)4
-    ,(lte)2 ,(lte)b4 ,(lte)a3 
-    ,(lte)2 ,(lte)b6 ,(lte)a7 
-    ,(lte)3 ,(lte)d6 ,(lte)e7 ,(lte)f8 
-    ,(lte)4 ,(lte)d4 ,(lte)e3 ,(lte)f2 ,(lte)g1 
+    ,(lte)2 ,(lte)b4 ,(lte)a3
+    ,(lte)2 ,(lte)b6 ,(lte)a7
+    ,(lte)3 ,(lte)d6 ,(lte)e7 ,(lte)f8
+    ,(lte)4 ,(lte)d4 ,(lte)e3 ,(lte)f2 ,(lte)g1
 };
 static const lte bishop_lookup_c6[] =
 {
 (lte)4
-    ,(lte)2 ,(lte)b5 ,(lte)a4 
-    ,(lte)2 ,(lte)b7 ,(lte)a8 
-    ,(lte)2 ,(lte)d7 ,(lte)e8 
-    ,(lte)5 ,(lte)d5 ,(lte)e4 ,(lte)f3 ,(lte)g2 ,(lte)h1 
+    ,(lte)2 ,(lte)b5 ,(lte)a4
+    ,(lte)2 ,(lte)b7 ,(lte)a8
+    ,(lte)2 ,(lte)d7 ,(lte)e8
+    ,(lte)5 ,(lte)d5 ,(lte)e4 ,(lte)f3 ,(lte)g2 ,(lte)h1
 };
 static const lte bishop_lookup_c7[] =
 {
 (lte)4
-    ,(lte)2 ,(lte)b6 ,(lte)a5 
-    ,(lte)1 ,(lte)b8 
-    ,(lte)1 ,(lte)d8 
-    ,(lte)5 ,(lte)d6 ,(lte)e5 ,(lte)f4 ,(lte)g3 ,(lte)h2 
+    ,(lte)2 ,(lte)b6 ,(lte)a5
+    ,(lte)1 ,(lte)b8
+    ,(lte)1 ,(lte)d8
+    ,(lte)5 ,(lte)d6 ,(lte)e5 ,(lte)f4 ,(lte)g3 ,(lte)h2
 };
 static const lte bishop_lookup_c8[] =
 {
 (lte)2
-    ,(lte)2 ,(lte)b7 ,(lte)a6 
-    ,(lte)5 ,(lte)d7 ,(lte)e6 ,(lte)f5 ,(lte)g4 ,(lte)h3 
+    ,(lte)2 ,(lte)b7 ,(lte)a6
+    ,(lte)5 ,(lte)d7 ,(lte)e6 ,(lte)f5 ,(lte)g4 ,(lte)h3
 };
 static const lte bishop_lookup_d1[] =
 {
 (lte)2
-    ,(lte)3 ,(lte)c2 ,(lte)b3 ,(lte)a4 
-    ,(lte)4 ,(lte)e2 ,(lte)f3 ,(lte)g4 ,(lte)h5 
+    ,(lte)3 ,(lte)c2 ,(lte)b3 ,(lte)a4
+    ,(lte)4 ,(lte)e2 ,(lte)f3 ,(lte)g4 ,(lte)h5
 };
 static const lte bishop_lookup_d2[] =
 {
 (lte)4
-    ,(lte)1 ,(lte)c1 
-    ,(lte)3 ,(lte)c3 ,(lte)b4 ,(lte)a5 
-    ,(lte)4 ,(lte)e3 ,(lte)f4 ,(lte)g5 ,(lte)h6 
-    ,(lte)1 ,(lte)e1 
+    ,(lte)1 ,(lte)c1
+    ,(lte)3 ,(lte)c3 ,(lte)b4 ,(lte)a5
+    ,(lte)4 ,(lte)e3 ,(lte)f4 ,(lte)g5 ,(lte)h6
+    ,(lte)1 ,(lte)e1
 };
 static const lte bishop_lookup_d3[] =
 {
 (lte)4
-    ,(lte)2 ,(lte)c2 ,(lte)b1 
-    ,(lte)3 ,(lte)c4 ,(lte)b5 ,(lte)a6 
-    ,(lte)4 ,(lte)e4 ,(lte)f5 ,(lte)g6 ,(lte)h7 
-    ,(lte)2 ,(lte)e2 ,(lte)f1 
+    ,(lte)2 ,(lte)c2 ,(lte)b1
+    ,(lte)3 ,(lte)c4 ,(lte)b5 ,(lte)a6
+    ,(lte)4 ,(lte)e4 ,(lte)f5 ,(lte)g6 ,(lte)h7
+    ,(lte)2 ,(lte)e2 ,(lte)f1
 };
 static const lte bishop_lookup_d4[] =
 {
 (lte)4
-    ,(lte)3 ,(lte)c3 ,(lte)b2 ,(lte)a1 
-    ,(lte)3 ,(lte)c5 ,(lte)b6 ,(lte)a7 
-    ,(lte)4 ,(lte)e5 ,(lte)f6 ,(lte)g7 ,(lte)h8 
-    ,(lte)3 ,(lte)e3 ,(lte)f2 ,(lte)g1 
+    ,(lte)3 ,(lte)c3 ,(lte)b2 ,(lte)a1
+    ,(lte)3 ,(lte)c5 ,(lte)b6 ,(lte)a7
+    ,(lte)4 ,(lte)e5 ,(lte)f6 ,(lte)g7 ,(lte)h8
+    ,(lte)3 ,(lte)e3 ,(lte)f2 ,(lte)g1
 };
 static const lte bishop_lookup_d5[] =
 {
 (lte)4
-    ,(lte)3 ,(lte)c4 ,(lte)b3 ,(lte)a2 
-    ,(lte)3 ,(lte)c6 ,(lte)b7 ,(lte)a8 
-    ,(lte)3 ,(lte)e6 ,(lte)f7 ,(lte)g8 
-    ,(lte)4 ,(lte)e4 ,(lte)f3 ,(lte)g2 ,(lte)h1 
+    ,(lte)3 ,(lte)c4 ,(lte)b3 ,(lte)a2
+    ,(lte)3 ,(lte)c6 ,(lte)b7 ,(lte)a8
+    ,(lte)3 ,(lte)e6 ,(lte)f7 ,(lte)g8
+    ,(lte)4 ,(lte)e4 ,(lte)f3 ,(lte)g2 ,(lte)h1
 };
 static const lte bishop_lookup_d6[] =
 {
 (lte)4
-    ,(lte)3 ,(lte)c5 ,(lte)b4 ,(lte)a3 
-    ,(lte)2 ,(lte)c7 ,(lte)b8 
-    ,(lte)2 ,(lte)e7 ,(lte)f8 
-    ,(lte)4 ,(lte)e5 ,(lte)f4 ,(lte)g3 ,(lte)h2 
+    ,(lte)3 ,(lte)c5 ,(lte)b4 ,(lte)a3
+    ,(lte)2 ,(lte)c7 ,(lte)b8
+    ,(lte)2 ,(lte)e7 ,(lte)f8
+    ,(lte)4 ,(lte)e5 ,(lte)f4 ,(lte)g3 ,(lte)h2
 };
 static const lte bishop_lookup_d7[] =
 {
 (lte)4
-    ,(lte)3 ,(lte)c6 ,(lte)b5 ,(lte)a4 
-    ,(lte)1 ,(lte)c8 
-    ,(lte)1 ,(lte)e8 
-    ,(lte)4 ,(lte)e6 ,(lte)f5 ,(lte)g4 ,(lte)h3 
+    ,(lte)3 ,(lte)c6 ,(lte)b5 ,(lte)a4
+    ,(lte)1 ,(lte)c8
+    ,(lte)1 ,(lte)e8
+    ,(lte)4 ,(lte)e6 ,(lte)f5 ,(lte)g4 ,(lte)h3
 };
 static const lte bishop_lookup_d8[] =
 {
 (lte)2
-    ,(lte)3 ,(lte)c7 ,(lte)b6 ,(lte)a5 
-    ,(lte)4 ,(lte)e7 ,(lte)f6 ,(lte)g5 ,(lte)h4 
+    ,(lte)3 ,(lte)c7 ,(lte)b6 ,(lte)a5
+    ,(lte)4 ,(lte)e7 ,(lte)f6 ,(lte)g5 ,(lte)h4
 };
 static const lte bishop_lookup_e1[] =
 {
 (lte)2
-    ,(lte)4 ,(lte)d2 ,(lte)c3 ,(lte)b4 ,(lte)a5 
-    ,(lte)3 ,(lte)f2 ,(lte)g3 ,(lte)h4 
+    ,(lte)4 ,(lte)d2 ,(lte)c3 ,(lte)b4 ,(lte)a5
+    ,(lte)3 ,(lte)f2 ,(lte)g3 ,(lte)h4
 };
 static const lte bishop_lookup_e2[] =
 {
 (lte)4
-    ,(lte)1 ,(lte)d1 
-    ,(lte)4 ,(lte)d3 ,(lte)c4 ,(lte)b5 ,(lte)a6 
-    ,(lte)3 ,(lte)f3 ,(lte)g4 ,(lte)h5 
-    ,(lte)1 ,(lte)f1 
+    ,(lte)1 ,(lte)d1
+    ,(lte)4 ,(lte)d3 ,(lte)c4 ,(lte)b5 ,(lte)a6
+    ,(lte)3 ,(lte)f3 ,(lte)g4 ,(lte)h5
+    ,(lte)1 ,(lte)f1
 };
 static const lte bishop_lookup_e3[] =
 {
 (lte)4
-    ,(lte)2 ,(lte)d2 ,(lte)c1 
-    ,(lte)4 ,(lte)d4 ,(lte)c5 ,(lte)b6 ,(lte)a7 
-    ,(lte)3 ,(lte)f4 ,(lte)g5 ,(lte)h6 
-    ,(lte)2 ,(lte)f2 ,(lte)g1 
+    ,(lte)2 ,(lte)d2 ,(lte)c1
+    ,(lte)4 ,(lte)d4 ,(lte)c5 ,(lte)b6 ,(lte)a7
+    ,(lte)3 ,(lte)f4 ,(lte)g5 ,(lte)h6
+    ,(lte)2 ,(lte)f2 ,(lte)g1
 };
 static const lte bishop_lookup_e4[] =
 {
 (lte)4
-    ,(lte)3 ,(lte)d3 ,(lte)c2 ,(lte)b1 
-    ,(lte)4 ,(lte)d5 ,(lte)c6 ,(lte)b7 ,(lte)a8 
-    ,(lte)3 ,(lte)f5 ,(lte)g6 ,(lte)h7 
-    ,(lte)3 ,(lte)f3 ,(lte)g2 ,(lte)h1 
+    ,(lte)3 ,(lte)d3 ,(lte)c2 ,(lte)b1
+    ,(lte)4 ,(lte)d5 ,(lte)c6 ,(lte)b7 ,(lte)a8
+    ,(lte)3 ,(lte)f5 ,(lte)g6 ,(lte)h7
+    ,(lte)3 ,(lte)f3 ,(lte)g2 ,(lte)h1
 };
 static const lte bishop_lookup_e5[] =
 {
 (lte)4
-    ,(lte)4 ,(lte)d4 ,(lte)c3 ,(lte)b2 ,(lte)a1 
-    ,(lte)3 ,(lte)d6 ,(lte)c7 ,(lte)b8 
-    ,(lte)3 ,(lte)f6 ,(lte)g7 ,(lte)h8 
-    ,(lte)3 ,(lte)f4 ,(lte)g3 ,(lte)h2 
+    ,(lte)4 ,(lte)d4 ,(lte)c3 ,(lte)b2 ,(lte)a1
+    ,(lte)3 ,(lte)d6 ,(lte)c7 ,(lte)b8
+    ,(lte)3 ,(lte)f6 ,(lte)g7 ,(lte)h8
+    ,(lte)3 ,(lte)f4 ,(lte)g3 ,(lte)h2
 };
 static const lte bishop_lookup_e6[] =
 {
 (lte)4
-    ,(lte)4 ,(lte)d5 ,(lte)c4 ,(lte)b3 ,(lte)a2 
-    ,(lte)2 ,(lte)d7 ,(lte)c8 
-    ,(lte)2 ,(lte)f7 ,(lte)g8 
-    ,(lte)3 ,(lte)f5 ,(lte)g4 ,(lte)h3 
+    ,(lte)4 ,(lte)d5 ,(lte)c4 ,(lte)b3 ,(lte)a2
+    ,(lte)2 ,(lte)d7 ,(lte)c8
+    ,(lte)2 ,(lte)f7 ,(lte)g8
+    ,(lte)3 ,(lte)f5 ,(lte)g4 ,(lte)h3
 };
 static const lte bishop_lookup_e7[] =
 {
 (lte)4
-    ,(lte)4 ,(lte)d6 ,(lte)c5 ,(lte)b4 ,(lte)a3 
-    ,(lte)1 ,(lte)d8 
-    ,(lte)1 ,(lte)f8 
-    ,(lte)3 ,(lte)f6 ,(lte)g5 ,(lte)h4 
+    ,(lte)4 ,(lte)d6 ,(lte)c5 ,(lte)b4 ,(lte)a3
+    ,(lte)1 ,(lte)d8
+    ,(lte)1 ,(lte)f8
+    ,(lte)3 ,(lte)f6 ,(lte)g5 ,(lte)h4
 };
 static const lte bishop_lookup_e8[] =
 {
 (lte)2
-    ,(lte)4 ,(lte)d7 ,(lte)c6 ,(lte)b5 ,(lte)a4 
-    ,(lte)3 ,(lte)f7 ,(lte)g6 ,(lte)h5 
+    ,(lte)4 ,(lte)d7 ,(lte)c6 ,(lte)b5 ,(lte)a4
+    ,(lte)3 ,(lte)f7 ,(lte)g6 ,(lte)h5
 };
 static const lte bishop_lookup_f1[] =
 {
 (lte)2
-    ,(lte)5 ,(lte)e2 ,(lte)d3 ,(lte)c4 ,(lte)b5 ,(lte)a6 
-    ,(lte)2 ,(lte)g2 ,(lte)h3 
+    ,(lte)5 ,(lte)e2 ,(lte)d3 ,(lte)c4 ,(lte)b5 ,(lte)a6
+    ,(lte)2 ,(lte)g2 ,(lte)h3
 };
 static const lte bishop_lookup_f2[] =
 {
 (lte)4
-    ,(lte)1 ,(lte)e1 
-    ,(lte)5 ,(lte)e3 ,(lte)d4 ,(lte)c5 ,(lte)b6 ,(lte)a7 
-    ,(lte)2 ,(lte)g3 ,(lte)h4 
-    ,(lte)1 ,(lte)g1 
+    ,(lte)1 ,(lte)e1
+    ,(lte)5 ,(lte)e3 ,(lte)d4 ,(lte)c5 ,(lte)b6 ,(lte)a7
+    ,(lte)2 ,(lte)g3 ,(lte)h4
+    ,(lte)1 ,(lte)g1
 };
 static const lte bishop_lookup_f3[] =
 {
 (lte)4
-    ,(lte)2 ,(lte)e2 ,(lte)d1 
-    ,(lte)5 ,(lte)e4 ,(lte)d5 ,(lte)c6 ,(lte)b7 ,(lte)a8 
-    ,(lte)2 ,(lte)g4 ,(lte)h5 
-    ,(lte)2 ,(lte)g2 ,(lte)h1 
+    ,(lte)2 ,(lte)e2 ,(lte)d1
+    ,(lte)5 ,(lte)e4 ,(lte)d5 ,(lte)c6 ,(lte)b7 ,(lte)a8
+    ,(lte)2 ,(lte)g4 ,(lte)h5
+    ,(lte)2 ,(lte)g2 ,(lte)h1
 };
 static const lte bishop_lookup_f4[] =
 {
 (lte)4
-    ,(lte)3 ,(lte)e3 ,(lte)d2 ,(lte)c1 
-    ,(lte)4 ,(lte)e5 ,(lte)d6 ,(lte)c7 ,(lte)b8 
-    ,(lte)2 ,(lte)g5 ,(lte)h6 
-    ,(lte)2 ,(lte)g3 ,(lte)h2 
+    ,(lte)3 ,(lte)e3 ,(lte)d2 ,(lte)c1
+    ,(lte)4 ,(lte)e5 ,(lte)d6 ,(lte)c7 ,(lte)b8
+    ,(lte)2 ,(lte)g5 ,(lte)h6
+    ,(lte)2 ,(lte)g3 ,(lte)h2
 };
 static const lte bishop_lookup_f5[] =
 {
 (lte)4
-    ,(lte)4 ,(lte)e4 ,(lte)d3 ,(lte)c2 ,(lte)b1 
-    ,(lte)3 ,(lte)e6 ,(lte)d7 ,(lte)c8 
-    ,(lte)2 ,(lte)g6 ,(lte)h7 
-    ,(lte)2 ,(lte)g4 ,(lte)h3 
+    ,(lte)4 ,(lte)e4 ,(lte)d3 ,(lte)c2 ,(lte)b1
+    ,(lte)3 ,(lte)e6 ,(lte)d7 ,(lte)c8
+    ,(lte)2 ,(lte)g6 ,(lte)h7
+    ,(lte)2 ,(lte)g4 ,(lte)h3
 };
 static const lte bishop_lookup_f6[] =
 {
 (lte)4
-    ,(lte)5 ,(lte)e5 ,(lte)d4 ,(lte)c3 ,(lte)b2 ,(lte)a1 
-    ,(lte)2 ,(lte)e7 ,(lte)d8 
-    ,(lte)2 ,(lte)g7 ,(lte)h8 
-    ,(lte)2 ,(lte)g5 ,(lte)h4 
+    ,(lte)5 ,(lte)e5 ,(lte)d4 ,(lte)c3 ,(lte)b2 ,(lte)a1
+    ,(lte)2 ,(lte)e7 ,(lte)d8
+    ,(lte)2 ,(lte)g7 ,(lte)h8
+    ,(lte)2 ,(lte)g5 ,(lte)h4
 };
 static const lte bishop_lookup_f7[] =
 {
 (lte)4
-    ,(lte)5 ,(lte)e6 ,(lte)d5 ,(lte)c4 ,(lte)b3 ,(lte)a2 
-    ,(lte)1 ,(lte)e8 
-    ,(lte)1 ,(lte)g8 
-    ,(lte)2 ,(lte)g6 ,(lte)h5 
+    ,(lte)5 ,(lte)e6 ,(lte)d5 ,(lte)c4 ,(lte)b3 ,(lte)a2
+    ,(lte)1 ,(lte)e8
+    ,(lte)1 ,(lte)g8
+    ,(lte)2 ,(lte)g6 ,(lte)h5
 };
 static const lte bishop_lookup_f8[] =
 {
 (lte)2
-    ,(lte)5 ,(lte)e7 ,(lte)d6 ,(lte)c5 ,(lte)b4 ,(lte)a3 
-    ,(lte)2 ,(lte)g7 ,(lte)h6 
+    ,(lte)5 ,(lte)e7 ,(lte)d6 ,(lte)c5 ,(lte)b4 ,(lte)a3
+    ,(lte)2 ,(lte)g7 ,(lte)h6
 };
 static const lte bishop_lookup_g1[] =
 {
 (lte)2
-    ,(lte)6 ,(lte)f2 ,(lte)e3 ,(lte)d4 ,(lte)c5 ,(lte)b6 ,(lte)a7 
-    ,(lte)1 ,(lte)h2 
+    ,(lte)6 ,(lte)f2 ,(lte)e3 ,(lte)d4 ,(lte)c5 ,(lte)b6 ,(lte)a7
+    ,(lte)1 ,(lte)h2
 };
 static const lte bishop_lookup_g2[] =
 {
 (lte)4
-    ,(lte)1 ,(lte)f1 
-    ,(lte)6 ,(lte)f3 ,(lte)e4 ,(lte)d5 ,(lte)c6 ,(lte)b7 ,(lte)a8 
-    ,(lte)1 ,(lte)h3 
-    ,(lte)1 ,(lte)h1 
+    ,(lte)1 ,(lte)f1
+    ,(lte)6 ,(lte)f3 ,(lte)e4 ,(lte)d5 ,(lte)c6 ,(lte)b7 ,(lte)a8
+    ,(lte)1 ,(lte)h3
+    ,(lte)1 ,(lte)h1
 };
 static const lte bishop_lookup_g3[] =
 {
 (lte)4
-    ,(lte)2 ,(lte)f2 ,(lte)e1 
-    ,(lte)5 ,(lte)f4 ,(lte)e5 ,(lte)d6 ,(lte)c7 ,(lte)b8 
-    ,(lte)1 ,(lte)h4 
-    ,(lte)1 ,(lte)h2 
+    ,(lte)2 ,(lte)f2 ,(lte)e1
+    ,(lte)5 ,(lte)f4 ,(lte)e5 ,(lte)d6 ,(lte)c7 ,(lte)b8
+    ,(lte)1 ,(lte)h4
+    ,(lte)1 ,(lte)h2
 };
 static const lte bishop_lookup_g4[] =
 {
 (lte)4
-    ,(lte)3 ,(lte)f3 ,(lte)e2 ,(lte)d1 
-    ,(lte)4 ,(lte)f5 ,(lte)e6 ,(lte)d7 ,(lte)c8 
-    ,(lte)1 ,(lte)h5 
-    ,(lte)1 ,(lte)h3 
+    ,(lte)3 ,(lte)f3 ,(lte)e2 ,(lte)d1
+    ,(lte)4 ,(lte)f5 ,(lte)e6 ,(lte)d7 ,(lte)c8
+    ,(lte)1 ,(lte)h5
+    ,(lte)1 ,(lte)h3
 };
 static const lte bishop_lookup_g5[] =
 {
 (lte)4
-    ,(lte)4 ,(lte)f4 ,(lte)e3 ,(lte)d2 ,(lte)c1 
-    ,(lte)3 ,(lte)f6 ,(lte)e7 ,(lte)d8 
-    ,(lte)1 ,(lte)h6 
-    ,(lte)1 ,(lte)h4 
+    ,(lte)4 ,(lte)f4 ,(lte)e3 ,(lte)d2 ,(lte)c1
+    ,(lte)3 ,(lte)f6 ,(lte)e7 ,(lte)d8
+    ,(lte)1 ,(lte)h6
+    ,(lte)1 ,(lte)h4
 };
 static const lte bishop_lookup_g6[] =
 {
 (lte)4
-    ,(lte)5 ,(lte)f5 ,(lte)e4 ,(lte)d3 ,(lte)c2 ,(lte)b1 
-    ,(lte)2 ,(lte)f7 ,(lte)e8 
-    ,(lte)1 ,(lte)h7 
-    ,(lte)1 ,(lte)h5 
+    ,(lte)5 ,(lte)f5 ,(lte)e4 ,(lte)d3 ,(lte)c2 ,(lte)b1
+    ,(lte)2 ,(lte)f7 ,(lte)e8
+    ,(lte)1 ,(lte)h7
+    ,(lte)1 ,(lte)h5
 };
 static const lte bishop_lookup_g7[] =
 {
 (lte)4
-    ,(lte)6 ,(lte)f6 ,(lte)e5 ,(lte)d4 ,(lte)c3 ,(lte)b2 ,(lte)a1 
-    ,(lte)1 ,(lte)f8 
-    ,(lte)1 ,(lte)h8 
-    ,(lte)1 ,(lte)h6 
+    ,(lte)6 ,(lte)f6 ,(lte)e5 ,(lte)d4 ,(lte)c3 ,(lte)b2 ,(lte)a1
+    ,(lte)1 ,(lte)f8
+    ,(lte)1 ,(lte)h8
+    ,(lte)1 ,(lte)h6
 };
 static const lte bishop_lookup_g8[] =
 {
 (lte)2
-    ,(lte)6 ,(lte)f7 ,(lte)e6 ,(lte)d5 ,(lte)c4 ,(lte)b3 ,(lte)a2 
-    ,(lte)1 ,(lte)h7 
+    ,(lte)6 ,(lte)f7 ,(lte)e6 ,(lte)d5 ,(lte)c4 ,(lte)b3 ,(lte)a2
+    ,(lte)1 ,(lte)h7
 };
 static const lte bishop_lookup_h1[] =
 {
 (lte)1
-    ,(lte)7 ,(lte)g2 ,(lte)f3 ,(lte)e4 ,(lte)d5 ,(lte)c6 ,(lte)b7 ,(lte)a8 
+    ,(lte)7 ,(lte)g2 ,(lte)f3 ,(lte)e4 ,(lte)d5 ,(lte)c6 ,(lte)b7 ,(lte)a8
 };
 static const lte bishop_lookup_h2[] =
 {
 (lte)2
-    ,(lte)1 ,(lte)g1 
-    ,(lte)6 ,(lte)g3 ,(lte)f4 ,(lte)e5 ,(lte)d6 ,(lte)c7 ,(lte)b8 
+    ,(lte)1 ,(lte)g1
+    ,(lte)6 ,(lte)g3 ,(lte)f4 ,(lte)e5 ,(lte)d6 ,(lte)c7 ,(lte)b8
 };
 static const lte bishop_lookup_h3[] =
 {
 (lte)2
-    ,(lte)2 ,(lte)g2 ,(lte)f1 
-    ,(lte)5 ,(lte)g4 ,(lte)f5 ,(lte)e6 ,(lte)d7 ,(lte)c8 
+    ,(lte)2 ,(lte)g2 ,(lte)f1
+    ,(lte)5 ,(lte)g4 ,(lte)f5 ,(lte)e6 ,(lte)d7 ,(lte)c8
 };
 static const lte bishop_lookup_h4[] =
 {
 (lte)2
-    ,(lte)3 ,(lte)g3 ,(lte)f2 ,(lte)e1 
-    ,(lte)4 ,(lte)g5 ,(lte)f6 ,(lte)e7 ,(lte)d8 
+    ,(lte)3 ,(lte)g3 ,(lte)f2 ,(lte)e1
+    ,(lte)4 ,(lte)g5 ,(lte)f6 ,(lte)e7 ,(lte)d8
 };
 static const lte bishop_lookup_h5[] =
 {
 (lte)2
-    ,(lte)4 ,(lte)g4 ,(lte)f3 ,(lte)e2 ,(lte)d1 
-    ,(lte)3 ,(lte)g6 ,(lte)f7 ,(lte)e8 
+    ,(lte)4 ,(lte)g4 ,(lte)f3 ,(lte)e2 ,(lte)d1
+    ,(lte)3 ,(lte)g6 ,(lte)f7 ,(lte)e8
 };
 static const lte bishop_lookup_h6[] =
 {
 (lte)2
-    ,(lte)5 ,(lte)g5 ,(lte)f4 ,(lte)e3 ,(lte)d2 ,(lte)c1 
-    ,(lte)2 ,(lte)g7 ,(lte)f8 
+    ,(lte)5 ,(lte)g5 ,(lte)f4 ,(lte)e3 ,(lte)d2 ,(lte)c1
+    ,(lte)2 ,(lte)g7 ,(lte)f8
 };
 static const lte bishop_lookup_h7[] =
 {
 (lte)2
-    ,(lte)6 ,(lte)g6 ,(lte)f5 ,(lte)e4 ,(lte)d3 ,(lte)c2 ,(lte)b1 
-    ,(lte)1 ,(lte)g8 
+    ,(lte)6 ,(lte)g6 ,(lte)f5 ,(lte)e4 ,(lte)d3 ,(lte)c2 ,(lte)b1
+    ,(lte)1 ,(lte)g8
 };
 static const lte bishop_lookup_h8[] =
 {
 (lte)1
-    ,(lte)7 ,(lte)g7 ,(lte)f6 ,(lte)e5 ,(lte)d4 ,(lte)c3 ,(lte)b2 ,(lte)a1 
+    ,(lte)7 ,(lte)g7 ,(lte)f6 ,(lte)e5 ,(lte)d4 ,(lte)c3 ,(lte)b2 ,(lte)a1
 };
 
 // bishop_lookup
@@ -12608,678 +11467,678 @@ const lte *pawn_attacks_black_lookup[] =
 static const lte attacks_white_lookup_a1[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)b1,(lte)(K|R|Q)   ,(lte)c1,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)7 ,(lte)a2,(lte)(K|R|Q)   ,(lte)a3,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)7 ,(lte)b2,(lte)(K|P|B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q) 
+    ,(lte)7 ,(lte)b1,(lte)(K|R|Q)   ,(lte)c1,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)7 ,(lte)a2,(lte)(K|R|Q)   ,(lte)a3,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)7 ,(lte)b2,(lte)(K|P|B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_a2[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)b2,(lte)(K|R|Q)   ,(lte)c2,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) 
-    ,(lte)1 ,(lte)a1,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)a3,(lte)(K|R|Q)   ,(lte)a4,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)6 ,(lte)b3,(lte)(K|P|B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)f7,(lte)(B|Q) ,(lte)g8,(lte)(B|Q) 
-    ,(lte)1 ,(lte)b1,(lte)(K|B|Q)   
+    ,(lte)7 ,(lte)b2,(lte)(K|R|Q)   ,(lte)c2,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q)
+    ,(lte)1 ,(lte)a1,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)a3,(lte)(K|R|Q)   ,(lte)a4,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)6 ,(lte)b3,(lte)(K|P|B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)f7,(lte)(B|Q) ,(lte)g8,(lte)(B|Q)
+    ,(lte)1 ,(lte)b1,(lte)(K|B|Q)
 };
 static const lte attacks_white_lookup_a3[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)b3,(lte)(K|R|Q)   ,(lte)c3,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) 
-    ,(lte)2 ,(lte)a2,(lte)(K|R|Q)   ,(lte)a1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)a4,(lte)(K|R|Q)   ,(lte)a5,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)5 ,(lte)b4,(lte)(K|P|B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)e7,(lte)(B|Q) ,(lte)f8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)b2,(lte)(K|B|Q)   ,(lte)c1,(lte)(B|Q) 
+    ,(lte)7 ,(lte)b3,(lte)(K|R|Q)   ,(lte)c3,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q)
+    ,(lte)2 ,(lte)a2,(lte)(K|R|Q)   ,(lte)a1,(lte)(R|Q)
+    ,(lte)5 ,(lte)a4,(lte)(K|R|Q)   ,(lte)a5,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)5 ,(lte)b4,(lte)(K|P|B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)e7,(lte)(B|Q) ,(lte)f8,(lte)(B|Q)
+    ,(lte)2 ,(lte)b2,(lte)(K|B|Q)   ,(lte)c1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_a4[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)b4,(lte)(K|R|Q)   ,(lte)c4,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) 
-    ,(lte)3 ,(lte)a3,(lte)(K|R|Q)   ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)a5,(lte)(K|R|Q)   ,(lte)a6,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)4 ,(lte)b5,(lte)(K|P|B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)d7,(lte)(B|Q) ,(lte)e8,(lte)(B|Q) 
-    ,(lte)3 ,(lte)b3,(lte)(K|B|Q)   ,(lte)c2,(lte)(B|Q) ,(lte)d1,(lte)(B|Q) 
+    ,(lte)7 ,(lte)b4,(lte)(K|R|Q)   ,(lte)c4,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q)
+    ,(lte)3 ,(lte)a3,(lte)(K|R|Q)   ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)4 ,(lte)a5,(lte)(K|R|Q)   ,(lte)a6,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)4 ,(lte)b5,(lte)(K|P|B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)d7,(lte)(B|Q) ,(lte)e8,(lte)(B|Q)
+    ,(lte)3 ,(lte)b3,(lte)(K|B|Q)   ,(lte)c2,(lte)(B|Q) ,(lte)d1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_a5[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)b5,(lte)(K|R|Q)   ,(lte)c5,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) 
-    ,(lte)4 ,(lte)a4,(lte)(K|R|Q)   ,(lte)a3,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)a6,(lte)(K|R|Q)   ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)b6,(lte)(K|P|B|Q) ,(lte)c7,(lte)(B|Q) ,(lte)d8,(lte)(B|Q) 
-    ,(lte)4 ,(lte)b4,(lte)(K|B|Q)   ,(lte)c3,(lte)(B|Q) ,(lte)d2,(lte)(B|Q) ,(lte)e1,(lte)(B|Q) 
+    ,(lte)7 ,(lte)b5,(lte)(K|R|Q)   ,(lte)c5,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q)
+    ,(lte)4 ,(lte)a4,(lte)(K|R|Q)   ,(lte)a3,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)3 ,(lte)a6,(lte)(K|R|Q)   ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)3 ,(lte)b6,(lte)(K|P|B|Q) ,(lte)c7,(lte)(B|Q) ,(lte)d8,(lte)(B|Q)
+    ,(lte)4 ,(lte)b4,(lte)(K|B|Q)   ,(lte)c3,(lte)(B|Q) ,(lte)d2,(lte)(B|Q) ,(lte)e1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_a6[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)b6,(lte)(K|R|Q)   ,(lte)c6,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) 
-    ,(lte)5 ,(lte)a5,(lte)(K|R|Q)   ,(lte)a4,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)a7,(lte)(K|R|Q)   ,(lte)a8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)b7,(lte)(K|P|B|Q) ,(lte)c8,(lte)(B|Q) 
-    ,(lte)5 ,(lte)b5,(lte)(K|B|Q)   ,(lte)c4,(lte)(B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)e2,(lte)(B|Q) ,(lte)f1,(lte)(B|Q) 
+    ,(lte)7 ,(lte)b6,(lte)(K|R|Q)   ,(lte)c6,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q)
+    ,(lte)5 ,(lte)a5,(lte)(K|R|Q)   ,(lte)a4,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)2 ,(lte)a7,(lte)(K|R|Q)   ,(lte)a8,(lte)(R|Q)
+    ,(lte)2 ,(lte)b7,(lte)(K|P|B|Q) ,(lte)c8,(lte)(B|Q)
+    ,(lte)5 ,(lte)b5,(lte)(K|B|Q)   ,(lte)c4,(lte)(B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)e2,(lte)(B|Q) ,(lte)f1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_a7[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)b7,(lte)(K|R|Q)   ,(lte)c7,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) 
-    ,(lte)6 ,(lte)a6,(lte)(K|R|Q)   ,(lte)a5,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)a8,(lte)(K|R|Q)   
-    ,(lte)1 ,(lte)b8,(lte)(K|P|B|Q) 
-    ,(lte)6 ,(lte)b6,(lte)(K|B|Q)   ,(lte)c5,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)f2,(lte)(B|Q) ,(lte)g1,(lte)(B|Q) 
+    ,(lte)7 ,(lte)b7,(lte)(K|R|Q)   ,(lte)c7,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q)
+    ,(lte)6 ,(lte)a6,(lte)(K|R|Q)   ,(lte)a5,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)1 ,(lte)a8,(lte)(K|R|Q)
+    ,(lte)1 ,(lte)b8,(lte)(K|P|B|Q)
+    ,(lte)6 ,(lte)b6,(lte)(K|B|Q)   ,(lte)c5,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)f2,(lte)(B|Q) ,(lte)g1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_a8[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)b8,(lte)(K|R|Q)   ,(lte)c8,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)7 ,(lte)a7,(lte)(K|R|Q)   ,(lte)a6,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)7 ,(lte)b7,(lte)(K|B|Q)   ,(lte)c6,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q) 
+    ,(lte)7 ,(lte)b8,(lte)(K|R|Q)   ,(lte)c8,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)7 ,(lte)a7,(lte)(K|R|Q)   ,(lte)a6,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)7 ,(lte)b7,(lte)(K|B|Q)   ,(lte)c6,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_b1[] =
 {
 (lte)5
-    ,(lte)1 ,(lte)a1,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)c1,(lte)(K|R|Q)   ,(lte)d1,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)7 ,(lte)b2,(lte)(K|R|Q)   ,(lte)b3,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)a2,(lte)(K|P|B|Q) 
-    ,(lte)6 ,(lte)c2,(lte)(K|P|B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)g6,(lte)(B|Q) ,(lte)h7,(lte)(B|Q) 
+    ,(lte)1 ,(lte)a1,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)c1,(lte)(K|R|Q)   ,(lte)d1,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)7 ,(lte)b2,(lte)(K|R|Q)   ,(lte)b3,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q)
+    ,(lte)1 ,(lte)a2,(lte)(K|P|B|Q)
+    ,(lte)6 ,(lte)c2,(lte)(K|P|B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)g6,(lte)(B|Q) ,(lte)h7,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_b2[] =
 {
 (lte)8
-    ,(lte)1 ,(lte)a2,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)c2,(lte)(K|R|Q)   ,(lte)d2,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) 
-    ,(lte)1 ,(lte)b1,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)b3,(lte)(K|R|Q)   ,(lte)b4,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)a1,(lte)(K|B|Q)   
-    ,(lte)1 ,(lte)a3,(lte)(K|P|B|Q) 
-    ,(lte)6 ,(lte)c3,(lte)(K|P|B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q) 
-    ,(lte)1 ,(lte)c1,(lte)(K|B|Q)   
+    ,(lte)1 ,(lte)a2,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)c2,(lte)(K|R|Q)   ,(lte)d2,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q)
+    ,(lte)1 ,(lte)b1,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)b3,(lte)(K|R|Q)   ,(lte)b4,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q)
+    ,(lte)1 ,(lte)a1,(lte)(K|B|Q)
+    ,(lte)1 ,(lte)a3,(lte)(K|P|B|Q)
+    ,(lte)6 ,(lte)c3,(lte)(K|P|B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q)
+    ,(lte)1 ,(lte)c1,(lte)(K|B|Q)
 };
 static const lte attacks_white_lookup_b3[] =
 {
 (lte)8
-    ,(lte)1 ,(lte)a3,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)c3,(lte)(K|R|Q)   ,(lte)d3,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) 
-    ,(lte)2 ,(lte)b2,(lte)(K|R|Q)   ,(lte)b1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)b4,(lte)(K|R|Q)   ,(lte)b5,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)a2,(lte)(K|B|Q)   
-    ,(lte)1 ,(lte)a4,(lte)(K|P|B|Q) 
-    ,(lte)5 ,(lte)c4,(lte)(K|P|B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)f7,(lte)(B|Q) ,(lte)g8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)c2,(lte)(K|B|Q)   ,(lte)d1,(lte)(B|Q) 
+    ,(lte)1 ,(lte)a3,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)c3,(lte)(K|R|Q)   ,(lte)d3,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q)
+    ,(lte)2 ,(lte)b2,(lte)(K|R|Q)   ,(lte)b1,(lte)(R|Q)
+    ,(lte)5 ,(lte)b4,(lte)(K|R|Q)   ,(lte)b5,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q)
+    ,(lte)1 ,(lte)a2,(lte)(K|B|Q)
+    ,(lte)1 ,(lte)a4,(lte)(K|P|B|Q)
+    ,(lte)5 ,(lte)c4,(lte)(K|P|B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)f7,(lte)(B|Q) ,(lte)g8,(lte)(B|Q)
+    ,(lte)2 ,(lte)c2,(lte)(K|B|Q)   ,(lte)d1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_b4[] =
 {
 (lte)8
-    ,(lte)1 ,(lte)a4,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)c4,(lte)(K|R|Q)   ,(lte)d4,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) 
-    ,(lte)3 ,(lte)b3,(lte)(K|R|Q)   ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)b5,(lte)(K|R|Q)   ,(lte)b6,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)a3,(lte)(K|B|Q)   
-    ,(lte)1 ,(lte)a5,(lte)(K|P|B|Q) 
-    ,(lte)4 ,(lte)c5,(lte)(K|P|B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)e7,(lte)(B|Q) ,(lte)f8,(lte)(B|Q) 
-    ,(lte)3 ,(lte)c3,(lte)(K|B|Q)   ,(lte)d2,(lte)(B|Q) ,(lte)e1,(lte)(B|Q) 
+    ,(lte)1 ,(lte)a4,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)c4,(lte)(K|R|Q)   ,(lte)d4,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q)
+    ,(lte)3 ,(lte)b3,(lte)(K|R|Q)   ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q)
+    ,(lte)4 ,(lte)b5,(lte)(K|R|Q)   ,(lte)b6,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q)
+    ,(lte)1 ,(lte)a3,(lte)(K|B|Q)
+    ,(lte)1 ,(lte)a5,(lte)(K|P|B|Q)
+    ,(lte)4 ,(lte)c5,(lte)(K|P|B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)e7,(lte)(B|Q) ,(lte)f8,(lte)(B|Q)
+    ,(lte)3 ,(lte)c3,(lte)(K|B|Q)   ,(lte)d2,(lte)(B|Q) ,(lte)e1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_b5[] =
 {
 (lte)8
-    ,(lte)1 ,(lte)a5,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)c5,(lte)(K|R|Q)   ,(lte)d5,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) 
-    ,(lte)4 ,(lte)b4,(lte)(K|R|Q)   ,(lte)b3,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)b6,(lte)(K|R|Q)   ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)a4,(lte)(K|B|Q)   
-    ,(lte)1 ,(lte)a6,(lte)(K|P|B|Q) 
-    ,(lte)3 ,(lte)c6,(lte)(K|P|B|Q) ,(lte)d7,(lte)(B|Q) ,(lte)e8,(lte)(B|Q) 
-    ,(lte)4 ,(lte)c4,(lte)(K|B|Q)   ,(lte)d3,(lte)(B|Q) ,(lte)e2,(lte)(B|Q) ,(lte)f1,(lte)(B|Q) 
+    ,(lte)1 ,(lte)a5,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)c5,(lte)(K|R|Q)   ,(lte)d5,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q)
+    ,(lte)4 ,(lte)b4,(lte)(K|R|Q)   ,(lte)b3,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q)
+    ,(lte)3 ,(lte)b6,(lte)(K|R|Q)   ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q)
+    ,(lte)1 ,(lte)a4,(lte)(K|B|Q)
+    ,(lte)1 ,(lte)a6,(lte)(K|P|B|Q)
+    ,(lte)3 ,(lte)c6,(lte)(K|P|B|Q) ,(lte)d7,(lte)(B|Q) ,(lte)e8,(lte)(B|Q)
+    ,(lte)4 ,(lte)c4,(lte)(K|B|Q)   ,(lte)d3,(lte)(B|Q) ,(lte)e2,(lte)(B|Q) ,(lte)f1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_b6[] =
 {
 (lte)8
-    ,(lte)1 ,(lte)a6,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)c6,(lte)(K|R|Q)   ,(lte)d6,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) 
-    ,(lte)5 ,(lte)b5,(lte)(K|R|Q)   ,(lte)b4,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)b7,(lte)(K|R|Q)   ,(lte)b8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)a5,(lte)(K|B|Q)   
-    ,(lte)1 ,(lte)a7,(lte)(K|P|B|Q) 
-    ,(lte)2 ,(lte)c7,(lte)(K|P|B|Q) ,(lte)d8,(lte)(B|Q) 
-    ,(lte)5 ,(lte)c5,(lte)(K|B|Q)   ,(lte)d4,(lte)(B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)f2,(lte)(B|Q) ,(lte)g1,(lte)(B|Q) 
+    ,(lte)1 ,(lte)a6,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)c6,(lte)(K|R|Q)   ,(lte)d6,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q)
+    ,(lte)5 ,(lte)b5,(lte)(K|R|Q)   ,(lte)b4,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q)
+    ,(lte)2 ,(lte)b7,(lte)(K|R|Q)   ,(lte)b8,(lte)(R|Q)
+    ,(lte)1 ,(lte)a5,(lte)(K|B|Q)
+    ,(lte)1 ,(lte)a7,(lte)(K|P|B|Q)
+    ,(lte)2 ,(lte)c7,(lte)(K|P|B|Q) ,(lte)d8,(lte)(B|Q)
+    ,(lte)5 ,(lte)c5,(lte)(K|B|Q)   ,(lte)d4,(lte)(B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)f2,(lte)(B|Q) ,(lte)g1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_b7[] =
 {
 (lte)8
-    ,(lte)1 ,(lte)a7,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)c7,(lte)(K|R|Q)   ,(lte)d7,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) 
-    ,(lte)6 ,(lte)b6,(lte)(K|R|Q)   ,(lte)b5,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)b8,(lte)(K|R|Q)   
-    ,(lte)1 ,(lte)a6,(lte)(K|B|Q)   
-    ,(lte)1 ,(lte)a8,(lte)(K|P|B|Q) 
-    ,(lte)1 ,(lte)c8,(lte)(K|P|B|Q) 
-    ,(lte)6 ,(lte)c6,(lte)(K|B|Q)   ,(lte)d5,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q) 
+    ,(lte)1 ,(lte)a7,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)c7,(lte)(K|R|Q)   ,(lte)d7,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q)
+    ,(lte)6 ,(lte)b6,(lte)(K|R|Q)   ,(lte)b5,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q)
+    ,(lte)1 ,(lte)b8,(lte)(K|R|Q)
+    ,(lte)1 ,(lte)a6,(lte)(K|B|Q)
+    ,(lte)1 ,(lte)a8,(lte)(K|P|B|Q)
+    ,(lte)1 ,(lte)c8,(lte)(K|P|B|Q)
+    ,(lte)6 ,(lte)c6,(lte)(K|B|Q)   ,(lte)d5,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_b8[] =
 {
 (lte)5
-    ,(lte)1 ,(lte)a8,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)c8,(lte)(K|R|Q)   ,(lte)d8,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)7 ,(lte)b7,(lte)(K|R|Q)   ,(lte)b6,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)a7,(lte)(K|B|Q)   
-    ,(lte)6 ,(lte)c7,(lte)(K|B|Q)   ,(lte)d6,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)g3,(lte)(B|Q) ,(lte)h2,(lte)(B|Q) 
+    ,(lte)1 ,(lte)a8,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)c8,(lte)(K|R|Q)   ,(lte)d8,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)7 ,(lte)b7,(lte)(K|R|Q)   ,(lte)b6,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q)
+    ,(lte)1 ,(lte)a7,(lte)(K|B|Q)
+    ,(lte)6 ,(lte)c7,(lte)(K|B|Q)   ,(lte)d6,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)g3,(lte)(B|Q) ,(lte)h2,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_c1[] =
 {
 (lte)5
-    ,(lte)2 ,(lte)b1,(lte)(K|R|Q)   ,(lte)a1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d1,(lte)(K|R|Q)   ,(lte)e1,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)7 ,(lte)c2,(lte)(K|R|Q)   ,(lte)c3,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)b2,(lte)(K|P|B|Q) ,(lte)a3,(lte)(B|Q) 
-    ,(lte)5 ,(lte)d2,(lte)(K|P|B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)g5,(lte)(B|Q) ,(lte)h6,(lte)(B|Q) 
+    ,(lte)2 ,(lte)b1,(lte)(K|R|Q)   ,(lte)a1,(lte)(R|Q)
+    ,(lte)5 ,(lte)d1,(lte)(K|R|Q)   ,(lte)e1,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)7 ,(lte)c2,(lte)(K|R|Q)   ,(lte)c3,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q)
+    ,(lte)2 ,(lte)b2,(lte)(K|P|B|Q) ,(lte)a3,(lte)(B|Q)
+    ,(lte)5 ,(lte)d2,(lte)(K|P|B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)g5,(lte)(B|Q) ,(lte)h6,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_c2[] =
 {
 (lte)8
-    ,(lte)2 ,(lte)b2,(lte)(K|R|Q)   ,(lte)a2,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d2,(lte)(K|R|Q)   ,(lte)e2,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) 
-    ,(lte)1 ,(lte)c1,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)c3,(lte)(K|R|Q)   ,(lte)c4,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)b1,(lte)(K|B|Q)   
-    ,(lte)2 ,(lte)b3,(lte)(K|P|B|Q) ,(lte)a4,(lte)(B|Q) 
-    ,(lte)5 ,(lte)d3,(lte)(K|P|B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)g6,(lte)(B|Q) ,(lte)h7,(lte)(B|Q) 
-    ,(lte)1 ,(lte)d1,(lte)(K|B|Q)   
+    ,(lte)2 ,(lte)b2,(lte)(K|R|Q)   ,(lte)a2,(lte)(R|Q)
+    ,(lte)5 ,(lte)d2,(lte)(K|R|Q)   ,(lte)e2,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q)
+    ,(lte)1 ,(lte)c1,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)c3,(lte)(K|R|Q)   ,(lte)c4,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q)
+    ,(lte)1 ,(lte)b1,(lte)(K|B|Q)
+    ,(lte)2 ,(lte)b3,(lte)(K|P|B|Q) ,(lte)a4,(lte)(B|Q)
+    ,(lte)5 ,(lte)d3,(lte)(K|P|B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)g6,(lte)(B|Q) ,(lte)h7,(lte)(B|Q)
+    ,(lte)1 ,(lte)d1,(lte)(K|B|Q)
 };
 static const lte attacks_white_lookup_c3[] =
 {
 (lte)8
-    ,(lte)2 ,(lte)b3,(lte)(K|R|Q)   ,(lte)a3,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d3,(lte)(K|R|Q)   ,(lte)e3,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) 
-    ,(lte)2 ,(lte)c2,(lte)(K|R|Q)   ,(lte)c1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)c4,(lte)(K|R|Q)   ,(lte)c5,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)b2,(lte)(K|B|Q)   ,(lte)a1,(lte)(B|Q) 
-    ,(lte)2 ,(lte)b4,(lte)(K|P|B|Q) ,(lte)a5,(lte)(B|Q) 
-    ,(lte)5 ,(lte)d4,(lte)(K|P|B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)d2,(lte)(K|B|Q)   ,(lte)e1,(lte)(B|Q) 
+    ,(lte)2 ,(lte)b3,(lte)(K|R|Q)   ,(lte)a3,(lte)(R|Q)
+    ,(lte)5 ,(lte)d3,(lte)(K|R|Q)   ,(lte)e3,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q)
+    ,(lte)2 ,(lte)c2,(lte)(K|R|Q)   ,(lte)c1,(lte)(R|Q)
+    ,(lte)5 ,(lte)c4,(lte)(K|R|Q)   ,(lte)c5,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q)
+    ,(lte)2 ,(lte)b2,(lte)(K|B|Q)   ,(lte)a1,(lte)(B|Q)
+    ,(lte)2 ,(lte)b4,(lte)(K|P|B|Q) ,(lte)a5,(lte)(B|Q)
+    ,(lte)5 ,(lte)d4,(lte)(K|P|B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q)
+    ,(lte)2 ,(lte)d2,(lte)(K|B|Q)   ,(lte)e1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_c4[] =
 {
 (lte)8
-    ,(lte)2 ,(lte)b4,(lte)(K|R|Q)   ,(lte)a4,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d4,(lte)(K|R|Q)   ,(lte)e4,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) 
-    ,(lte)3 ,(lte)c3,(lte)(K|R|Q)   ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)c5,(lte)(K|R|Q)   ,(lte)c6,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)b3,(lte)(K|B|Q)   ,(lte)a2,(lte)(B|Q) 
-    ,(lte)2 ,(lte)b5,(lte)(K|P|B|Q) ,(lte)a6,(lte)(B|Q) 
-    ,(lte)4 ,(lte)d5,(lte)(K|P|B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)f7,(lte)(B|Q) ,(lte)g8,(lte)(B|Q) 
-    ,(lte)3 ,(lte)d3,(lte)(K|B|Q)   ,(lte)e2,(lte)(B|Q) ,(lte)f1,(lte)(B|Q) 
+    ,(lte)2 ,(lte)b4,(lte)(K|R|Q)   ,(lte)a4,(lte)(R|Q)
+    ,(lte)5 ,(lte)d4,(lte)(K|R|Q)   ,(lte)e4,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q)
+    ,(lte)3 ,(lte)c3,(lte)(K|R|Q)   ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q)
+    ,(lte)4 ,(lte)c5,(lte)(K|R|Q)   ,(lte)c6,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q)
+    ,(lte)2 ,(lte)b3,(lte)(K|B|Q)   ,(lte)a2,(lte)(B|Q)
+    ,(lte)2 ,(lte)b5,(lte)(K|P|B|Q) ,(lte)a6,(lte)(B|Q)
+    ,(lte)4 ,(lte)d5,(lte)(K|P|B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)f7,(lte)(B|Q) ,(lte)g8,(lte)(B|Q)
+    ,(lte)3 ,(lte)d3,(lte)(K|B|Q)   ,(lte)e2,(lte)(B|Q) ,(lte)f1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_c5[] =
 {
 (lte)8
-    ,(lte)2 ,(lte)b5,(lte)(K|R|Q)   ,(lte)a5,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d5,(lte)(K|R|Q)   ,(lte)e5,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) 
-    ,(lte)4 ,(lte)c4,(lte)(K|R|Q)   ,(lte)c3,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)c6,(lte)(K|R|Q)   ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)b4,(lte)(K|B|Q)   ,(lte)a3,(lte)(B|Q) 
-    ,(lte)2 ,(lte)b6,(lte)(K|P|B|Q) ,(lte)a7,(lte)(B|Q) 
-    ,(lte)3 ,(lte)d6,(lte)(K|P|B|Q) ,(lte)e7,(lte)(B|Q) ,(lte)f8,(lte)(B|Q) 
-    ,(lte)4 ,(lte)d4,(lte)(K|B|Q)   ,(lte)e3,(lte)(B|Q) ,(lte)f2,(lte)(B|Q) ,(lte)g1,(lte)(B|Q) 
+    ,(lte)2 ,(lte)b5,(lte)(K|R|Q)   ,(lte)a5,(lte)(R|Q)
+    ,(lte)5 ,(lte)d5,(lte)(K|R|Q)   ,(lte)e5,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q)
+    ,(lte)4 ,(lte)c4,(lte)(K|R|Q)   ,(lte)c3,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q)
+    ,(lte)3 ,(lte)c6,(lte)(K|R|Q)   ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q)
+    ,(lte)2 ,(lte)b4,(lte)(K|B|Q)   ,(lte)a3,(lte)(B|Q)
+    ,(lte)2 ,(lte)b6,(lte)(K|P|B|Q) ,(lte)a7,(lte)(B|Q)
+    ,(lte)3 ,(lte)d6,(lte)(K|P|B|Q) ,(lte)e7,(lte)(B|Q) ,(lte)f8,(lte)(B|Q)
+    ,(lte)4 ,(lte)d4,(lte)(K|B|Q)   ,(lte)e3,(lte)(B|Q) ,(lte)f2,(lte)(B|Q) ,(lte)g1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_c6[] =
 {
 (lte)8
-    ,(lte)2 ,(lte)b6,(lte)(K|R|Q)   ,(lte)a6,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d6,(lte)(K|R|Q)   ,(lte)e6,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) 
-    ,(lte)5 ,(lte)c5,(lte)(K|R|Q)   ,(lte)c4,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)c7,(lte)(K|R|Q)   ,(lte)c8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)b5,(lte)(K|B|Q)   ,(lte)a4,(lte)(B|Q) 
-    ,(lte)2 ,(lte)b7,(lte)(K|P|B|Q) ,(lte)a8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)d7,(lte)(K|P|B|Q) ,(lte)e8,(lte)(B|Q) 
-    ,(lte)5 ,(lte)d5,(lte)(K|B|Q)   ,(lte)e4,(lte)(B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q) 
+    ,(lte)2 ,(lte)b6,(lte)(K|R|Q)   ,(lte)a6,(lte)(R|Q)
+    ,(lte)5 ,(lte)d6,(lte)(K|R|Q)   ,(lte)e6,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q)
+    ,(lte)5 ,(lte)c5,(lte)(K|R|Q)   ,(lte)c4,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q)
+    ,(lte)2 ,(lte)c7,(lte)(K|R|Q)   ,(lte)c8,(lte)(R|Q)
+    ,(lte)2 ,(lte)b5,(lte)(K|B|Q)   ,(lte)a4,(lte)(B|Q)
+    ,(lte)2 ,(lte)b7,(lte)(K|P|B|Q) ,(lte)a8,(lte)(B|Q)
+    ,(lte)2 ,(lte)d7,(lte)(K|P|B|Q) ,(lte)e8,(lte)(B|Q)
+    ,(lte)5 ,(lte)d5,(lte)(K|B|Q)   ,(lte)e4,(lte)(B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_c7[] =
 {
 (lte)8
-    ,(lte)2 ,(lte)b7,(lte)(K|R|Q)   ,(lte)a7,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d7,(lte)(K|R|Q)   ,(lte)e7,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) 
-    ,(lte)6 ,(lte)c6,(lte)(K|R|Q)   ,(lte)c5,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)c8,(lte)(K|R|Q)   
-    ,(lte)2 ,(lte)b6,(lte)(K|B|Q)   ,(lte)a5,(lte)(B|Q) 
-    ,(lte)1 ,(lte)b8,(lte)(K|P|B|Q) 
-    ,(lte)1 ,(lte)d8,(lte)(K|P|B|Q) 
-    ,(lte)5 ,(lte)d6,(lte)(K|B|Q)   ,(lte)e5,(lte)(B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)g3,(lte)(B|Q) ,(lte)h2,(lte)(B|Q) 
+    ,(lte)2 ,(lte)b7,(lte)(K|R|Q)   ,(lte)a7,(lte)(R|Q)
+    ,(lte)5 ,(lte)d7,(lte)(K|R|Q)   ,(lte)e7,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q)
+    ,(lte)6 ,(lte)c6,(lte)(K|R|Q)   ,(lte)c5,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q)
+    ,(lte)1 ,(lte)c8,(lte)(K|R|Q)
+    ,(lte)2 ,(lte)b6,(lte)(K|B|Q)   ,(lte)a5,(lte)(B|Q)
+    ,(lte)1 ,(lte)b8,(lte)(K|P|B|Q)
+    ,(lte)1 ,(lte)d8,(lte)(K|P|B|Q)
+    ,(lte)5 ,(lte)d6,(lte)(K|B|Q)   ,(lte)e5,(lte)(B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)g3,(lte)(B|Q) ,(lte)h2,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_c8[] =
 {
 (lte)5
-    ,(lte)2 ,(lte)b8,(lte)(K|R|Q)   ,(lte)a8,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d8,(lte)(K|R|Q)   ,(lte)e8,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)7 ,(lte)c7,(lte)(K|R|Q)   ,(lte)c6,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)b7,(lte)(K|B|Q)   ,(lte)a6,(lte)(B|Q) 
-    ,(lte)5 ,(lte)d7,(lte)(K|B|Q)   ,(lte)e6,(lte)(B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)g4,(lte)(B|Q) ,(lte)h3,(lte)(B|Q) 
+    ,(lte)2 ,(lte)b8,(lte)(K|R|Q)   ,(lte)a8,(lte)(R|Q)
+    ,(lte)5 ,(lte)d8,(lte)(K|R|Q)   ,(lte)e8,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)7 ,(lte)c7,(lte)(K|R|Q)   ,(lte)c6,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q)
+    ,(lte)2 ,(lte)b7,(lte)(K|B|Q)   ,(lte)a6,(lte)(B|Q)
+    ,(lte)5 ,(lte)d7,(lte)(K|B|Q)   ,(lte)e6,(lte)(B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)g4,(lte)(B|Q) ,(lte)h3,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_d1[] =
 {
 (lte)5
-    ,(lte)3 ,(lte)c1,(lte)(K|R|Q)   ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e1,(lte)(K|R|Q)   ,(lte)f1,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)7 ,(lte)d2,(lte)(K|R|Q)   ,(lte)d3,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)c2,(lte)(K|P|B|Q) ,(lte)b3,(lte)(B|Q) ,(lte)a4,(lte)(B|Q) 
-    ,(lte)4 ,(lte)e2,(lte)(K|P|B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)g4,(lte)(B|Q) ,(lte)h5,(lte)(B|Q) 
+    ,(lte)3 ,(lte)c1,(lte)(K|R|Q)   ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)4 ,(lte)e1,(lte)(K|R|Q)   ,(lte)f1,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)7 ,(lte)d2,(lte)(K|R|Q)   ,(lte)d3,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q)
+    ,(lte)3 ,(lte)c2,(lte)(K|P|B|Q) ,(lte)b3,(lte)(B|Q) ,(lte)a4,(lte)(B|Q)
+    ,(lte)4 ,(lte)e2,(lte)(K|P|B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)g4,(lte)(B|Q) ,(lte)h5,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_d2[] =
 {
 (lte)8
-    ,(lte)3 ,(lte)c2,(lte)(K|R|Q)   ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e2,(lte)(K|R|Q)   ,(lte)f2,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) 
-    ,(lte)1 ,(lte)d1,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)d3,(lte)(K|R|Q)   ,(lte)d4,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)c1,(lte)(K|B|Q)   
-    ,(lte)3 ,(lte)c3,(lte)(K|P|B|Q) ,(lte)b4,(lte)(B|Q) ,(lte)a5,(lte)(B|Q) 
-    ,(lte)4 ,(lte)e3,(lte)(K|P|B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)g5,(lte)(B|Q) ,(lte)h6,(lte)(B|Q) 
-    ,(lte)1 ,(lte)e1,(lte)(K|B|Q)   
+    ,(lte)3 ,(lte)c2,(lte)(K|R|Q)   ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q)
+    ,(lte)4 ,(lte)e2,(lte)(K|R|Q)   ,(lte)f2,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q)
+    ,(lte)1 ,(lte)d1,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)d3,(lte)(K|R|Q)   ,(lte)d4,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q)
+    ,(lte)1 ,(lte)c1,(lte)(K|B|Q)
+    ,(lte)3 ,(lte)c3,(lte)(K|P|B|Q) ,(lte)b4,(lte)(B|Q) ,(lte)a5,(lte)(B|Q)
+    ,(lte)4 ,(lte)e3,(lte)(K|P|B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)g5,(lte)(B|Q) ,(lte)h6,(lte)(B|Q)
+    ,(lte)1 ,(lte)e1,(lte)(K|B|Q)
 };
 static const lte attacks_white_lookup_d3[] =
 {
 (lte)8
-    ,(lte)3 ,(lte)c3,(lte)(K|R|Q)   ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e3,(lte)(K|R|Q)   ,(lte)f3,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) 
-    ,(lte)2 ,(lte)d2,(lte)(K|R|Q)   ,(lte)d1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d4,(lte)(K|R|Q)   ,(lte)d5,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)c2,(lte)(K|B|Q)   ,(lte)b1,(lte)(B|Q) 
-    ,(lte)3 ,(lte)c4,(lte)(K|P|B|Q) ,(lte)b5,(lte)(B|Q) ,(lte)a6,(lte)(B|Q) 
-    ,(lte)4 ,(lte)e4,(lte)(K|P|B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)g6,(lte)(B|Q) ,(lte)h7,(lte)(B|Q) 
-    ,(lte)2 ,(lte)e2,(lte)(K|B|Q)   ,(lte)f1,(lte)(B|Q) 
+    ,(lte)3 ,(lte)c3,(lte)(K|R|Q)   ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q)
+    ,(lte)4 ,(lte)e3,(lte)(K|R|Q)   ,(lte)f3,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q)
+    ,(lte)2 ,(lte)d2,(lte)(K|R|Q)   ,(lte)d1,(lte)(R|Q)
+    ,(lte)5 ,(lte)d4,(lte)(K|R|Q)   ,(lte)d5,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q)
+    ,(lte)2 ,(lte)c2,(lte)(K|B|Q)   ,(lte)b1,(lte)(B|Q)
+    ,(lte)3 ,(lte)c4,(lte)(K|P|B|Q) ,(lte)b5,(lte)(B|Q) ,(lte)a6,(lte)(B|Q)
+    ,(lte)4 ,(lte)e4,(lte)(K|P|B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)g6,(lte)(B|Q) ,(lte)h7,(lte)(B|Q)
+    ,(lte)2 ,(lte)e2,(lte)(K|B|Q)   ,(lte)f1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_d4[] =
 {
 (lte)8
-    ,(lte)3 ,(lte)c4,(lte)(K|R|Q)   ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e4,(lte)(K|R|Q)   ,(lte)f4,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) 
-    ,(lte)3 ,(lte)d3,(lte)(K|R|Q)   ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)d5,(lte)(K|R|Q)   ,(lte)d6,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)c3,(lte)(K|B|Q)   ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q) 
-    ,(lte)3 ,(lte)c5,(lte)(K|P|B|Q) ,(lte)b6,(lte)(B|Q) ,(lte)a7,(lte)(B|Q) 
-    ,(lte)4 ,(lte)e5,(lte)(K|P|B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q) 
-    ,(lte)3 ,(lte)e3,(lte)(K|B|Q)   ,(lte)f2,(lte)(B|Q) ,(lte)g1,(lte)(B|Q) 
+    ,(lte)3 ,(lte)c4,(lte)(K|R|Q)   ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q)
+    ,(lte)4 ,(lte)e4,(lte)(K|R|Q)   ,(lte)f4,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q)
+    ,(lte)3 ,(lte)d3,(lte)(K|R|Q)   ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q)
+    ,(lte)4 ,(lte)d5,(lte)(K|R|Q)   ,(lte)d6,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q)
+    ,(lte)3 ,(lte)c3,(lte)(K|B|Q)   ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q)
+    ,(lte)3 ,(lte)c5,(lte)(K|P|B|Q) ,(lte)b6,(lte)(B|Q) ,(lte)a7,(lte)(B|Q)
+    ,(lte)4 ,(lte)e5,(lte)(K|P|B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q)
+    ,(lte)3 ,(lte)e3,(lte)(K|B|Q)   ,(lte)f2,(lte)(B|Q) ,(lte)g1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_d5[] =
 {
 (lte)8
-    ,(lte)3 ,(lte)c5,(lte)(K|R|Q)   ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e5,(lte)(K|R|Q)   ,(lte)f5,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) 
-    ,(lte)4 ,(lte)d4,(lte)(K|R|Q)   ,(lte)d3,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)d6,(lte)(K|R|Q)   ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)c4,(lte)(K|B|Q)   ,(lte)b3,(lte)(B|Q) ,(lte)a2,(lte)(B|Q) 
-    ,(lte)3 ,(lte)c6,(lte)(K|P|B|Q) ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q) 
-    ,(lte)3 ,(lte)e6,(lte)(K|P|B|Q) ,(lte)f7,(lte)(B|Q) ,(lte)g8,(lte)(B|Q) 
-    ,(lte)4 ,(lte)e4,(lte)(K|B|Q)   ,(lte)f3,(lte)(B|Q) ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q) 
+    ,(lte)3 ,(lte)c5,(lte)(K|R|Q)   ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q)
+    ,(lte)4 ,(lte)e5,(lte)(K|R|Q)   ,(lte)f5,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q)
+    ,(lte)4 ,(lte)d4,(lte)(K|R|Q)   ,(lte)d3,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q)
+    ,(lte)3 ,(lte)d6,(lte)(K|R|Q)   ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q)
+    ,(lte)3 ,(lte)c4,(lte)(K|B|Q)   ,(lte)b3,(lte)(B|Q) ,(lte)a2,(lte)(B|Q)
+    ,(lte)3 ,(lte)c6,(lte)(K|P|B|Q) ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q)
+    ,(lte)3 ,(lte)e6,(lte)(K|P|B|Q) ,(lte)f7,(lte)(B|Q) ,(lte)g8,(lte)(B|Q)
+    ,(lte)4 ,(lte)e4,(lte)(K|B|Q)   ,(lte)f3,(lte)(B|Q) ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_d6[] =
 {
 (lte)8
-    ,(lte)3 ,(lte)c6,(lte)(K|R|Q)   ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e6,(lte)(K|R|Q)   ,(lte)f6,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d5,(lte)(K|R|Q)   ,(lte)d4,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)d7,(lte)(K|R|Q)   ,(lte)d8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)c5,(lte)(K|B|Q)   ,(lte)b4,(lte)(B|Q) ,(lte)a3,(lte)(B|Q) 
-    ,(lte)2 ,(lte)c7,(lte)(K|P|B|Q) ,(lte)b8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)e7,(lte)(K|P|B|Q) ,(lte)f8,(lte)(B|Q) 
-    ,(lte)4 ,(lte)e5,(lte)(K|B|Q)   ,(lte)f4,(lte)(B|Q) ,(lte)g3,(lte)(B|Q) ,(lte)h2,(lte)(B|Q) 
+    ,(lte)3 ,(lte)c6,(lte)(K|R|Q)   ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q)
+    ,(lte)4 ,(lte)e6,(lte)(K|R|Q)   ,(lte)f6,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q)
+    ,(lte)5 ,(lte)d5,(lte)(K|R|Q)   ,(lte)d4,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q)
+    ,(lte)2 ,(lte)d7,(lte)(K|R|Q)   ,(lte)d8,(lte)(R|Q)
+    ,(lte)3 ,(lte)c5,(lte)(K|B|Q)   ,(lte)b4,(lte)(B|Q) ,(lte)a3,(lte)(B|Q)
+    ,(lte)2 ,(lte)c7,(lte)(K|P|B|Q) ,(lte)b8,(lte)(B|Q)
+    ,(lte)2 ,(lte)e7,(lte)(K|P|B|Q) ,(lte)f8,(lte)(B|Q)
+    ,(lte)4 ,(lte)e5,(lte)(K|B|Q)   ,(lte)f4,(lte)(B|Q) ,(lte)g3,(lte)(B|Q) ,(lte)h2,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_d7[] =
 {
 (lte)8
-    ,(lte)3 ,(lte)c7,(lte)(K|R|Q)   ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e7,(lte)(K|R|Q)   ,(lte)f7,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) 
-    ,(lte)6 ,(lte)d6,(lte)(K|R|Q)   ,(lte)d5,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)d8,(lte)(K|R|Q)   
-    ,(lte)3 ,(lte)c6,(lte)(K|B|Q)   ,(lte)b5,(lte)(B|Q) ,(lte)a4,(lte)(B|Q) 
-    ,(lte)1 ,(lte)c8,(lte)(K|P|B|Q) 
-    ,(lte)1 ,(lte)e8,(lte)(K|P|B|Q) 
-    ,(lte)4 ,(lte)e6,(lte)(K|B|Q)   ,(lte)f5,(lte)(B|Q) ,(lte)g4,(lte)(B|Q) ,(lte)h3,(lte)(B|Q) 
+    ,(lte)3 ,(lte)c7,(lte)(K|R|Q)   ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q)
+    ,(lte)4 ,(lte)e7,(lte)(K|R|Q)   ,(lte)f7,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q)
+    ,(lte)6 ,(lte)d6,(lte)(K|R|Q)   ,(lte)d5,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q)
+    ,(lte)1 ,(lte)d8,(lte)(K|R|Q)
+    ,(lte)3 ,(lte)c6,(lte)(K|B|Q)   ,(lte)b5,(lte)(B|Q) ,(lte)a4,(lte)(B|Q)
+    ,(lte)1 ,(lte)c8,(lte)(K|P|B|Q)
+    ,(lte)1 ,(lte)e8,(lte)(K|P|B|Q)
+    ,(lte)4 ,(lte)e6,(lte)(K|B|Q)   ,(lte)f5,(lte)(B|Q) ,(lte)g4,(lte)(B|Q) ,(lte)h3,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_d8[] =
 {
 (lte)5
-    ,(lte)3 ,(lte)c8,(lte)(K|R|Q)   ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e8,(lte)(K|R|Q)   ,(lte)f8,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)7 ,(lte)d7,(lte)(K|R|Q)   ,(lte)d6,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)c7,(lte)(K|B|Q)   ,(lte)b6,(lte)(B|Q) ,(lte)a5,(lte)(B|Q) 
-    ,(lte)4 ,(lte)e7,(lte)(K|B|Q)   ,(lte)f6,(lte)(B|Q) ,(lte)g5,(lte)(B|Q) ,(lte)h4,(lte)(B|Q) 
+    ,(lte)3 ,(lte)c8,(lte)(K|R|Q)   ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)4 ,(lte)e8,(lte)(K|R|Q)   ,(lte)f8,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)7 ,(lte)d7,(lte)(K|R|Q)   ,(lte)d6,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q)
+    ,(lte)3 ,(lte)c7,(lte)(K|B|Q)   ,(lte)b6,(lte)(B|Q) ,(lte)a5,(lte)(B|Q)
+    ,(lte)4 ,(lte)e7,(lte)(K|B|Q)   ,(lte)f6,(lte)(B|Q) ,(lte)g5,(lte)(B|Q) ,(lte)h4,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_e1[] =
 {
 (lte)5
-    ,(lte)4 ,(lte)d1,(lte)(K|R|Q)   ,(lte)c1,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f1,(lte)(K|R|Q)   ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)7 ,(lte)e2,(lte)(K|R|Q)   ,(lte)e3,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) 
-    ,(lte)4 ,(lte)d2,(lte)(K|P|B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)b4,(lte)(B|Q) ,(lte)a5,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f2,(lte)(K|P|B|Q) ,(lte)g3,(lte)(B|Q) ,(lte)h4,(lte)(B|Q) 
+    ,(lte)4 ,(lte)d1,(lte)(K|R|Q)   ,(lte)c1,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)3 ,(lte)f1,(lte)(K|R|Q)   ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)7 ,(lte)e2,(lte)(K|R|Q)   ,(lte)e3,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q)
+    ,(lte)4 ,(lte)d2,(lte)(K|P|B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)b4,(lte)(B|Q) ,(lte)a5,(lte)(B|Q)
+    ,(lte)3 ,(lte)f2,(lte)(K|P|B|Q) ,(lte)g3,(lte)(B|Q) ,(lte)h4,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_e2[] =
 {
 (lte)8
-    ,(lte)4 ,(lte)d2,(lte)(K|R|Q)   ,(lte)c2,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f2,(lte)(K|R|Q)   ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) 
-    ,(lte)1 ,(lte)e1,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)e3,(lte)(K|R|Q)   ,(lte)e4,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)d1,(lte)(K|B|Q)   
-    ,(lte)4 ,(lte)d3,(lte)(K|P|B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)b5,(lte)(B|Q) ,(lte)a6,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f3,(lte)(K|P|B|Q) ,(lte)g4,(lte)(B|Q) ,(lte)h5,(lte)(B|Q) 
-    ,(lte)1 ,(lte)f1,(lte)(K|B|Q)   
+    ,(lte)4 ,(lte)d2,(lte)(K|R|Q)   ,(lte)c2,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q)
+    ,(lte)3 ,(lte)f2,(lte)(K|R|Q)   ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q)
+    ,(lte)1 ,(lte)e1,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)e3,(lte)(K|R|Q)   ,(lte)e4,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q)
+    ,(lte)1 ,(lte)d1,(lte)(K|B|Q)
+    ,(lte)4 ,(lte)d3,(lte)(K|P|B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)b5,(lte)(B|Q) ,(lte)a6,(lte)(B|Q)
+    ,(lte)3 ,(lte)f3,(lte)(K|P|B|Q) ,(lte)g4,(lte)(B|Q) ,(lte)h5,(lte)(B|Q)
+    ,(lte)1 ,(lte)f1,(lte)(K|B|Q)
 };
 static const lte attacks_white_lookup_e3[] =
 {
 (lte)8
-    ,(lte)4 ,(lte)d3,(lte)(K|R|Q)   ,(lte)c3,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f3,(lte)(K|R|Q)   ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) 
-    ,(lte)2 ,(lte)e2,(lte)(K|R|Q)   ,(lte)e1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)e4,(lte)(K|R|Q)   ,(lte)e5,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)d2,(lte)(K|B|Q)   ,(lte)c1,(lte)(B|Q) 
-    ,(lte)4 ,(lte)d4,(lte)(K|P|B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)b6,(lte)(B|Q) ,(lte)a7,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f4,(lte)(K|P|B|Q) ,(lte)g5,(lte)(B|Q) ,(lte)h6,(lte)(B|Q) 
-    ,(lte)2 ,(lte)f2,(lte)(K|B|Q)   ,(lte)g1,(lte)(B|Q) 
+    ,(lte)4 ,(lte)d3,(lte)(K|R|Q)   ,(lte)c3,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q)
+    ,(lte)3 ,(lte)f3,(lte)(K|R|Q)   ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q)
+    ,(lte)2 ,(lte)e2,(lte)(K|R|Q)   ,(lte)e1,(lte)(R|Q)
+    ,(lte)5 ,(lte)e4,(lte)(K|R|Q)   ,(lte)e5,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q)
+    ,(lte)2 ,(lte)d2,(lte)(K|B|Q)   ,(lte)c1,(lte)(B|Q)
+    ,(lte)4 ,(lte)d4,(lte)(K|P|B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)b6,(lte)(B|Q) ,(lte)a7,(lte)(B|Q)
+    ,(lte)3 ,(lte)f4,(lte)(K|P|B|Q) ,(lte)g5,(lte)(B|Q) ,(lte)h6,(lte)(B|Q)
+    ,(lte)2 ,(lte)f2,(lte)(K|B|Q)   ,(lte)g1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_e4[] =
 {
 (lte)8
-    ,(lte)4 ,(lte)d4,(lte)(K|R|Q)   ,(lte)c4,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f4,(lte)(K|R|Q)   ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) 
-    ,(lte)3 ,(lte)e3,(lte)(K|R|Q)   ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e5,(lte)(K|R|Q)   ,(lte)e6,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)d3,(lte)(K|B|Q)   ,(lte)c2,(lte)(B|Q) ,(lte)b1,(lte)(B|Q) 
-    ,(lte)4 ,(lte)d5,(lte)(K|P|B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f5,(lte)(K|P|B|Q) ,(lte)g6,(lte)(B|Q) ,(lte)h7,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f3,(lte)(K|B|Q)   ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q) 
+    ,(lte)4 ,(lte)d4,(lte)(K|R|Q)   ,(lte)c4,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q)
+    ,(lte)3 ,(lte)f4,(lte)(K|R|Q)   ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q)
+    ,(lte)3 ,(lte)e3,(lte)(K|R|Q)   ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q)
+    ,(lte)4 ,(lte)e5,(lte)(K|R|Q)   ,(lte)e6,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q)
+    ,(lte)3 ,(lte)d3,(lte)(K|B|Q)   ,(lte)c2,(lte)(B|Q) ,(lte)b1,(lte)(B|Q)
+    ,(lte)4 ,(lte)d5,(lte)(K|P|B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q)
+    ,(lte)3 ,(lte)f5,(lte)(K|P|B|Q) ,(lte)g6,(lte)(B|Q) ,(lte)h7,(lte)(B|Q)
+    ,(lte)3 ,(lte)f3,(lte)(K|B|Q)   ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_e5[] =
 {
 (lte)8
-    ,(lte)4 ,(lte)d5,(lte)(K|R|Q)   ,(lte)c5,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f5,(lte)(K|R|Q)   ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e4,(lte)(K|R|Q)   ,(lte)e3,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)e6,(lte)(K|R|Q)   ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) 
-    ,(lte)4 ,(lte)d4,(lte)(K|B|Q)   ,(lte)c3,(lte)(B|Q) ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q) 
-    ,(lte)3 ,(lte)d6,(lte)(K|P|B|Q) ,(lte)c7,(lte)(B|Q) ,(lte)b8,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f6,(lte)(K|P|B|Q) ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f4,(lte)(K|B|Q)   ,(lte)g3,(lte)(B|Q) ,(lte)h2,(lte)(B|Q) 
+    ,(lte)4 ,(lte)d5,(lte)(K|R|Q)   ,(lte)c5,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q)
+    ,(lte)3 ,(lte)f5,(lte)(K|R|Q)   ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q)
+    ,(lte)4 ,(lte)e4,(lte)(K|R|Q)   ,(lte)e3,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q)
+    ,(lte)3 ,(lte)e6,(lte)(K|R|Q)   ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q)
+    ,(lte)4 ,(lte)d4,(lte)(K|B|Q)   ,(lte)c3,(lte)(B|Q) ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q)
+    ,(lte)3 ,(lte)d6,(lte)(K|P|B|Q) ,(lte)c7,(lte)(B|Q) ,(lte)b8,(lte)(B|Q)
+    ,(lte)3 ,(lte)f6,(lte)(K|P|B|Q) ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q)
+    ,(lte)3 ,(lte)f4,(lte)(K|B|Q)   ,(lte)g3,(lte)(B|Q) ,(lte)h2,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_e6[] =
 {
 (lte)8
-    ,(lte)4 ,(lte)d6,(lte)(K|R|Q)   ,(lte)c6,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f6,(lte)(K|R|Q)   ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) 
-    ,(lte)5 ,(lte)e5,(lte)(K|R|Q)   ,(lte)e4,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)e7,(lte)(K|R|Q)   ,(lte)e8,(lte)(R|Q) 
-    ,(lte)4 ,(lte)d5,(lte)(K|B|Q)   ,(lte)c4,(lte)(B|Q) ,(lte)b3,(lte)(B|Q) ,(lte)a2,(lte)(B|Q) 
-    ,(lte)2 ,(lte)d7,(lte)(K|P|B|Q) ,(lte)c8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)f7,(lte)(K|P|B|Q) ,(lte)g8,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f5,(lte)(K|B|Q)   ,(lte)g4,(lte)(B|Q) ,(lte)h3,(lte)(B|Q) 
+    ,(lte)4 ,(lte)d6,(lte)(K|R|Q)   ,(lte)c6,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q)
+    ,(lte)3 ,(lte)f6,(lte)(K|R|Q)   ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q)
+    ,(lte)5 ,(lte)e5,(lte)(K|R|Q)   ,(lte)e4,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q)
+    ,(lte)2 ,(lte)e7,(lte)(K|R|Q)   ,(lte)e8,(lte)(R|Q)
+    ,(lte)4 ,(lte)d5,(lte)(K|B|Q)   ,(lte)c4,(lte)(B|Q) ,(lte)b3,(lte)(B|Q) ,(lte)a2,(lte)(B|Q)
+    ,(lte)2 ,(lte)d7,(lte)(K|P|B|Q) ,(lte)c8,(lte)(B|Q)
+    ,(lte)2 ,(lte)f7,(lte)(K|P|B|Q) ,(lte)g8,(lte)(B|Q)
+    ,(lte)3 ,(lte)f5,(lte)(K|B|Q)   ,(lte)g4,(lte)(B|Q) ,(lte)h3,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_e7[] =
 {
 (lte)8
-    ,(lte)4 ,(lte)d7,(lte)(K|R|Q)   ,(lte)c7,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f7,(lte)(K|R|Q)   ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) 
-    ,(lte)6 ,(lte)e6,(lte)(K|R|Q)   ,(lte)e5,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)e8,(lte)(K|R|Q)   
-    ,(lte)4 ,(lte)d6,(lte)(K|B|Q)   ,(lte)c5,(lte)(B|Q) ,(lte)b4,(lte)(B|Q) ,(lte)a3,(lte)(B|Q) 
-    ,(lte)1 ,(lte)d8,(lte)(K|P|B|Q) 
-    ,(lte)1 ,(lte)f8,(lte)(K|P|B|Q) 
-    ,(lte)3 ,(lte)f6,(lte)(K|B|Q)   ,(lte)g5,(lte)(B|Q) ,(lte)h4,(lte)(B|Q) 
+    ,(lte)4 ,(lte)d7,(lte)(K|R|Q)   ,(lte)c7,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q)
+    ,(lte)3 ,(lte)f7,(lte)(K|R|Q)   ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q)
+    ,(lte)6 ,(lte)e6,(lte)(K|R|Q)   ,(lte)e5,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q)
+    ,(lte)1 ,(lte)e8,(lte)(K|R|Q)
+    ,(lte)4 ,(lte)d6,(lte)(K|B|Q)   ,(lte)c5,(lte)(B|Q) ,(lte)b4,(lte)(B|Q) ,(lte)a3,(lte)(B|Q)
+    ,(lte)1 ,(lte)d8,(lte)(K|P|B|Q)
+    ,(lte)1 ,(lte)f8,(lte)(K|P|B|Q)
+    ,(lte)3 ,(lte)f6,(lte)(K|B|Q)   ,(lte)g5,(lte)(B|Q) ,(lte)h4,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_e8[] =
 {
 (lte)5
-    ,(lte)4 ,(lte)d8,(lte)(K|R|Q)   ,(lte)c8,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f8,(lte)(K|R|Q)   ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)7 ,(lte)e7,(lte)(K|R|Q)   ,(lte)e6,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)d7,(lte)(K|B|Q)   ,(lte)c6,(lte)(B|Q) ,(lte)b5,(lte)(B|Q) ,(lte)a4,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f7,(lte)(K|B|Q)   ,(lte)g6,(lte)(B|Q) ,(lte)h5,(lte)(B|Q) 
+    ,(lte)4 ,(lte)d8,(lte)(K|R|Q)   ,(lte)c8,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)3 ,(lte)f8,(lte)(K|R|Q)   ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)7 ,(lte)e7,(lte)(K|R|Q)   ,(lte)e6,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q)
+    ,(lte)4 ,(lte)d7,(lte)(K|B|Q)   ,(lte)c6,(lte)(B|Q) ,(lte)b5,(lte)(B|Q) ,(lte)a4,(lte)(B|Q)
+    ,(lte)3 ,(lte)f7,(lte)(K|B|Q)   ,(lte)g6,(lte)(B|Q) ,(lte)h5,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_f1[] =
 {
 (lte)5
-    ,(lte)5 ,(lte)e1,(lte)(K|R|Q)   ,(lte)d1,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g1,(lte)(K|R|Q)   ,(lte)h1,(lte)(R|Q) 
-    ,(lte)7 ,(lte)f2,(lte)(K|R|Q)   ,(lte)f3,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) 
-    ,(lte)5 ,(lte)e2,(lte)(K|P|B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)b5,(lte)(B|Q) ,(lte)a6,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g2,(lte)(K|P|B|Q) ,(lte)h3,(lte)(B|Q) 
+    ,(lte)5 ,(lte)e1,(lte)(K|R|Q)   ,(lte)d1,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)2 ,(lte)g1,(lte)(K|R|Q)   ,(lte)h1,(lte)(R|Q)
+    ,(lte)7 ,(lte)f2,(lte)(K|R|Q)   ,(lte)f3,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q)
+    ,(lte)5 ,(lte)e2,(lte)(K|P|B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)b5,(lte)(B|Q) ,(lte)a6,(lte)(B|Q)
+    ,(lte)2 ,(lte)g2,(lte)(K|P|B|Q) ,(lte)h3,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_f2[] =
 {
 (lte)8
-    ,(lte)5 ,(lte)e2,(lte)(K|R|Q)   ,(lte)d2,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g2,(lte)(K|R|Q)   ,(lte)h2,(lte)(R|Q) 
-    ,(lte)1 ,(lte)f1,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)f3,(lte)(K|R|Q)   ,(lte)f4,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)e1,(lte)(K|B|Q)   
-    ,(lte)5 ,(lte)e3,(lte)(K|P|B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)b6,(lte)(B|Q) ,(lte)a7,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g3,(lte)(K|P|B|Q) ,(lte)h4,(lte)(B|Q) 
-    ,(lte)1 ,(lte)g1,(lte)(K|B|Q)   
+    ,(lte)5 ,(lte)e2,(lte)(K|R|Q)   ,(lte)d2,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q)
+    ,(lte)2 ,(lte)g2,(lte)(K|R|Q)   ,(lte)h2,(lte)(R|Q)
+    ,(lte)1 ,(lte)f1,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)f3,(lte)(K|R|Q)   ,(lte)f4,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q)
+    ,(lte)1 ,(lte)e1,(lte)(K|B|Q)
+    ,(lte)5 ,(lte)e3,(lte)(K|P|B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)b6,(lte)(B|Q) ,(lte)a7,(lte)(B|Q)
+    ,(lte)2 ,(lte)g3,(lte)(K|P|B|Q) ,(lte)h4,(lte)(B|Q)
+    ,(lte)1 ,(lte)g1,(lte)(K|B|Q)
 };
 static const lte attacks_white_lookup_f3[] =
 {
 (lte)8
-    ,(lte)5 ,(lte)e3,(lte)(K|R|Q)   ,(lte)d3,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g3,(lte)(K|R|Q)   ,(lte)h3,(lte)(R|Q) 
-    ,(lte)2 ,(lte)f2,(lte)(K|R|Q)   ,(lte)f1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)f4,(lte)(K|R|Q)   ,(lte)f5,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)e2,(lte)(K|B|Q)   ,(lte)d1,(lte)(B|Q) 
-    ,(lte)5 ,(lte)e4,(lte)(K|P|B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g4,(lte)(K|P|B|Q) ,(lte)h5,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g2,(lte)(K|B|Q)   ,(lte)h1,(lte)(B|Q) 
+    ,(lte)5 ,(lte)e3,(lte)(K|R|Q)   ,(lte)d3,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q)
+    ,(lte)2 ,(lte)g3,(lte)(K|R|Q)   ,(lte)h3,(lte)(R|Q)
+    ,(lte)2 ,(lte)f2,(lte)(K|R|Q)   ,(lte)f1,(lte)(R|Q)
+    ,(lte)5 ,(lte)f4,(lte)(K|R|Q)   ,(lte)f5,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q)
+    ,(lte)2 ,(lte)e2,(lte)(K|B|Q)   ,(lte)d1,(lte)(B|Q)
+    ,(lte)5 ,(lte)e4,(lte)(K|P|B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q)
+    ,(lte)2 ,(lte)g4,(lte)(K|P|B|Q) ,(lte)h5,(lte)(B|Q)
+    ,(lte)2 ,(lte)g2,(lte)(K|B|Q)   ,(lte)h1,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_f4[] =
 {
 (lte)8
-    ,(lte)5 ,(lte)e4,(lte)(K|R|Q)   ,(lte)d4,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g4,(lte)(K|R|Q)   ,(lte)h4,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f3,(lte)(K|R|Q)   ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)f5,(lte)(K|R|Q)   ,(lte)f6,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)e3,(lte)(K|B|Q)   ,(lte)d2,(lte)(B|Q) ,(lte)c1,(lte)(B|Q) 
-    ,(lte)4 ,(lte)e5,(lte)(K|P|B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)c7,(lte)(B|Q) ,(lte)b8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g5,(lte)(K|P|B|Q) ,(lte)h6,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g3,(lte)(K|B|Q)   ,(lte)h2,(lte)(B|Q) 
+    ,(lte)5 ,(lte)e4,(lte)(K|R|Q)   ,(lte)d4,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q)
+    ,(lte)2 ,(lte)g4,(lte)(K|R|Q)   ,(lte)h4,(lte)(R|Q)
+    ,(lte)3 ,(lte)f3,(lte)(K|R|Q)   ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q)
+    ,(lte)4 ,(lte)f5,(lte)(K|R|Q)   ,(lte)f6,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q)
+    ,(lte)3 ,(lte)e3,(lte)(K|B|Q)   ,(lte)d2,(lte)(B|Q) ,(lte)c1,(lte)(B|Q)
+    ,(lte)4 ,(lte)e5,(lte)(K|P|B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)c7,(lte)(B|Q) ,(lte)b8,(lte)(B|Q)
+    ,(lte)2 ,(lte)g5,(lte)(K|P|B|Q) ,(lte)h6,(lte)(B|Q)
+    ,(lte)2 ,(lte)g3,(lte)(K|B|Q)   ,(lte)h2,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_f5[] =
 {
 (lte)8
-    ,(lte)5 ,(lte)e5,(lte)(K|R|Q)   ,(lte)d5,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g5,(lte)(K|R|Q)   ,(lte)h5,(lte)(R|Q) 
-    ,(lte)4 ,(lte)f4,(lte)(K|R|Q)   ,(lte)f3,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f6,(lte)(K|R|Q)   ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e4,(lte)(K|B|Q)   ,(lte)d3,(lte)(B|Q) ,(lte)c2,(lte)(B|Q) ,(lte)b1,(lte)(B|Q) 
-    ,(lte)3 ,(lte)e6,(lte)(K|P|B|Q) ,(lte)d7,(lte)(B|Q) ,(lte)c8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g6,(lte)(K|P|B|Q) ,(lte)h7,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g4,(lte)(K|B|Q)   ,(lte)h3,(lte)(B|Q) 
+    ,(lte)5 ,(lte)e5,(lte)(K|R|Q)   ,(lte)d5,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q)
+    ,(lte)2 ,(lte)g5,(lte)(K|R|Q)   ,(lte)h5,(lte)(R|Q)
+    ,(lte)4 ,(lte)f4,(lte)(K|R|Q)   ,(lte)f3,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q)
+    ,(lte)3 ,(lte)f6,(lte)(K|R|Q)   ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q)
+    ,(lte)4 ,(lte)e4,(lte)(K|B|Q)   ,(lte)d3,(lte)(B|Q) ,(lte)c2,(lte)(B|Q) ,(lte)b1,(lte)(B|Q)
+    ,(lte)3 ,(lte)e6,(lte)(K|P|B|Q) ,(lte)d7,(lte)(B|Q) ,(lte)c8,(lte)(B|Q)
+    ,(lte)2 ,(lte)g6,(lte)(K|P|B|Q) ,(lte)h7,(lte)(B|Q)
+    ,(lte)2 ,(lte)g4,(lte)(K|B|Q)   ,(lte)h3,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_f6[] =
 {
 (lte)8
-    ,(lte)5 ,(lte)e6,(lte)(K|R|Q)   ,(lte)d6,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g6,(lte)(K|R|Q)   ,(lte)h6,(lte)(R|Q) 
-    ,(lte)5 ,(lte)f5,(lte)(K|R|Q)   ,(lte)f4,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)f7,(lte)(K|R|Q)   ,(lte)f8,(lte)(R|Q) 
-    ,(lte)5 ,(lte)e5,(lte)(K|B|Q)   ,(lte)d4,(lte)(B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q) 
-    ,(lte)2 ,(lte)e7,(lte)(K|P|B|Q) ,(lte)d8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g7,(lte)(K|P|B|Q) ,(lte)h8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g5,(lte)(K|B|Q)   ,(lte)h4,(lte)(B|Q) 
+    ,(lte)5 ,(lte)e6,(lte)(K|R|Q)   ,(lte)d6,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q)
+    ,(lte)2 ,(lte)g6,(lte)(K|R|Q)   ,(lte)h6,(lte)(R|Q)
+    ,(lte)5 ,(lte)f5,(lte)(K|R|Q)   ,(lte)f4,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q)
+    ,(lte)2 ,(lte)f7,(lte)(K|R|Q)   ,(lte)f8,(lte)(R|Q)
+    ,(lte)5 ,(lte)e5,(lte)(K|B|Q)   ,(lte)d4,(lte)(B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q)
+    ,(lte)2 ,(lte)e7,(lte)(K|P|B|Q) ,(lte)d8,(lte)(B|Q)
+    ,(lte)2 ,(lte)g7,(lte)(K|P|B|Q) ,(lte)h8,(lte)(B|Q)
+    ,(lte)2 ,(lte)g5,(lte)(K|B|Q)   ,(lte)h4,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_f7[] =
 {
 (lte)8
-    ,(lte)5 ,(lte)e7,(lte)(K|R|Q)   ,(lte)d7,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g7,(lte)(K|R|Q)   ,(lte)h7,(lte)(R|Q) 
-    ,(lte)6 ,(lte)f6,(lte)(K|R|Q)   ,(lte)f5,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)f8,(lte)(K|R|Q)   
-    ,(lte)5 ,(lte)e6,(lte)(K|B|Q)   ,(lte)d5,(lte)(B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)b3,(lte)(B|Q) ,(lte)a2,(lte)(B|Q) 
-    ,(lte)1 ,(lte)e8,(lte)(K|P|B|Q) 
-    ,(lte)1 ,(lte)g8,(lte)(K|P|B|Q) 
-    ,(lte)2 ,(lte)g6,(lte)(K|B|Q)   ,(lte)h5,(lte)(B|Q) 
+    ,(lte)5 ,(lte)e7,(lte)(K|R|Q)   ,(lte)d7,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q)
+    ,(lte)2 ,(lte)g7,(lte)(K|R|Q)   ,(lte)h7,(lte)(R|Q)
+    ,(lte)6 ,(lte)f6,(lte)(K|R|Q)   ,(lte)f5,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q)
+    ,(lte)1 ,(lte)f8,(lte)(K|R|Q)
+    ,(lte)5 ,(lte)e6,(lte)(K|B|Q)   ,(lte)d5,(lte)(B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)b3,(lte)(B|Q) ,(lte)a2,(lte)(B|Q)
+    ,(lte)1 ,(lte)e8,(lte)(K|P|B|Q)
+    ,(lte)1 ,(lte)g8,(lte)(K|P|B|Q)
+    ,(lte)2 ,(lte)g6,(lte)(K|B|Q)   ,(lte)h5,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_f8[] =
 {
 (lte)5
-    ,(lte)5 ,(lte)e8,(lte)(K|R|Q)   ,(lte)d8,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g8,(lte)(K|R|Q)   ,(lte)h8,(lte)(R|Q) 
-    ,(lte)7 ,(lte)f7,(lte)(K|R|Q)   ,(lte)f6,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)e7,(lte)(K|B|Q)   ,(lte)d6,(lte)(B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)b4,(lte)(B|Q) ,(lte)a3,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g7,(lte)(K|B|Q)   ,(lte)h6,(lte)(B|Q) 
+    ,(lte)5 ,(lte)e8,(lte)(K|R|Q)   ,(lte)d8,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)2 ,(lte)g8,(lte)(K|R|Q)   ,(lte)h8,(lte)(R|Q)
+    ,(lte)7 ,(lte)f7,(lte)(K|R|Q)   ,(lte)f6,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q)
+    ,(lte)5 ,(lte)e7,(lte)(K|B|Q)   ,(lte)d6,(lte)(B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)b4,(lte)(B|Q) ,(lte)a3,(lte)(B|Q)
+    ,(lte)2 ,(lte)g7,(lte)(K|B|Q)   ,(lte)h6,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_g1[] =
 {
 (lte)5
-    ,(lte)6 ,(lte)f1,(lte)(K|R|Q)   ,(lte)e1,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h1,(lte)(K|R|Q)   
-    ,(lte)7 ,(lte)g2,(lte)(K|R|Q)   ,(lte)g3,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) 
-    ,(lte)6 ,(lte)f2,(lte)(K|P|B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)b6,(lte)(B|Q) ,(lte)a7,(lte)(B|Q) 
-    ,(lte)1 ,(lte)h2,(lte)(K|P|B|Q) 
+    ,(lte)6 ,(lte)f1,(lte)(K|R|Q)   ,(lte)e1,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)1 ,(lte)h1,(lte)(K|R|Q)
+    ,(lte)7 ,(lte)g2,(lte)(K|R|Q)   ,(lte)g3,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q)
+    ,(lte)6 ,(lte)f2,(lte)(K|P|B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)b6,(lte)(B|Q) ,(lte)a7,(lte)(B|Q)
+    ,(lte)1 ,(lte)h2,(lte)(K|P|B|Q)
 };
 static const lte attacks_white_lookup_g2[] =
 {
 (lte)8
-    ,(lte)6 ,(lte)f2,(lte)(K|R|Q)   ,(lte)e2,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h2,(lte)(K|R|Q)   
-    ,(lte)1 ,(lte)g1,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)g3,(lte)(K|R|Q)   ,(lte)g4,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)f1,(lte)(K|B|Q)   
-    ,(lte)6 ,(lte)f3,(lte)(K|P|B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q) 
-    ,(lte)1 ,(lte)h3,(lte)(K|P|B|Q) 
-    ,(lte)1 ,(lte)h1,(lte)(K|B|Q)   
+    ,(lte)6 ,(lte)f2,(lte)(K|R|Q)   ,(lte)e2,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q)
+    ,(lte)1 ,(lte)h2,(lte)(K|R|Q)
+    ,(lte)1 ,(lte)g1,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)g3,(lte)(K|R|Q)   ,(lte)g4,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q)
+    ,(lte)1 ,(lte)f1,(lte)(K|B|Q)
+    ,(lte)6 ,(lte)f3,(lte)(K|P|B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q)
+    ,(lte)1 ,(lte)h3,(lte)(K|P|B|Q)
+    ,(lte)1 ,(lte)h1,(lte)(K|B|Q)
 };
 static const lte attacks_white_lookup_g3[] =
 {
 (lte)8
-    ,(lte)6 ,(lte)f3,(lte)(K|R|Q)   ,(lte)e3,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h3,(lte)(K|R|Q)   
-    ,(lte)2 ,(lte)g2,(lte)(K|R|Q)   ,(lte)g1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)g4,(lte)(K|R|Q)   ,(lte)g5,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)f2,(lte)(K|B|Q)   ,(lte)e1,(lte)(B|Q) 
-    ,(lte)5 ,(lte)f4,(lte)(K|P|B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)c7,(lte)(B|Q) ,(lte)b8,(lte)(B|Q) 
-    ,(lte)1 ,(lte)h4,(lte)(K|P|B|Q) 
-    ,(lte)1 ,(lte)h2,(lte)(K|B|Q)   
+    ,(lte)6 ,(lte)f3,(lte)(K|R|Q)   ,(lte)e3,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q)
+    ,(lte)1 ,(lte)h3,(lte)(K|R|Q)
+    ,(lte)2 ,(lte)g2,(lte)(K|R|Q)   ,(lte)g1,(lte)(R|Q)
+    ,(lte)5 ,(lte)g4,(lte)(K|R|Q)   ,(lte)g5,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q)
+    ,(lte)2 ,(lte)f2,(lte)(K|B|Q)   ,(lte)e1,(lte)(B|Q)
+    ,(lte)5 ,(lte)f4,(lte)(K|P|B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)c7,(lte)(B|Q) ,(lte)b8,(lte)(B|Q)
+    ,(lte)1 ,(lte)h4,(lte)(K|P|B|Q)
+    ,(lte)1 ,(lte)h2,(lte)(K|B|Q)
 };
 static const lte attacks_white_lookup_g4[] =
 {
 (lte)8
-    ,(lte)6 ,(lte)f4,(lte)(K|R|Q)   ,(lte)e4,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h4,(lte)(K|R|Q)   
-    ,(lte)3 ,(lte)g3,(lte)(K|R|Q)   ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)g5,(lte)(K|R|Q)   ,(lte)g6,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f3,(lte)(K|B|Q)   ,(lte)e2,(lte)(B|Q) ,(lte)d1,(lte)(B|Q) 
-    ,(lte)4 ,(lte)f5,(lte)(K|P|B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)d7,(lte)(B|Q) ,(lte)c8,(lte)(B|Q) 
-    ,(lte)1 ,(lte)h5,(lte)(K|P|B|Q) 
-    ,(lte)1 ,(lte)h3,(lte)(K|B|Q)   
+    ,(lte)6 ,(lte)f4,(lte)(K|R|Q)   ,(lte)e4,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q)
+    ,(lte)1 ,(lte)h4,(lte)(K|R|Q)
+    ,(lte)3 ,(lte)g3,(lte)(K|R|Q)   ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q)
+    ,(lte)4 ,(lte)g5,(lte)(K|R|Q)   ,(lte)g6,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q)
+    ,(lte)3 ,(lte)f3,(lte)(K|B|Q)   ,(lte)e2,(lte)(B|Q) ,(lte)d1,(lte)(B|Q)
+    ,(lte)4 ,(lte)f5,(lte)(K|P|B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)d7,(lte)(B|Q) ,(lte)c8,(lte)(B|Q)
+    ,(lte)1 ,(lte)h5,(lte)(K|P|B|Q)
+    ,(lte)1 ,(lte)h3,(lte)(K|B|Q)
 };
 static const lte attacks_white_lookup_g5[] =
 {
 (lte)8
-    ,(lte)6 ,(lte)f5,(lte)(K|R|Q)   ,(lte)e5,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h5,(lte)(K|R|Q)   
-    ,(lte)4 ,(lte)g4,(lte)(K|R|Q)   ,(lte)g3,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)g6,(lte)(K|R|Q)   ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) 
-    ,(lte)4 ,(lte)f4,(lte)(K|B|Q)   ,(lte)e3,(lte)(B|Q) ,(lte)d2,(lte)(B|Q) ,(lte)c1,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f6,(lte)(K|P|B|Q) ,(lte)e7,(lte)(B|Q) ,(lte)d8,(lte)(B|Q) 
-    ,(lte)1 ,(lte)h6,(lte)(K|P|B|Q) 
-    ,(lte)1 ,(lte)h4,(lte)(K|B|Q)   
+    ,(lte)6 ,(lte)f5,(lte)(K|R|Q)   ,(lte)e5,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q)
+    ,(lte)1 ,(lte)h5,(lte)(K|R|Q)
+    ,(lte)4 ,(lte)g4,(lte)(K|R|Q)   ,(lte)g3,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q)
+    ,(lte)3 ,(lte)g6,(lte)(K|R|Q)   ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q)
+    ,(lte)4 ,(lte)f4,(lte)(K|B|Q)   ,(lte)e3,(lte)(B|Q) ,(lte)d2,(lte)(B|Q) ,(lte)c1,(lte)(B|Q)
+    ,(lte)3 ,(lte)f6,(lte)(K|P|B|Q) ,(lte)e7,(lte)(B|Q) ,(lte)d8,(lte)(B|Q)
+    ,(lte)1 ,(lte)h6,(lte)(K|P|B|Q)
+    ,(lte)1 ,(lte)h4,(lte)(K|B|Q)
 };
 static const lte attacks_white_lookup_g6[] =
 {
 (lte)8
-    ,(lte)6 ,(lte)f6,(lte)(K|R|Q)   ,(lte)e6,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h6,(lte)(K|R|Q)   
-    ,(lte)5 ,(lte)g5,(lte)(K|R|Q)   ,(lte)g4,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g7,(lte)(K|R|Q)   ,(lte)g8,(lte)(R|Q) 
-    ,(lte)5 ,(lte)f5,(lte)(K|B|Q)   ,(lte)e4,(lte)(B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)c2,(lte)(B|Q) ,(lte)b1,(lte)(B|Q) 
-    ,(lte)2 ,(lte)f7,(lte)(K|P|B|Q) ,(lte)e8,(lte)(B|Q) 
-    ,(lte)1 ,(lte)h7,(lte)(K|P|B|Q) 
-    ,(lte)1 ,(lte)h5,(lte)(K|B|Q)   
+    ,(lte)6 ,(lte)f6,(lte)(K|R|Q)   ,(lte)e6,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q)
+    ,(lte)1 ,(lte)h6,(lte)(K|R|Q)
+    ,(lte)5 ,(lte)g5,(lte)(K|R|Q)   ,(lte)g4,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q)
+    ,(lte)2 ,(lte)g7,(lte)(K|R|Q)   ,(lte)g8,(lte)(R|Q)
+    ,(lte)5 ,(lte)f5,(lte)(K|B|Q)   ,(lte)e4,(lte)(B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)c2,(lte)(B|Q) ,(lte)b1,(lte)(B|Q)
+    ,(lte)2 ,(lte)f7,(lte)(K|P|B|Q) ,(lte)e8,(lte)(B|Q)
+    ,(lte)1 ,(lte)h7,(lte)(K|P|B|Q)
+    ,(lte)1 ,(lte)h5,(lte)(K|B|Q)
 };
 static const lte attacks_white_lookup_g7[] =
 {
 (lte)8
-    ,(lte)6 ,(lte)f7,(lte)(K|R|Q)   ,(lte)e7,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h7,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)g6,(lte)(K|R|Q)   ,(lte)g5,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)g8,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)f6,(lte)(K|B|Q)   ,(lte)e5,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q) 
-    ,(lte)1 ,(lte)f8,(lte)(K|P|B|Q) 
-    ,(lte)1 ,(lte)h8,(lte)(K|P|B|Q) 
-    ,(lte)1 ,(lte)h6,(lte)(K|B|Q)   
+    ,(lte)6 ,(lte)f7,(lte)(K|R|Q)   ,(lte)e7,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q)
+    ,(lte)1 ,(lte)h7,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)g6,(lte)(K|R|Q)   ,(lte)g5,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q)
+    ,(lte)1 ,(lte)g8,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)f6,(lte)(K|B|Q)   ,(lte)e5,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q)
+    ,(lte)1 ,(lte)f8,(lte)(K|P|B|Q)
+    ,(lte)1 ,(lte)h8,(lte)(K|P|B|Q)
+    ,(lte)1 ,(lte)h6,(lte)(K|B|Q)
 };
 static const lte attacks_white_lookup_g8[] =
 {
 (lte)5
-    ,(lte)6 ,(lte)f8,(lte)(K|R|Q)   ,(lte)e8,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h8,(lte)(K|R|Q)   
-    ,(lte)7 ,(lte)g7,(lte)(K|R|Q)   ,(lte)g6,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) 
-    ,(lte)6 ,(lte)f7,(lte)(K|B|Q)   ,(lte)e6,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)b3,(lte)(B|Q) ,(lte)a2,(lte)(B|Q) 
-    ,(lte)1 ,(lte)h7,(lte)(K|B|Q)   
+    ,(lte)6 ,(lte)f8,(lte)(K|R|Q)   ,(lte)e8,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)1 ,(lte)h8,(lte)(K|R|Q)
+    ,(lte)7 ,(lte)g7,(lte)(K|R|Q)   ,(lte)g6,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q)
+    ,(lte)6 ,(lte)f7,(lte)(K|B|Q)   ,(lte)e6,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)b3,(lte)(B|Q) ,(lte)a2,(lte)(B|Q)
+    ,(lte)1 ,(lte)h7,(lte)(K|B|Q)
 };
 static const lte attacks_white_lookup_h1[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)g1,(lte)(K|R|Q)   ,(lte)f1,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)7 ,(lte)h2,(lte)(K|R|Q)   ,(lte)h3,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)7 ,(lte)g2,(lte)(K|P|B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q) 
+    ,(lte)7 ,(lte)g1,(lte)(K|R|Q)   ,(lte)f1,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)7 ,(lte)h2,(lte)(K|R|Q)   ,(lte)h3,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)7 ,(lte)g2,(lte)(K|P|B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_h2[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)g2,(lte)(K|R|Q)   ,(lte)f2,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h1,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)h3,(lte)(K|R|Q)   ,(lte)h4,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)g1,(lte)(K|B|Q)   
-    ,(lte)6 ,(lte)g3,(lte)(K|P|B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)c7,(lte)(B|Q) ,(lte)b8,(lte)(B|Q) 
+    ,(lte)7 ,(lte)g2,(lte)(K|R|Q)   ,(lte)f2,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q)
+    ,(lte)1 ,(lte)h1,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)h3,(lte)(K|R|Q)   ,(lte)h4,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)1 ,(lte)g1,(lte)(K|B|Q)
+    ,(lte)6 ,(lte)g3,(lte)(K|P|B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)c7,(lte)(B|Q) ,(lte)b8,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_h3[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)g3,(lte)(K|R|Q)   ,(lte)f3,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) 
-    ,(lte)2 ,(lte)h2,(lte)(K|R|Q)   ,(lte)h1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)h4,(lte)(K|R|Q)   ,(lte)h5,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g2,(lte)(K|B|Q)   ,(lte)f1,(lte)(B|Q) 
-    ,(lte)5 ,(lte)g4,(lte)(K|P|B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)d7,(lte)(B|Q) ,(lte)c8,(lte)(B|Q) 
+    ,(lte)7 ,(lte)g3,(lte)(K|R|Q)   ,(lte)f3,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q)
+    ,(lte)2 ,(lte)h2,(lte)(K|R|Q)   ,(lte)h1,(lte)(R|Q)
+    ,(lte)5 ,(lte)h4,(lte)(K|R|Q)   ,(lte)h5,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)2 ,(lte)g2,(lte)(K|B|Q)   ,(lte)f1,(lte)(B|Q)
+    ,(lte)5 ,(lte)g4,(lte)(K|P|B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)d7,(lte)(B|Q) ,(lte)c8,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_h4[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)g4,(lte)(K|R|Q)   ,(lte)f4,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) 
-    ,(lte)3 ,(lte)h3,(lte)(K|R|Q)   ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)h5,(lte)(K|R|Q)   ,(lte)h6,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)g3,(lte)(K|B|Q)   ,(lte)f2,(lte)(B|Q) ,(lte)e1,(lte)(B|Q) 
-    ,(lte)4 ,(lte)g5,(lte)(K|P|B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)e7,(lte)(B|Q) ,(lte)d8,(lte)(B|Q) 
+    ,(lte)7 ,(lte)g4,(lte)(K|R|Q)   ,(lte)f4,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q)
+    ,(lte)3 ,(lte)h3,(lte)(K|R|Q)   ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)4 ,(lte)h5,(lte)(K|R|Q)   ,(lte)h6,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)3 ,(lte)g3,(lte)(K|B|Q)   ,(lte)f2,(lte)(B|Q) ,(lte)e1,(lte)(B|Q)
+    ,(lte)4 ,(lte)g5,(lte)(K|P|B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)e7,(lte)(B|Q) ,(lte)d8,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_h5[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)g5,(lte)(K|R|Q)   ,(lte)f5,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) 
-    ,(lte)4 ,(lte)h4,(lte)(K|R|Q)   ,(lte)h3,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)h6,(lte)(K|R|Q)   ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)4 ,(lte)g4,(lte)(K|B|Q)   ,(lte)f3,(lte)(B|Q) ,(lte)e2,(lte)(B|Q) ,(lte)d1,(lte)(B|Q) 
-    ,(lte)3 ,(lte)g6,(lte)(K|P|B|Q) ,(lte)f7,(lte)(B|Q) ,(lte)e8,(lte)(B|Q) 
+    ,(lte)7 ,(lte)g5,(lte)(K|R|Q)   ,(lte)f5,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q)
+    ,(lte)4 ,(lte)h4,(lte)(K|R|Q)   ,(lte)h3,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)3 ,(lte)h6,(lte)(K|R|Q)   ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)4 ,(lte)g4,(lte)(K|B|Q)   ,(lte)f3,(lte)(B|Q) ,(lte)e2,(lte)(B|Q) ,(lte)d1,(lte)(B|Q)
+    ,(lte)3 ,(lte)g6,(lte)(K|P|B|Q) ,(lte)f7,(lte)(B|Q) ,(lte)e8,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_h6[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)g6,(lte)(K|R|Q)   ,(lte)f6,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) 
-    ,(lte)5 ,(lte)h5,(lte)(K|R|Q)   ,(lte)h4,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)h7,(lte)(K|R|Q)   ,(lte)h8,(lte)(R|Q) 
-    ,(lte)5 ,(lte)g5,(lte)(K|B|Q)   ,(lte)f4,(lte)(B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)d2,(lte)(B|Q) ,(lte)c1,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g7,(lte)(K|P|B|Q) ,(lte)f8,(lte)(B|Q) 
+    ,(lte)7 ,(lte)g6,(lte)(K|R|Q)   ,(lte)f6,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q)
+    ,(lte)5 ,(lte)h5,(lte)(K|R|Q)   ,(lte)h4,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)2 ,(lte)h7,(lte)(K|R|Q)   ,(lte)h8,(lte)(R|Q)
+    ,(lte)5 ,(lte)g5,(lte)(K|B|Q)   ,(lte)f4,(lte)(B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)d2,(lte)(B|Q) ,(lte)c1,(lte)(B|Q)
+    ,(lte)2 ,(lte)g7,(lte)(K|P|B|Q) ,(lte)f8,(lte)(B|Q)
 };
 static const lte attacks_white_lookup_h7[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)g7,(lte)(K|R|Q)   ,(lte)f7,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) 
-    ,(lte)6 ,(lte)h6,(lte)(K|R|Q)   ,(lte)h5,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h8,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)g6,(lte)(K|B|Q)   ,(lte)f5,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)c2,(lte)(B|Q) ,(lte)b1,(lte)(B|Q) 
-    ,(lte)1 ,(lte)g8,(lte)(K|P|B|Q) 
+    ,(lte)7 ,(lte)g7,(lte)(K|R|Q)   ,(lte)f7,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q)
+    ,(lte)6 ,(lte)h6,(lte)(K|R|Q)   ,(lte)h5,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)1 ,(lte)h8,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)g6,(lte)(K|B|Q)   ,(lte)f5,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)c2,(lte)(B|Q) ,(lte)b1,(lte)(B|Q)
+    ,(lte)1 ,(lte)g8,(lte)(K|P|B|Q)
 };
 static const lte attacks_white_lookup_h8[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)g8,(lte)(K|R|Q)   ,(lte)f8,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)7 ,(lte)h7,(lte)(K|R|Q)   ,(lte)h6,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)7 ,(lte)g7,(lte)(K|B|Q)   ,(lte)f6,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q) 
+    ,(lte)7 ,(lte)g8,(lte)(K|R|Q)   ,(lte)f8,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)7 ,(lte)h7,(lte)(K|R|Q)   ,(lte)h6,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)7 ,(lte)g7,(lte)(K|B|Q)   ,(lte)f6,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q)
 };
 
 // attacks_white_lookup
@@ -13355,678 +12214,678 @@ const lte *attacks_white_lookup[] =
 static const lte attacks_black_lookup_a1[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)b1,(lte)(K|R|Q)   ,(lte)c1,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)7 ,(lte)a2,(lte)(K|R|Q)   ,(lte)a3,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)7 ,(lte)b2,(lte)(K|B|Q)   ,(lte)c3,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q) 
+    ,(lte)7 ,(lte)b1,(lte)(K|R|Q)   ,(lte)c1,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)7 ,(lte)a2,(lte)(K|R|Q)   ,(lte)a3,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)7 ,(lte)b2,(lte)(K|B|Q)   ,(lte)c3,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_a2[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)b2,(lte)(K|R|Q)   ,(lte)c2,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) 
-    ,(lte)1 ,(lte)a1,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)a3,(lte)(K|R|Q)   ,(lte)a4,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)6 ,(lte)b3,(lte)(K|B|Q)   ,(lte)c4,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)f7,(lte)(B|Q) ,(lte)g8,(lte)(B|Q) 
-    ,(lte)1 ,(lte)b1,(lte)(K|P|B|Q) 
+    ,(lte)7 ,(lte)b2,(lte)(K|R|Q)   ,(lte)c2,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q)
+    ,(lte)1 ,(lte)a1,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)a3,(lte)(K|R|Q)   ,(lte)a4,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)6 ,(lte)b3,(lte)(K|B|Q)   ,(lte)c4,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)f7,(lte)(B|Q) ,(lte)g8,(lte)(B|Q)
+    ,(lte)1 ,(lte)b1,(lte)(K|P|B|Q)
 };
 static const lte attacks_black_lookup_a3[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)b3,(lte)(K|R|Q)   ,(lte)c3,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) 
-    ,(lte)2 ,(lte)a2,(lte)(K|R|Q)   ,(lte)a1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)a4,(lte)(K|R|Q)   ,(lte)a5,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)5 ,(lte)b4,(lte)(K|B|Q)   ,(lte)c5,(lte)(B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)e7,(lte)(B|Q) ,(lte)f8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)b2,(lte)(K|P|B|Q) ,(lte)c1,(lte)(B|Q) 
+    ,(lte)7 ,(lte)b3,(lte)(K|R|Q)   ,(lte)c3,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q)
+    ,(lte)2 ,(lte)a2,(lte)(K|R|Q)   ,(lte)a1,(lte)(R|Q)
+    ,(lte)5 ,(lte)a4,(lte)(K|R|Q)   ,(lte)a5,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)5 ,(lte)b4,(lte)(K|B|Q)   ,(lte)c5,(lte)(B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)e7,(lte)(B|Q) ,(lte)f8,(lte)(B|Q)
+    ,(lte)2 ,(lte)b2,(lte)(K|P|B|Q) ,(lte)c1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_a4[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)b4,(lte)(K|R|Q)   ,(lte)c4,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) 
-    ,(lte)3 ,(lte)a3,(lte)(K|R|Q)   ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)a5,(lte)(K|R|Q)   ,(lte)a6,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)4 ,(lte)b5,(lte)(K|B|Q)   ,(lte)c6,(lte)(B|Q) ,(lte)d7,(lte)(B|Q) ,(lte)e8,(lte)(B|Q) 
-    ,(lte)3 ,(lte)b3,(lte)(K|P|B|Q) ,(lte)c2,(lte)(B|Q) ,(lte)d1,(lte)(B|Q) 
+    ,(lte)7 ,(lte)b4,(lte)(K|R|Q)   ,(lte)c4,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q)
+    ,(lte)3 ,(lte)a3,(lte)(K|R|Q)   ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)4 ,(lte)a5,(lte)(K|R|Q)   ,(lte)a6,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)4 ,(lte)b5,(lte)(K|B|Q)   ,(lte)c6,(lte)(B|Q) ,(lte)d7,(lte)(B|Q) ,(lte)e8,(lte)(B|Q)
+    ,(lte)3 ,(lte)b3,(lte)(K|P|B|Q) ,(lte)c2,(lte)(B|Q) ,(lte)d1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_a5[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)b5,(lte)(K|R|Q)   ,(lte)c5,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) 
-    ,(lte)4 ,(lte)a4,(lte)(K|R|Q)   ,(lte)a3,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)a6,(lte)(K|R|Q)   ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)b6,(lte)(K|B|Q)   ,(lte)c7,(lte)(B|Q) ,(lte)d8,(lte)(B|Q) 
-    ,(lte)4 ,(lte)b4,(lte)(K|P|B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)d2,(lte)(B|Q) ,(lte)e1,(lte)(B|Q) 
+    ,(lte)7 ,(lte)b5,(lte)(K|R|Q)   ,(lte)c5,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q)
+    ,(lte)4 ,(lte)a4,(lte)(K|R|Q)   ,(lte)a3,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)3 ,(lte)a6,(lte)(K|R|Q)   ,(lte)a7,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)3 ,(lte)b6,(lte)(K|B|Q)   ,(lte)c7,(lte)(B|Q) ,(lte)d8,(lte)(B|Q)
+    ,(lte)4 ,(lte)b4,(lte)(K|P|B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)d2,(lte)(B|Q) ,(lte)e1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_a6[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)b6,(lte)(K|R|Q)   ,(lte)c6,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) 
-    ,(lte)5 ,(lte)a5,(lte)(K|R|Q)   ,(lte)a4,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)a7,(lte)(K|R|Q)   ,(lte)a8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)b7,(lte)(K|B|Q)   ,(lte)c8,(lte)(B|Q) 
-    ,(lte)5 ,(lte)b5,(lte)(K|P|B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)e2,(lte)(B|Q) ,(lte)f1,(lte)(B|Q) 
+    ,(lte)7 ,(lte)b6,(lte)(K|R|Q)   ,(lte)c6,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q)
+    ,(lte)5 ,(lte)a5,(lte)(K|R|Q)   ,(lte)a4,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)2 ,(lte)a7,(lte)(K|R|Q)   ,(lte)a8,(lte)(R|Q)
+    ,(lte)2 ,(lte)b7,(lte)(K|B|Q)   ,(lte)c8,(lte)(B|Q)
+    ,(lte)5 ,(lte)b5,(lte)(K|P|B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)e2,(lte)(B|Q) ,(lte)f1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_a7[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)b7,(lte)(K|R|Q)   ,(lte)c7,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) 
-    ,(lte)6 ,(lte)a6,(lte)(K|R|Q)   ,(lte)a5,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)a8,(lte)(K|R|Q)   
-    ,(lte)1 ,(lte)b8,(lte)(K|B|Q)   
-    ,(lte)6 ,(lte)b6,(lte)(K|P|B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)f2,(lte)(B|Q) ,(lte)g1,(lte)(B|Q) 
+    ,(lte)7 ,(lte)b7,(lte)(K|R|Q)   ,(lte)c7,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q)
+    ,(lte)6 ,(lte)a6,(lte)(K|R|Q)   ,(lte)a5,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)1 ,(lte)a8,(lte)(K|R|Q)
+    ,(lte)1 ,(lte)b8,(lte)(K|B|Q)
+    ,(lte)6 ,(lte)b6,(lte)(K|P|B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)f2,(lte)(B|Q) ,(lte)g1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_a8[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)b8,(lte)(K|R|Q)   ,(lte)c8,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)7 ,(lte)a7,(lte)(K|R|Q)   ,(lte)a6,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)7 ,(lte)b7,(lte)(K|P|B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q) 
+    ,(lte)7 ,(lte)b8,(lte)(K|R|Q)   ,(lte)c8,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)7 ,(lte)a7,(lte)(K|R|Q)   ,(lte)a6,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)7 ,(lte)b7,(lte)(K|P|B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_b1[] =
 {
 (lte)5
-    ,(lte)1 ,(lte)a1,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)c1,(lte)(K|R|Q)   ,(lte)d1,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)7 ,(lte)b2,(lte)(K|R|Q)   ,(lte)b3,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)a2,(lte)(K|B|Q)   
-    ,(lte)6 ,(lte)c2,(lte)(K|B|Q)   ,(lte)d3,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)g6,(lte)(B|Q) ,(lte)h7,(lte)(B|Q) 
+    ,(lte)1 ,(lte)a1,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)c1,(lte)(K|R|Q)   ,(lte)d1,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)7 ,(lte)b2,(lte)(K|R|Q)   ,(lte)b3,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q)
+    ,(lte)1 ,(lte)a2,(lte)(K|B|Q)
+    ,(lte)6 ,(lte)c2,(lte)(K|B|Q)   ,(lte)d3,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)g6,(lte)(B|Q) ,(lte)h7,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_b2[] =
 {
 (lte)8
-    ,(lte)1 ,(lte)a2,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)c2,(lte)(K|R|Q)   ,(lte)d2,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) 
-    ,(lte)1 ,(lte)b1,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)b3,(lte)(K|R|Q)   ,(lte)b4,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)a1,(lte)(K|P|B|Q) 
-    ,(lte)1 ,(lte)a3,(lte)(K|B|Q)   
-    ,(lte)6 ,(lte)c3,(lte)(K|B|Q)   ,(lte)d4,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q) 
-    ,(lte)1 ,(lte)c1,(lte)(K|P|B|Q) 
+    ,(lte)1 ,(lte)a2,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)c2,(lte)(K|R|Q)   ,(lte)d2,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q)
+    ,(lte)1 ,(lte)b1,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)b3,(lte)(K|R|Q)   ,(lte)b4,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q)
+    ,(lte)1 ,(lte)a1,(lte)(K|P|B|Q)
+    ,(lte)1 ,(lte)a3,(lte)(K|B|Q)
+    ,(lte)6 ,(lte)c3,(lte)(K|B|Q)   ,(lte)d4,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q)
+    ,(lte)1 ,(lte)c1,(lte)(K|P|B|Q)
 };
 static const lte attacks_black_lookup_b3[] =
 {
 (lte)8
-    ,(lte)1 ,(lte)a3,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)c3,(lte)(K|R|Q)   ,(lte)d3,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) 
-    ,(lte)2 ,(lte)b2,(lte)(K|R|Q)   ,(lte)b1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)b4,(lte)(K|R|Q)   ,(lte)b5,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)a2,(lte)(K|P|B|Q) 
-    ,(lte)1 ,(lte)a4,(lte)(K|B|Q)   
-    ,(lte)5 ,(lte)c4,(lte)(K|B|Q)   ,(lte)d5,(lte)(B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)f7,(lte)(B|Q) ,(lte)g8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)c2,(lte)(K|P|B|Q) ,(lte)d1,(lte)(B|Q) 
+    ,(lte)1 ,(lte)a3,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)c3,(lte)(K|R|Q)   ,(lte)d3,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q)
+    ,(lte)2 ,(lte)b2,(lte)(K|R|Q)   ,(lte)b1,(lte)(R|Q)
+    ,(lte)5 ,(lte)b4,(lte)(K|R|Q)   ,(lte)b5,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q)
+    ,(lte)1 ,(lte)a2,(lte)(K|P|B|Q)
+    ,(lte)1 ,(lte)a4,(lte)(K|B|Q)
+    ,(lte)5 ,(lte)c4,(lte)(K|B|Q)   ,(lte)d5,(lte)(B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)f7,(lte)(B|Q) ,(lte)g8,(lte)(B|Q)
+    ,(lte)2 ,(lte)c2,(lte)(K|P|B|Q) ,(lte)d1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_b4[] =
 {
 (lte)8
-    ,(lte)1 ,(lte)a4,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)c4,(lte)(K|R|Q)   ,(lte)d4,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) 
-    ,(lte)3 ,(lte)b3,(lte)(K|R|Q)   ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)b5,(lte)(K|R|Q)   ,(lte)b6,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)a3,(lte)(K|P|B|Q) 
-    ,(lte)1 ,(lte)a5,(lte)(K|B|Q)   
-    ,(lte)4 ,(lte)c5,(lte)(K|B|Q)   ,(lte)d6,(lte)(B|Q) ,(lte)e7,(lte)(B|Q) ,(lte)f8,(lte)(B|Q) 
-    ,(lte)3 ,(lte)c3,(lte)(K|P|B|Q) ,(lte)d2,(lte)(B|Q) ,(lte)e1,(lte)(B|Q) 
+    ,(lte)1 ,(lte)a4,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)c4,(lte)(K|R|Q)   ,(lte)d4,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q)
+    ,(lte)3 ,(lte)b3,(lte)(K|R|Q)   ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q)
+    ,(lte)4 ,(lte)b5,(lte)(K|R|Q)   ,(lte)b6,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q)
+    ,(lte)1 ,(lte)a3,(lte)(K|P|B|Q)
+    ,(lte)1 ,(lte)a5,(lte)(K|B|Q)
+    ,(lte)4 ,(lte)c5,(lte)(K|B|Q)   ,(lte)d6,(lte)(B|Q) ,(lte)e7,(lte)(B|Q) ,(lte)f8,(lte)(B|Q)
+    ,(lte)3 ,(lte)c3,(lte)(K|P|B|Q) ,(lte)d2,(lte)(B|Q) ,(lte)e1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_b5[] =
 {
 (lte)8
-    ,(lte)1 ,(lte)a5,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)c5,(lte)(K|R|Q)   ,(lte)d5,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) 
-    ,(lte)4 ,(lte)b4,(lte)(K|R|Q)   ,(lte)b3,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)b6,(lte)(K|R|Q)   ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)a4,(lte)(K|P|B|Q) 
-    ,(lte)1 ,(lte)a6,(lte)(K|B|Q)   
-    ,(lte)3 ,(lte)c6,(lte)(K|B|Q)   ,(lte)d7,(lte)(B|Q) ,(lte)e8,(lte)(B|Q) 
-    ,(lte)4 ,(lte)c4,(lte)(K|P|B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)e2,(lte)(B|Q) ,(lte)f1,(lte)(B|Q) 
+    ,(lte)1 ,(lte)a5,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)c5,(lte)(K|R|Q)   ,(lte)d5,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q)
+    ,(lte)4 ,(lte)b4,(lte)(K|R|Q)   ,(lte)b3,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q)
+    ,(lte)3 ,(lte)b6,(lte)(K|R|Q)   ,(lte)b7,(lte)(R|Q) ,(lte)b8,(lte)(R|Q)
+    ,(lte)1 ,(lte)a4,(lte)(K|P|B|Q)
+    ,(lte)1 ,(lte)a6,(lte)(K|B|Q)
+    ,(lte)3 ,(lte)c6,(lte)(K|B|Q)   ,(lte)d7,(lte)(B|Q) ,(lte)e8,(lte)(B|Q)
+    ,(lte)4 ,(lte)c4,(lte)(K|P|B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)e2,(lte)(B|Q) ,(lte)f1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_b6[] =
 {
 (lte)8
-    ,(lte)1 ,(lte)a6,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)c6,(lte)(K|R|Q)   ,(lte)d6,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) 
-    ,(lte)5 ,(lte)b5,(lte)(K|R|Q)   ,(lte)b4,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)b7,(lte)(K|R|Q)   ,(lte)b8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)a5,(lte)(K|P|B|Q) 
-    ,(lte)1 ,(lte)a7,(lte)(K|B|Q)   
-    ,(lte)2 ,(lte)c7,(lte)(K|B|Q)   ,(lte)d8,(lte)(B|Q) 
-    ,(lte)5 ,(lte)c5,(lte)(K|P|B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)f2,(lte)(B|Q) ,(lte)g1,(lte)(B|Q) 
+    ,(lte)1 ,(lte)a6,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)c6,(lte)(K|R|Q)   ,(lte)d6,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q)
+    ,(lte)5 ,(lte)b5,(lte)(K|R|Q)   ,(lte)b4,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q)
+    ,(lte)2 ,(lte)b7,(lte)(K|R|Q)   ,(lte)b8,(lte)(R|Q)
+    ,(lte)1 ,(lte)a5,(lte)(K|P|B|Q)
+    ,(lte)1 ,(lte)a7,(lte)(K|B|Q)
+    ,(lte)2 ,(lte)c7,(lte)(K|B|Q)   ,(lte)d8,(lte)(B|Q)
+    ,(lte)5 ,(lte)c5,(lte)(K|P|B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)f2,(lte)(B|Q) ,(lte)g1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_b7[] =
 {
 (lte)8
-    ,(lte)1 ,(lte)a7,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)c7,(lte)(K|R|Q)   ,(lte)d7,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) 
-    ,(lte)6 ,(lte)b6,(lte)(K|R|Q)   ,(lte)b5,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)b8,(lte)(K|R|Q)   
-    ,(lte)1 ,(lte)a6,(lte)(K|P|B|Q) 
-    ,(lte)1 ,(lte)a8,(lte)(K|B|Q)   
-    ,(lte)1 ,(lte)c8,(lte)(K|B|Q)   
-    ,(lte)6 ,(lte)c6,(lte)(K|P|B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q) 
+    ,(lte)1 ,(lte)a7,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)c7,(lte)(K|R|Q)   ,(lte)d7,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q)
+    ,(lte)6 ,(lte)b6,(lte)(K|R|Q)   ,(lte)b5,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q)
+    ,(lte)1 ,(lte)b8,(lte)(K|R|Q)
+    ,(lte)1 ,(lte)a6,(lte)(K|P|B|Q)
+    ,(lte)1 ,(lte)a8,(lte)(K|B|Q)
+    ,(lte)1 ,(lte)c8,(lte)(K|B|Q)
+    ,(lte)6 ,(lte)c6,(lte)(K|P|B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_b8[] =
 {
 (lte)5
-    ,(lte)1 ,(lte)a8,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)c8,(lte)(K|R|Q)   ,(lte)d8,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)7 ,(lte)b7,(lte)(K|R|Q)   ,(lte)b6,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)a7,(lte)(K|P|B|Q) 
-    ,(lte)6 ,(lte)c7,(lte)(K|P|B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)g3,(lte)(B|Q) ,(lte)h2,(lte)(B|Q) 
+    ,(lte)1 ,(lte)a8,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)c8,(lte)(K|R|Q)   ,(lte)d8,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)7 ,(lte)b7,(lte)(K|R|Q)   ,(lte)b6,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)b1,(lte)(R|Q)
+    ,(lte)1 ,(lte)a7,(lte)(K|P|B|Q)
+    ,(lte)6 ,(lte)c7,(lte)(K|P|B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)g3,(lte)(B|Q) ,(lte)h2,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_c1[] =
 {
 (lte)5
-    ,(lte)2 ,(lte)b1,(lte)(K|R|Q)   ,(lte)a1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d1,(lte)(K|R|Q)   ,(lte)e1,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)7 ,(lte)c2,(lte)(K|R|Q)   ,(lte)c3,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)b2,(lte)(K|B|Q)   ,(lte)a3,(lte)(B|Q) 
-    ,(lte)5 ,(lte)d2,(lte)(K|B|Q)   ,(lte)e3,(lte)(B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)g5,(lte)(B|Q) ,(lte)h6,(lte)(B|Q) 
+    ,(lte)2 ,(lte)b1,(lte)(K|R|Q)   ,(lte)a1,(lte)(R|Q)
+    ,(lte)5 ,(lte)d1,(lte)(K|R|Q)   ,(lte)e1,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)7 ,(lte)c2,(lte)(K|R|Q)   ,(lte)c3,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q)
+    ,(lte)2 ,(lte)b2,(lte)(K|B|Q)   ,(lte)a3,(lte)(B|Q)
+    ,(lte)5 ,(lte)d2,(lte)(K|B|Q)   ,(lte)e3,(lte)(B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)g5,(lte)(B|Q) ,(lte)h6,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_c2[] =
 {
 (lte)8
-    ,(lte)2 ,(lte)b2,(lte)(K|R|Q)   ,(lte)a2,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d2,(lte)(K|R|Q)   ,(lte)e2,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) 
-    ,(lte)1 ,(lte)c1,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)c3,(lte)(K|R|Q)   ,(lte)c4,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)b1,(lte)(K|P|B|Q) 
-    ,(lte)2 ,(lte)b3,(lte)(K|B|Q)   ,(lte)a4,(lte)(B|Q) 
-    ,(lte)5 ,(lte)d3,(lte)(K|B|Q)   ,(lte)e4,(lte)(B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)g6,(lte)(B|Q) ,(lte)h7,(lte)(B|Q) 
-    ,(lte)1 ,(lte)d1,(lte)(K|P|B|Q) 
+    ,(lte)2 ,(lte)b2,(lte)(K|R|Q)   ,(lte)a2,(lte)(R|Q)
+    ,(lte)5 ,(lte)d2,(lte)(K|R|Q)   ,(lte)e2,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q)
+    ,(lte)1 ,(lte)c1,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)c3,(lte)(K|R|Q)   ,(lte)c4,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q)
+    ,(lte)1 ,(lte)b1,(lte)(K|P|B|Q)
+    ,(lte)2 ,(lte)b3,(lte)(K|B|Q)   ,(lte)a4,(lte)(B|Q)
+    ,(lte)5 ,(lte)d3,(lte)(K|B|Q)   ,(lte)e4,(lte)(B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)g6,(lte)(B|Q) ,(lte)h7,(lte)(B|Q)
+    ,(lte)1 ,(lte)d1,(lte)(K|P|B|Q)
 };
 static const lte attacks_black_lookup_c3[] =
 {
 (lte)8
-    ,(lte)2 ,(lte)b3,(lte)(K|R|Q)   ,(lte)a3,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d3,(lte)(K|R|Q)   ,(lte)e3,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) 
-    ,(lte)2 ,(lte)c2,(lte)(K|R|Q)   ,(lte)c1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)c4,(lte)(K|R|Q)   ,(lte)c5,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)b2,(lte)(K|P|B|Q) ,(lte)a1,(lte)(B|Q) 
-    ,(lte)2 ,(lte)b4,(lte)(K|B|Q)   ,(lte)a5,(lte)(B|Q) 
-    ,(lte)5 ,(lte)d4,(lte)(K|B|Q)   ,(lte)e5,(lte)(B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)d2,(lte)(K|P|B|Q) ,(lte)e1,(lte)(B|Q) 
+    ,(lte)2 ,(lte)b3,(lte)(K|R|Q)   ,(lte)a3,(lte)(R|Q)
+    ,(lte)5 ,(lte)d3,(lte)(K|R|Q)   ,(lte)e3,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q)
+    ,(lte)2 ,(lte)c2,(lte)(K|R|Q)   ,(lte)c1,(lte)(R|Q)
+    ,(lte)5 ,(lte)c4,(lte)(K|R|Q)   ,(lte)c5,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q)
+    ,(lte)2 ,(lte)b2,(lte)(K|P|B|Q) ,(lte)a1,(lte)(B|Q)
+    ,(lte)2 ,(lte)b4,(lte)(K|B|Q)   ,(lte)a5,(lte)(B|Q)
+    ,(lte)5 ,(lte)d4,(lte)(K|B|Q)   ,(lte)e5,(lte)(B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q)
+    ,(lte)2 ,(lte)d2,(lte)(K|P|B|Q) ,(lte)e1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_c4[] =
 {
 (lte)8
-    ,(lte)2 ,(lte)b4,(lte)(K|R|Q)   ,(lte)a4,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d4,(lte)(K|R|Q)   ,(lte)e4,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) 
-    ,(lte)3 ,(lte)c3,(lte)(K|R|Q)   ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)c5,(lte)(K|R|Q)   ,(lte)c6,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)b3,(lte)(K|P|B|Q) ,(lte)a2,(lte)(B|Q) 
-    ,(lte)2 ,(lte)b5,(lte)(K|B|Q)   ,(lte)a6,(lte)(B|Q) 
-    ,(lte)4 ,(lte)d5,(lte)(K|B|Q)   ,(lte)e6,(lte)(B|Q) ,(lte)f7,(lte)(B|Q) ,(lte)g8,(lte)(B|Q) 
-    ,(lte)3 ,(lte)d3,(lte)(K|P|B|Q) ,(lte)e2,(lte)(B|Q) ,(lte)f1,(lte)(B|Q) 
+    ,(lte)2 ,(lte)b4,(lte)(K|R|Q)   ,(lte)a4,(lte)(R|Q)
+    ,(lte)5 ,(lte)d4,(lte)(K|R|Q)   ,(lte)e4,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q)
+    ,(lte)3 ,(lte)c3,(lte)(K|R|Q)   ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q)
+    ,(lte)4 ,(lte)c5,(lte)(K|R|Q)   ,(lte)c6,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q)
+    ,(lte)2 ,(lte)b3,(lte)(K|P|B|Q) ,(lte)a2,(lte)(B|Q)
+    ,(lte)2 ,(lte)b5,(lte)(K|B|Q)   ,(lte)a6,(lte)(B|Q)
+    ,(lte)4 ,(lte)d5,(lte)(K|B|Q)   ,(lte)e6,(lte)(B|Q) ,(lte)f7,(lte)(B|Q) ,(lte)g8,(lte)(B|Q)
+    ,(lte)3 ,(lte)d3,(lte)(K|P|B|Q) ,(lte)e2,(lte)(B|Q) ,(lte)f1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_c5[] =
 {
 (lte)8
-    ,(lte)2 ,(lte)b5,(lte)(K|R|Q)   ,(lte)a5,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d5,(lte)(K|R|Q)   ,(lte)e5,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) 
-    ,(lte)4 ,(lte)c4,(lte)(K|R|Q)   ,(lte)c3,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)c6,(lte)(K|R|Q)   ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)b4,(lte)(K|P|B|Q) ,(lte)a3,(lte)(B|Q) 
-    ,(lte)2 ,(lte)b6,(lte)(K|B|Q)   ,(lte)a7,(lte)(B|Q) 
-    ,(lte)3 ,(lte)d6,(lte)(K|B|Q)   ,(lte)e7,(lte)(B|Q) ,(lte)f8,(lte)(B|Q) 
-    ,(lte)4 ,(lte)d4,(lte)(K|P|B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)f2,(lte)(B|Q) ,(lte)g1,(lte)(B|Q) 
+    ,(lte)2 ,(lte)b5,(lte)(K|R|Q)   ,(lte)a5,(lte)(R|Q)
+    ,(lte)5 ,(lte)d5,(lte)(K|R|Q)   ,(lte)e5,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q)
+    ,(lte)4 ,(lte)c4,(lte)(K|R|Q)   ,(lte)c3,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q)
+    ,(lte)3 ,(lte)c6,(lte)(K|R|Q)   ,(lte)c7,(lte)(R|Q) ,(lte)c8,(lte)(R|Q)
+    ,(lte)2 ,(lte)b4,(lte)(K|P|B|Q) ,(lte)a3,(lte)(B|Q)
+    ,(lte)2 ,(lte)b6,(lte)(K|B|Q)   ,(lte)a7,(lte)(B|Q)
+    ,(lte)3 ,(lte)d6,(lte)(K|B|Q)   ,(lte)e7,(lte)(B|Q) ,(lte)f8,(lte)(B|Q)
+    ,(lte)4 ,(lte)d4,(lte)(K|P|B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)f2,(lte)(B|Q) ,(lte)g1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_c6[] =
 {
 (lte)8
-    ,(lte)2 ,(lte)b6,(lte)(K|R|Q)   ,(lte)a6,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d6,(lte)(K|R|Q)   ,(lte)e6,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) 
-    ,(lte)5 ,(lte)c5,(lte)(K|R|Q)   ,(lte)c4,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)c7,(lte)(K|R|Q)   ,(lte)c8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)b5,(lte)(K|P|B|Q) ,(lte)a4,(lte)(B|Q) 
-    ,(lte)2 ,(lte)b7,(lte)(K|B|Q)   ,(lte)a8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)d7,(lte)(K|B|Q)   ,(lte)e8,(lte)(B|Q) 
-    ,(lte)5 ,(lte)d5,(lte)(K|P|B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q) 
+    ,(lte)2 ,(lte)b6,(lte)(K|R|Q)   ,(lte)a6,(lte)(R|Q)
+    ,(lte)5 ,(lte)d6,(lte)(K|R|Q)   ,(lte)e6,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q)
+    ,(lte)5 ,(lte)c5,(lte)(K|R|Q)   ,(lte)c4,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q)
+    ,(lte)2 ,(lte)c7,(lte)(K|R|Q)   ,(lte)c8,(lte)(R|Q)
+    ,(lte)2 ,(lte)b5,(lte)(K|P|B|Q) ,(lte)a4,(lte)(B|Q)
+    ,(lte)2 ,(lte)b7,(lte)(K|B|Q)   ,(lte)a8,(lte)(B|Q)
+    ,(lte)2 ,(lte)d7,(lte)(K|B|Q)   ,(lte)e8,(lte)(B|Q)
+    ,(lte)5 ,(lte)d5,(lte)(K|P|B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_c7[] =
 {
 (lte)8
-    ,(lte)2 ,(lte)b7,(lte)(K|R|Q)   ,(lte)a7,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d7,(lte)(K|R|Q)   ,(lte)e7,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) 
-    ,(lte)6 ,(lte)c6,(lte)(K|R|Q)   ,(lte)c5,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)c8,(lte)(K|R|Q)   
-    ,(lte)2 ,(lte)b6,(lte)(K|P|B|Q) ,(lte)a5,(lte)(B|Q) 
-    ,(lte)1 ,(lte)b8,(lte)(K|B|Q)   
-    ,(lte)1 ,(lte)d8,(lte)(K|B|Q)   
-    ,(lte)5 ,(lte)d6,(lte)(K|P|B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)g3,(lte)(B|Q) ,(lte)h2,(lte)(B|Q) 
+    ,(lte)2 ,(lte)b7,(lte)(K|R|Q)   ,(lte)a7,(lte)(R|Q)
+    ,(lte)5 ,(lte)d7,(lte)(K|R|Q)   ,(lte)e7,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q)
+    ,(lte)6 ,(lte)c6,(lte)(K|R|Q)   ,(lte)c5,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q)
+    ,(lte)1 ,(lte)c8,(lte)(K|R|Q)
+    ,(lte)2 ,(lte)b6,(lte)(K|P|B|Q) ,(lte)a5,(lte)(B|Q)
+    ,(lte)1 ,(lte)b8,(lte)(K|B|Q)
+    ,(lte)1 ,(lte)d8,(lte)(K|B|Q)
+    ,(lte)5 ,(lte)d6,(lte)(K|P|B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)g3,(lte)(B|Q) ,(lte)h2,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_c8[] =
 {
 (lte)5
-    ,(lte)2 ,(lte)b8,(lte)(K|R|Q)   ,(lte)a8,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d8,(lte)(K|R|Q)   ,(lte)e8,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)7 ,(lte)c7,(lte)(K|R|Q)   ,(lte)c6,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)b7,(lte)(K|P|B|Q) ,(lte)a6,(lte)(B|Q) 
-    ,(lte)5 ,(lte)d7,(lte)(K|P|B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)g4,(lte)(B|Q) ,(lte)h3,(lte)(B|Q) 
+    ,(lte)2 ,(lte)b8,(lte)(K|R|Q)   ,(lte)a8,(lte)(R|Q)
+    ,(lte)5 ,(lte)d8,(lte)(K|R|Q)   ,(lte)e8,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)7 ,(lte)c7,(lte)(K|R|Q)   ,(lte)c6,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)c1,(lte)(R|Q)
+    ,(lte)2 ,(lte)b7,(lte)(K|P|B|Q) ,(lte)a6,(lte)(B|Q)
+    ,(lte)5 ,(lte)d7,(lte)(K|P|B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)g4,(lte)(B|Q) ,(lte)h3,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_d1[] =
 {
 (lte)5
-    ,(lte)3 ,(lte)c1,(lte)(K|R|Q)   ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e1,(lte)(K|R|Q)   ,(lte)f1,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)7 ,(lte)d2,(lte)(K|R|Q)   ,(lte)d3,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)c2,(lte)(K|B|Q)   ,(lte)b3,(lte)(B|Q) ,(lte)a4,(lte)(B|Q) 
-    ,(lte)4 ,(lte)e2,(lte)(K|B|Q)   ,(lte)f3,(lte)(B|Q) ,(lte)g4,(lte)(B|Q) ,(lte)h5,(lte)(B|Q) 
+    ,(lte)3 ,(lte)c1,(lte)(K|R|Q)   ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)4 ,(lte)e1,(lte)(K|R|Q)   ,(lte)f1,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)7 ,(lte)d2,(lte)(K|R|Q)   ,(lte)d3,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q)
+    ,(lte)3 ,(lte)c2,(lte)(K|B|Q)   ,(lte)b3,(lte)(B|Q) ,(lte)a4,(lte)(B|Q)
+    ,(lte)4 ,(lte)e2,(lte)(K|B|Q)   ,(lte)f3,(lte)(B|Q) ,(lte)g4,(lte)(B|Q) ,(lte)h5,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_d2[] =
 {
 (lte)8
-    ,(lte)3 ,(lte)c2,(lte)(K|R|Q)   ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e2,(lte)(K|R|Q)   ,(lte)f2,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) 
-    ,(lte)1 ,(lte)d1,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)d3,(lte)(K|R|Q)   ,(lte)d4,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)c1,(lte)(K|P|B|Q) 
-    ,(lte)3 ,(lte)c3,(lte)(K|B|Q)   ,(lte)b4,(lte)(B|Q) ,(lte)a5,(lte)(B|Q) 
-    ,(lte)4 ,(lte)e3,(lte)(K|B|Q)   ,(lte)f4,(lte)(B|Q) ,(lte)g5,(lte)(B|Q) ,(lte)h6,(lte)(B|Q) 
-    ,(lte)1 ,(lte)e1,(lte)(K|P|B|Q) 
+    ,(lte)3 ,(lte)c2,(lte)(K|R|Q)   ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q)
+    ,(lte)4 ,(lte)e2,(lte)(K|R|Q)   ,(lte)f2,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q)
+    ,(lte)1 ,(lte)d1,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)d3,(lte)(K|R|Q)   ,(lte)d4,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q)
+    ,(lte)1 ,(lte)c1,(lte)(K|P|B|Q)
+    ,(lte)3 ,(lte)c3,(lte)(K|B|Q)   ,(lte)b4,(lte)(B|Q) ,(lte)a5,(lte)(B|Q)
+    ,(lte)4 ,(lte)e3,(lte)(K|B|Q)   ,(lte)f4,(lte)(B|Q) ,(lte)g5,(lte)(B|Q) ,(lte)h6,(lte)(B|Q)
+    ,(lte)1 ,(lte)e1,(lte)(K|P|B|Q)
 };
 static const lte attacks_black_lookup_d3[] =
 {
 (lte)8
-    ,(lte)3 ,(lte)c3,(lte)(K|R|Q)   ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e3,(lte)(K|R|Q)   ,(lte)f3,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) 
-    ,(lte)2 ,(lte)d2,(lte)(K|R|Q)   ,(lte)d1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d4,(lte)(K|R|Q)   ,(lte)d5,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)c2,(lte)(K|P|B|Q) ,(lte)b1,(lte)(B|Q) 
-    ,(lte)3 ,(lte)c4,(lte)(K|B|Q)   ,(lte)b5,(lte)(B|Q) ,(lte)a6,(lte)(B|Q) 
-    ,(lte)4 ,(lte)e4,(lte)(K|B|Q)   ,(lte)f5,(lte)(B|Q) ,(lte)g6,(lte)(B|Q) ,(lte)h7,(lte)(B|Q) 
-    ,(lte)2 ,(lte)e2,(lte)(K|P|B|Q) ,(lte)f1,(lte)(B|Q) 
+    ,(lte)3 ,(lte)c3,(lte)(K|R|Q)   ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q)
+    ,(lte)4 ,(lte)e3,(lte)(K|R|Q)   ,(lte)f3,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q)
+    ,(lte)2 ,(lte)d2,(lte)(K|R|Q)   ,(lte)d1,(lte)(R|Q)
+    ,(lte)5 ,(lte)d4,(lte)(K|R|Q)   ,(lte)d5,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q)
+    ,(lte)2 ,(lte)c2,(lte)(K|P|B|Q) ,(lte)b1,(lte)(B|Q)
+    ,(lte)3 ,(lte)c4,(lte)(K|B|Q)   ,(lte)b5,(lte)(B|Q) ,(lte)a6,(lte)(B|Q)
+    ,(lte)4 ,(lte)e4,(lte)(K|B|Q)   ,(lte)f5,(lte)(B|Q) ,(lte)g6,(lte)(B|Q) ,(lte)h7,(lte)(B|Q)
+    ,(lte)2 ,(lte)e2,(lte)(K|P|B|Q) ,(lte)f1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_d4[] =
 {
 (lte)8
-    ,(lte)3 ,(lte)c4,(lte)(K|R|Q)   ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e4,(lte)(K|R|Q)   ,(lte)f4,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) 
-    ,(lte)3 ,(lte)d3,(lte)(K|R|Q)   ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)d5,(lte)(K|R|Q)   ,(lte)d6,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)c3,(lte)(K|P|B|Q) ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q) 
-    ,(lte)3 ,(lte)c5,(lte)(K|B|Q)   ,(lte)b6,(lte)(B|Q) ,(lte)a7,(lte)(B|Q) 
-    ,(lte)4 ,(lte)e5,(lte)(K|B|Q)   ,(lte)f6,(lte)(B|Q) ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q) 
-    ,(lte)3 ,(lte)e3,(lte)(K|P|B|Q) ,(lte)f2,(lte)(B|Q) ,(lte)g1,(lte)(B|Q) 
+    ,(lte)3 ,(lte)c4,(lte)(K|R|Q)   ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q)
+    ,(lte)4 ,(lte)e4,(lte)(K|R|Q)   ,(lte)f4,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q)
+    ,(lte)3 ,(lte)d3,(lte)(K|R|Q)   ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q)
+    ,(lte)4 ,(lte)d5,(lte)(K|R|Q)   ,(lte)d6,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q)
+    ,(lte)3 ,(lte)c3,(lte)(K|P|B|Q) ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q)
+    ,(lte)3 ,(lte)c5,(lte)(K|B|Q)   ,(lte)b6,(lte)(B|Q) ,(lte)a7,(lte)(B|Q)
+    ,(lte)4 ,(lte)e5,(lte)(K|B|Q)   ,(lte)f6,(lte)(B|Q) ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q)
+    ,(lte)3 ,(lte)e3,(lte)(K|P|B|Q) ,(lte)f2,(lte)(B|Q) ,(lte)g1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_d5[] =
 {
 (lte)8
-    ,(lte)3 ,(lte)c5,(lte)(K|R|Q)   ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e5,(lte)(K|R|Q)   ,(lte)f5,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) 
-    ,(lte)4 ,(lte)d4,(lte)(K|R|Q)   ,(lte)d3,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)d6,(lte)(K|R|Q)   ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)c4,(lte)(K|P|B|Q) ,(lte)b3,(lte)(B|Q) ,(lte)a2,(lte)(B|Q) 
-    ,(lte)3 ,(lte)c6,(lte)(K|B|Q)   ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q) 
-    ,(lte)3 ,(lte)e6,(lte)(K|B|Q)   ,(lte)f7,(lte)(B|Q) ,(lte)g8,(lte)(B|Q) 
-    ,(lte)4 ,(lte)e4,(lte)(K|P|B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q) 
+    ,(lte)3 ,(lte)c5,(lte)(K|R|Q)   ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q)
+    ,(lte)4 ,(lte)e5,(lte)(K|R|Q)   ,(lte)f5,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q)
+    ,(lte)4 ,(lte)d4,(lte)(K|R|Q)   ,(lte)d3,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q)
+    ,(lte)3 ,(lte)d6,(lte)(K|R|Q)   ,(lte)d7,(lte)(R|Q) ,(lte)d8,(lte)(R|Q)
+    ,(lte)3 ,(lte)c4,(lte)(K|P|B|Q) ,(lte)b3,(lte)(B|Q) ,(lte)a2,(lte)(B|Q)
+    ,(lte)3 ,(lte)c6,(lte)(K|B|Q)   ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q)
+    ,(lte)3 ,(lte)e6,(lte)(K|B|Q)   ,(lte)f7,(lte)(B|Q) ,(lte)g8,(lte)(B|Q)
+    ,(lte)4 ,(lte)e4,(lte)(K|P|B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_d6[] =
 {
 (lte)8
-    ,(lte)3 ,(lte)c6,(lte)(K|R|Q)   ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e6,(lte)(K|R|Q)   ,(lte)f6,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) 
-    ,(lte)5 ,(lte)d5,(lte)(K|R|Q)   ,(lte)d4,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)d7,(lte)(K|R|Q)   ,(lte)d8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)c5,(lte)(K|P|B|Q) ,(lte)b4,(lte)(B|Q) ,(lte)a3,(lte)(B|Q) 
-    ,(lte)2 ,(lte)c7,(lte)(K|B|Q)   ,(lte)b8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)e7,(lte)(K|B|Q)   ,(lte)f8,(lte)(B|Q) 
-    ,(lte)4 ,(lte)e5,(lte)(K|P|B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)g3,(lte)(B|Q) ,(lte)h2,(lte)(B|Q) 
+    ,(lte)3 ,(lte)c6,(lte)(K|R|Q)   ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q)
+    ,(lte)4 ,(lte)e6,(lte)(K|R|Q)   ,(lte)f6,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q)
+    ,(lte)5 ,(lte)d5,(lte)(K|R|Q)   ,(lte)d4,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q)
+    ,(lte)2 ,(lte)d7,(lte)(K|R|Q)   ,(lte)d8,(lte)(R|Q)
+    ,(lte)3 ,(lte)c5,(lte)(K|P|B|Q) ,(lte)b4,(lte)(B|Q) ,(lte)a3,(lte)(B|Q)
+    ,(lte)2 ,(lte)c7,(lte)(K|B|Q)   ,(lte)b8,(lte)(B|Q)
+    ,(lte)2 ,(lte)e7,(lte)(K|B|Q)   ,(lte)f8,(lte)(B|Q)
+    ,(lte)4 ,(lte)e5,(lte)(K|P|B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)g3,(lte)(B|Q) ,(lte)h2,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_d7[] =
 {
 (lte)8
-    ,(lte)3 ,(lte)c7,(lte)(K|R|Q)   ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e7,(lte)(K|R|Q)   ,(lte)f7,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) 
-    ,(lte)6 ,(lte)d6,(lte)(K|R|Q)   ,(lte)d5,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)d8,(lte)(K|R|Q)   
-    ,(lte)3 ,(lte)c6,(lte)(K|P|B|Q) ,(lte)b5,(lte)(B|Q) ,(lte)a4,(lte)(B|Q) 
-    ,(lte)1 ,(lte)c8,(lte)(K|B|Q)   
-    ,(lte)1 ,(lte)e8,(lte)(K|B|Q)   
-    ,(lte)4 ,(lte)e6,(lte)(K|P|B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)g4,(lte)(B|Q) ,(lte)h3,(lte)(B|Q) 
+    ,(lte)3 ,(lte)c7,(lte)(K|R|Q)   ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q)
+    ,(lte)4 ,(lte)e7,(lte)(K|R|Q)   ,(lte)f7,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q)
+    ,(lte)6 ,(lte)d6,(lte)(K|R|Q)   ,(lte)d5,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q)
+    ,(lte)1 ,(lte)d8,(lte)(K|R|Q)
+    ,(lte)3 ,(lte)c6,(lte)(K|P|B|Q) ,(lte)b5,(lte)(B|Q) ,(lte)a4,(lte)(B|Q)
+    ,(lte)1 ,(lte)c8,(lte)(K|B|Q)
+    ,(lte)1 ,(lte)e8,(lte)(K|B|Q)
+    ,(lte)4 ,(lte)e6,(lte)(K|P|B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)g4,(lte)(B|Q) ,(lte)h3,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_d8[] =
 {
 (lte)5
-    ,(lte)3 ,(lte)c8,(lte)(K|R|Q)   ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e8,(lte)(K|R|Q)   ,(lte)f8,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)7 ,(lte)d7,(lte)(K|R|Q)   ,(lte)d6,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)c7,(lte)(K|P|B|Q) ,(lte)b6,(lte)(B|Q) ,(lte)a5,(lte)(B|Q) 
-    ,(lte)4 ,(lte)e7,(lte)(K|P|B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)g5,(lte)(B|Q) ,(lte)h4,(lte)(B|Q) 
+    ,(lte)3 ,(lte)c8,(lte)(K|R|Q)   ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)4 ,(lte)e8,(lte)(K|R|Q)   ,(lte)f8,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)7 ,(lte)d7,(lte)(K|R|Q)   ,(lte)d6,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)d1,(lte)(R|Q)
+    ,(lte)3 ,(lte)c7,(lte)(K|P|B|Q) ,(lte)b6,(lte)(B|Q) ,(lte)a5,(lte)(B|Q)
+    ,(lte)4 ,(lte)e7,(lte)(K|P|B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)g5,(lte)(B|Q) ,(lte)h4,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_e1[] =
 {
 (lte)5
-    ,(lte)4 ,(lte)d1,(lte)(K|R|Q)   ,(lte)c1,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f1,(lte)(K|R|Q)   ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)7 ,(lte)e2,(lte)(K|R|Q)   ,(lte)e3,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) 
-    ,(lte)4 ,(lte)d2,(lte)(K|B|Q)   ,(lte)c3,(lte)(B|Q) ,(lte)b4,(lte)(B|Q) ,(lte)a5,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f2,(lte)(K|B|Q)   ,(lte)g3,(lte)(B|Q) ,(lte)h4,(lte)(B|Q) 
+    ,(lte)4 ,(lte)d1,(lte)(K|R|Q)   ,(lte)c1,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)3 ,(lte)f1,(lte)(K|R|Q)   ,(lte)g1,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)7 ,(lte)e2,(lte)(K|R|Q)   ,(lte)e3,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q)
+    ,(lte)4 ,(lte)d2,(lte)(K|B|Q)   ,(lte)c3,(lte)(B|Q) ,(lte)b4,(lte)(B|Q) ,(lte)a5,(lte)(B|Q)
+    ,(lte)3 ,(lte)f2,(lte)(K|B|Q)   ,(lte)g3,(lte)(B|Q) ,(lte)h4,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_e2[] =
 {
 (lte)8
-    ,(lte)4 ,(lte)d2,(lte)(K|R|Q)   ,(lte)c2,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f2,(lte)(K|R|Q)   ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) 
-    ,(lte)1 ,(lte)e1,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)e3,(lte)(K|R|Q)   ,(lte)e4,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)d1,(lte)(K|P|B|Q) 
-    ,(lte)4 ,(lte)d3,(lte)(K|B|Q)   ,(lte)c4,(lte)(B|Q) ,(lte)b5,(lte)(B|Q) ,(lte)a6,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f3,(lte)(K|B|Q)   ,(lte)g4,(lte)(B|Q) ,(lte)h5,(lte)(B|Q) 
-    ,(lte)1 ,(lte)f1,(lte)(K|P|B|Q) 
+    ,(lte)4 ,(lte)d2,(lte)(K|R|Q)   ,(lte)c2,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q)
+    ,(lte)3 ,(lte)f2,(lte)(K|R|Q)   ,(lte)g2,(lte)(R|Q) ,(lte)h2,(lte)(R|Q)
+    ,(lte)1 ,(lte)e1,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)e3,(lte)(K|R|Q)   ,(lte)e4,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q)
+    ,(lte)1 ,(lte)d1,(lte)(K|P|B|Q)
+    ,(lte)4 ,(lte)d3,(lte)(K|B|Q)   ,(lte)c4,(lte)(B|Q) ,(lte)b5,(lte)(B|Q) ,(lte)a6,(lte)(B|Q)
+    ,(lte)3 ,(lte)f3,(lte)(K|B|Q)   ,(lte)g4,(lte)(B|Q) ,(lte)h5,(lte)(B|Q)
+    ,(lte)1 ,(lte)f1,(lte)(K|P|B|Q)
 };
 static const lte attacks_black_lookup_e3[] =
 {
 (lte)8
-    ,(lte)4 ,(lte)d3,(lte)(K|R|Q)   ,(lte)c3,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f3,(lte)(K|R|Q)   ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) 
-    ,(lte)2 ,(lte)e2,(lte)(K|R|Q)   ,(lte)e1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)e4,(lte)(K|R|Q)   ,(lte)e5,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)d2,(lte)(K|P|B|Q) ,(lte)c1,(lte)(B|Q) 
-    ,(lte)4 ,(lte)d4,(lte)(K|B|Q)   ,(lte)c5,(lte)(B|Q) ,(lte)b6,(lte)(B|Q) ,(lte)a7,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f4,(lte)(K|B|Q)   ,(lte)g5,(lte)(B|Q) ,(lte)h6,(lte)(B|Q) 
-    ,(lte)2 ,(lte)f2,(lte)(K|P|B|Q) ,(lte)g1,(lte)(B|Q) 
+    ,(lte)4 ,(lte)d3,(lte)(K|R|Q)   ,(lte)c3,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q)
+    ,(lte)3 ,(lte)f3,(lte)(K|R|Q)   ,(lte)g3,(lte)(R|Q) ,(lte)h3,(lte)(R|Q)
+    ,(lte)2 ,(lte)e2,(lte)(K|R|Q)   ,(lte)e1,(lte)(R|Q)
+    ,(lte)5 ,(lte)e4,(lte)(K|R|Q)   ,(lte)e5,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q)
+    ,(lte)2 ,(lte)d2,(lte)(K|P|B|Q) ,(lte)c1,(lte)(B|Q)
+    ,(lte)4 ,(lte)d4,(lte)(K|B|Q)   ,(lte)c5,(lte)(B|Q) ,(lte)b6,(lte)(B|Q) ,(lte)a7,(lte)(B|Q)
+    ,(lte)3 ,(lte)f4,(lte)(K|B|Q)   ,(lte)g5,(lte)(B|Q) ,(lte)h6,(lte)(B|Q)
+    ,(lte)2 ,(lte)f2,(lte)(K|P|B|Q) ,(lte)g1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_e4[] =
 {
 (lte)8
-    ,(lte)4 ,(lte)d4,(lte)(K|R|Q)   ,(lte)c4,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f4,(lte)(K|R|Q)   ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) 
-    ,(lte)3 ,(lte)e3,(lte)(K|R|Q)   ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e5,(lte)(K|R|Q)   ,(lte)e6,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)d3,(lte)(K|P|B|Q) ,(lte)c2,(lte)(B|Q) ,(lte)b1,(lte)(B|Q) 
-    ,(lte)4 ,(lte)d5,(lte)(K|B|Q)   ,(lte)c6,(lte)(B|Q) ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f5,(lte)(K|B|Q)   ,(lte)g6,(lte)(B|Q) ,(lte)h7,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f3,(lte)(K|P|B|Q) ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q) 
+    ,(lte)4 ,(lte)d4,(lte)(K|R|Q)   ,(lte)c4,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q)
+    ,(lte)3 ,(lte)f4,(lte)(K|R|Q)   ,(lte)g4,(lte)(R|Q) ,(lte)h4,(lte)(R|Q)
+    ,(lte)3 ,(lte)e3,(lte)(K|R|Q)   ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q)
+    ,(lte)4 ,(lte)e5,(lte)(K|R|Q)   ,(lte)e6,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q)
+    ,(lte)3 ,(lte)d3,(lte)(K|P|B|Q) ,(lte)c2,(lte)(B|Q) ,(lte)b1,(lte)(B|Q)
+    ,(lte)4 ,(lte)d5,(lte)(K|B|Q)   ,(lte)c6,(lte)(B|Q) ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q)
+    ,(lte)3 ,(lte)f5,(lte)(K|B|Q)   ,(lte)g6,(lte)(B|Q) ,(lte)h7,(lte)(B|Q)
+    ,(lte)3 ,(lte)f3,(lte)(K|P|B|Q) ,(lte)g2,(lte)(B|Q) ,(lte)h1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_e5[] =
 {
 (lte)8
-    ,(lte)4 ,(lte)d5,(lte)(K|R|Q)   ,(lte)c5,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f5,(lte)(K|R|Q)   ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e4,(lte)(K|R|Q)   ,(lte)e3,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)e6,(lte)(K|R|Q)   ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) 
-    ,(lte)4 ,(lte)d4,(lte)(K|P|B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q) 
-    ,(lte)3 ,(lte)d6,(lte)(K|B|Q)   ,(lte)c7,(lte)(B|Q) ,(lte)b8,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f6,(lte)(K|B|Q)   ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f4,(lte)(K|P|B|Q) ,(lte)g3,(lte)(B|Q) ,(lte)h2,(lte)(B|Q) 
+    ,(lte)4 ,(lte)d5,(lte)(K|R|Q)   ,(lte)c5,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q)
+    ,(lte)3 ,(lte)f5,(lte)(K|R|Q)   ,(lte)g5,(lte)(R|Q) ,(lte)h5,(lte)(R|Q)
+    ,(lte)4 ,(lte)e4,(lte)(K|R|Q)   ,(lte)e3,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q)
+    ,(lte)3 ,(lte)e6,(lte)(K|R|Q)   ,(lte)e7,(lte)(R|Q) ,(lte)e8,(lte)(R|Q)
+    ,(lte)4 ,(lte)d4,(lte)(K|P|B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q)
+    ,(lte)3 ,(lte)d6,(lte)(K|B|Q)   ,(lte)c7,(lte)(B|Q) ,(lte)b8,(lte)(B|Q)
+    ,(lte)3 ,(lte)f6,(lte)(K|B|Q)   ,(lte)g7,(lte)(B|Q) ,(lte)h8,(lte)(B|Q)
+    ,(lte)3 ,(lte)f4,(lte)(K|P|B|Q) ,(lte)g3,(lte)(B|Q) ,(lte)h2,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_e6[] =
 {
 (lte)8
-    ,(lte)4 ,(lte)d6,(lte)(K|R|Q)   ,(lte)c6,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f6,(lte)(K|R|Q)   ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) 
-    ,(lte)5 ,(lte)e5,(lte)(K|R|Q)   ,(lte)e4,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)e7,(lte)(K|R|Q)   ,(lte)e8,(lte)(R|Q) 
-    ,(lte)4 ,(lte)d5,(lte)(K|P|B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)b3,(lte)(B|Q) ,(lte)a2,(lte)(B|Q) 
-    ,(lte)2 ,(lte)d7,(lte)(K|B|Q)   ,(lte)c8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)f7,(lte)(K|B|Q)   ,(lte)g8,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f5,(lte)(K|P|B|Q) ,(lte)g4,(lte)(B|Q) ,(lte)h3,(lte)(B|Q) 
+    ,(lte)4 ,(lte)d6,(lte)(K|R|Q)   ,(lte)c6,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q)
+    ,(lte)3 ,(lte)f6,(lte)(K|R|Q)   ,(lte)g6,(lte)(R|Q) ,(lte)h6,(lte)(R|Q)
+    ,(lte)5 ,(lte)e5,(lte)(K|R|Q)   ,(lte)e4,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q)
+    ,(lte)2 ,(lte)e7,(lte)(K|R|Q)   ,(lte)e8,(lte)(R|Q)
+    ,(lte)4 ,(lte)d5,(lte)(K|P|B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)b3,(lte)(B|Q) ,(lte)a2,(lte)(B|Q)
+    ,(lte)2 ,(lte)d7,(lte)(K|B|Q)   ,(lte)c8,(lte)(B|Q)
+    ,(lte)2 ,(lte)f7,(lte)(K|B|Q)   ,(lte)g8,(lte)(B|Q)
+    ,(lte)3 ,(lte)f5,(lte)(K|P|B|Q) ,(lte)g4,(lte)(B|Q) ,(lte)h3,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_e7[] =
 {
 (lte)8
-    ,(lte)4 ,(lte)d7,(lte)(K|R|Q)   ,(lte)c7,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f7,(lte)(K|R|Q)   ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) 
-    ,(lte)6 ,(lte)e6,(lte)(K|R|Q)   ,(lte)e5,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)e8,(lte)(K|R|Q)   
-    ,(lte)4 ,(lte)d6,(lte)(K|P|B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)b4,(lte)(B|Q) ,(lte)a3,(lte)(B|Q) 
-    ,(lte)1 ,(lte)d8,(lte)(K|B|Q)   
-    ,(lte)1 ,(lte)f8,(lte)(K|B|Q)   
-    ,(lte)3 ,(lte)f6,(lte)(K|P|B|Q) ,(lte)g5,(lte)(B|Q) ,(lte)h4,(lte)(B|Q) 
+    ,(lte)4 ,(lte)d7,(lte)(K|R|Q)   ,(lte)c7,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q)
+    ,(lte)3 ,(lte)f7,(lte)(K|R|Q)   ,(lte)g7,(lte)(R|Q) ,(lte)h7,(lte)(R|Q)
+    ,(lte)6 ,(lte)e6,(lte)(K|R|Q)   ,(lte)e5,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q)
+    ,(lte)1 ,(lte)e8,(lte)(K|R|Q)
+    ,(lte)4 ,(lte)d6,(lte)(K|P|B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)b4,(lte)(B|Q) ,(lte)a3,(lte)(B|Q)
+    ,(lte)1 ,(lte)d8,(lte)(K|B|Q)
+    ,(lte)1 ,(lte)f8,(lte)(K|B|Q)
+    ,(lte)3 ,(lte)f6,(lte)(K|P|B|Q) ,(lte)g5,(lte)(B|Q) ,(lte)h4,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_e8[] =
 {
 (lte)5
-    ,(lte)4 ,(lte)d8,(lte)(K|R|Q)   ,(lte)c8,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f8,(lte)(K|R|Q)   ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)7 ,(lte)e7,(lte)(K|R|Q)   ,(lte)e6,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)d7,(lte)(K|P|B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)b5,(lte)(B|Q) ,(lte)a4,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f7,(lte)(K|P|B|Q) ,(lte)g6,(lte)(B|Q) ,(lte)h5,(lte)(B|Q) 
+    ,(lte)4 ,(lte)d8,(lte)(K|R|Q)   ,(lte)c8,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)3 ,(lte)f8,(lte)(K|R|Q)   ,(lte)g8,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)7 ,(lte)e7,(lte)(K|R|Q)   ,(lte)e6,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)e1,(lte)(R|Q)
+    ,(lte)4 ,(lte)d7,(lte)(K|P|B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)b5,(lte)(B|Q) ,(lte)a4,(lte)(B|Q)
+    ,(lte)3 ,(lte)f7,(lte)(K|P|B|Q) ,(lte)g6,(lte)(B|Q) ,(lte)h5,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_f1[] =
 {
 (lte)5
-    ,(lte)5 ,(lte)e1,(lte)(K|R|Q)   ,(lte)d1,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g1,(lte)(K|R|Q)   ,(lte)h1,(lte)(R|Q) 
-    ,(lte)7 ,(lte)f2,(lte)(K|R|Q)   ,(lte)f3,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) 
-    ,(lte)5 ,(lte)e2,(lte)(K|B|Q)   ,(lte)d3,(lte)(B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)b5,(lte)(B|Q) ,(lte)a6,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g2,(lte)(K|B|Q)   ,(lte)h3,(lte)(B|Q) 
+    ,(lte)5 ,(lte)e1,(lte)(K|R|Q)   ,(lte)d1,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)2 ,(lte)g1,(lte)(K|R|Q)   ,(lte)h1,(lte)(R|Q)
+    ,(lte)7 ,(lte)f2,(lte)(K|R|Q)   ,(lte)f3,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q)
+    ,(lte)5 ,(lte)e2,(lte)(K|B|Q)   ,(lte)d3,(lte)(B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)b5,(lte)(B|Q) ,(lte)a6,(lte)(B|Q)
+    ,(lte)2 ,(lte)g2,(lte)(K|B|Q)   ,(lte)h3,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_f2[] =
 {
 (lte)8
-    ,(lte)5 ,(lte)e2,(lte)(K|R|Q)   ,(lte)d2,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g2,(lte)(K|R|Q)   ,(lte)h2,(lte)(R|Q) 
-    ,(lte)1 ,(lte)f1,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)f3,(lte)(K|R|Q)   ,(lte)f4,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)e1,(lte)(K|P|B|Q) 
-    ,(lte)5 ,(lte)e3,(lte)(K|B|Q)   ,(lte)d4,(lte)(B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)b6,(lte)(B|Q) ,(lte)a7,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g3,(lte)(K|B|Q)   ,(lte)h4,(lte)(B|Q) 
-    ,(lte)1 ,(lte)g1,(lte)(K|P|B|Q) 
+    ,(lte)5 ,(lte)e2,(lte)(K|R|Q)   ,(lte)d2,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q)
+    ,(lte)2 ,(lte)g2,(lte)(K|R|Q)   ,(lte)h2,(lte)(R|Q)
+    ,(lte)1 ,(lte)f1,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)f3,(lte)(K|R|Q)   ,(lte)f4,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q)
+    ,(lte)1 ,(lte)e1,(lte)(K|P|B|Q)
+    ,(lte)5 ,(lte)e3,(lte)(K|B|Q)   ,(lte)d4,(lte)(B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)b6,(lte)(B|Q) ,(lte)a7,(lte)(B|Q)
+    ,(lte)2 ,(lte)g3,(lte)(K|B|Q)   ,(lte)h4,(lte)(B|Q)
+    ,(lte)1 ,(lte)g1,(lte)(K|P|B|Q)
 };
 static const lte attacks_black_lookup_f3[] =
 {
 (lte)8
-    ,(lte)5 ,(lte)e3,(lte)(K|R|Q)   ,(lte)d3,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g3,(lte)(K|R|Q)   ,(lte)h3,(lte)(R|Q) 
-    ,(lte)2 ,(lte)f2,(lte)(K|R|Q)   ,(lte)f1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)f4,(lte)(K|R|Q)   ,(lte)f5,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)e2,(lte)(K|P|B|Q) ,(lte)d1,(lte)(B|Q) 
-    ,(lte)5 ,(lte)e4,(lte)(K|B|Q)   ,(lte)d5,(lte)(B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g4,(lte)(K|B|Q)   ,(lte)h5,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g2,(lte)(K|P|B|Q) ,(lte)h1,(lte)(B|Q) 
+    ,(lte)5 ,(lte)e3,(lte)(K|R|Q)   ,(lte)d3,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q)
+    ,(lte)2 ,(lte)g3,(lte)(K|R|Q)   ,(lte)h3,(lte)(R|Q)
+    ,(lte)2 ,(lte)f2,(lte)(K|R|Q)   ,(lte)f1,(lte)(R|Q)
+    ,(lte)5 ,(lte)f4,(lte)(K|R|Q)   ,(lte)f5,(lte)(R|Q) ,(lte)f6,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q)
+    ,(lte)2 ,(lte)e2,(lte)(K|P|B|Q) ,(lte)d1,(lte)(B|Q)
+    ,(lte)5 ,(lte)e4,(lte)(K|B|Q)   ,(lte)d5,(lte)(B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q)
+    ,(lte)2 ,(lte)g4,(lte)(K|B|Q)   ,(lte)h5,(lte)(B|Q)
+    ,(lte)2 ,(lte)g2,(lte)(K|P|B|Q) ,(lte)h1,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_f4[] =
 {
 (lte)8
-    ,(lte)5 ,(lte)e4,(lte)(K|R|Q)   ,(lte)d4,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g4,(lte)(K|R|Q)   ,(lte)h4,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f3,(lte)(K|R|Q)   ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)f5,(lte)(K|R|Q)   ,(lte)f6,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)e3,(lte)(K|P|B|Q) ,(lte)d2,(lte)(B|Q) ,(lte)c1,(lte)(B|Q) 
-    ,(lte)4 ,(lte)e5,(lte)(K|B|Q)   ,(lte)d6,(lte)(B|Q) ,(lte)c7,(lte)(B|Q) ,(lte)b8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g5,(lte)(K|B|Q)   ,(lte)h6,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g3,(lte)(K|P|B|Q) ,(lte)h2,(lte)(B|Q) 
+    ,(lte)5 ,(lte)e4,(lte)(K|R|Q)   ,(lte)d4,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q)
+    ,(lte)2 ,(lte)g4,(lte)(K|R|Q)   ,(lte)h4,(lte)(R|Q)
+    ,(lte)3 ,(lte)f3,(lte)(K|R|Q)   ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q)
+    ,(lte)4 ,(lte)f5,(lte)(K|R|Q)   ,(lte)f6,(lte)(R|Q) ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q)
+    ,(lte)3 ,(lte)e3,(lte)(K|P|B|Q) ,(lte)d2,(lte)(B|Q) ,(lte)c1,(lte)(B|Q)
+    ,(lte)4 ,(lte)e5,(lte)(K|B|Q)   ,(lte)d6,(lte)(B|Q) ,(lte)c7,(lte)(B|Q) ,(lte)b8,(lte)(B|Q)
+    ,(lte)2 ,(lte)g5,(lte)(K|B|Q)   ,(lte)h6,(lte)(B|Q)
+    ,(lte)2 ,(lte)g3,(lte)(K|P|B|Q) ,(lte)h2,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_f5[] =
 {
 (lte)8
-    ,(lte)5 ,(lte)e5,(lte)(K|R|Q)   ,(lte)d5,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g5,(lte)(K|R|Q)   ,(lte)h5,(lte)(R|Q) 
-    ,(lte)4 ,(lte)f4,(lte)(K|R|Q)   ,(lte)f3,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f6,(lte)(K|R|Q)   ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q) 
-    ,(lte)4 ,(lte)e4,(lte)(K|P|B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)c2,(lte)(B|Q) ,(lte)b1,(lte)(B|Q) 
-    ,(lte)3 ,(lte)e6,(lte)(K|B|Q)   ,(lte)d7,(lte)(B|Q) ,(lte)c8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g6,(lte)(K|B|Q)   ,(lte)h7,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g4,(lte)(K|P|B|Q) ,(lte)h3,(lte)(B|Q) 
+    ,(lte)5 ,(lte)e5,(lte)(K|R|Q)   ,(lte)d5,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q)
+    ,(lte)2 ,(lte)g5,(lte)(K|R|Q)   ,(lte)h5,(lte)(R|Q)
+    ,(lte)4 ,(lte)f4,(lte)(K|R|Q)   ,(lte)f3,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q)
+    ,(lte)3 ,(lte)f6,(lte)(K|R|Q)   ,(lte)f7,(lte)(R|Q) ,(lte)f8,(lte)(R|Q)
+    ,(lte)4 ,(lte)e4,(lte)(K|P|B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)c2,(lte)(B|Q) ,(lte)b1,(lte)(B|Q)
+    ,(lte)3 ,(lte)e6,(lte)(K|B|Q)   ,(lte)d7,(lte)(B|Q) ,(lte)c8,(lte)(B|Q)
+    ,(lte)2 ,(lte)g6,(lte)(K|B|Q)   ,(lte)h7,(lte)(B|Q)
+    ,(lte)2 ,(lte)g4,(lte)(K|P|B|Q) ,(lte)h3,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_f6[] =
 {
 (lte)8
-    ,(lte)5 ,(lte)e6,(lte)(K|R|Q)   ,(lte)d6,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g6,(lte)(K|R|Q)   ,(lte)h6,(lte)(R|Q) 
-    ,(lte)5 ,(lte)f5,(lte)(K|R|Q)   ,(lte)f4,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)f7,(lte)(K|R|Q)   ,(lte)f8,(lte)(R|Q) 
-    ,(lte)5 ,(lte)e5,(lte)(K|P|B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q) 
-    ,(lte)2 ,(lte)e7,(lte)(K|B|Q)   ,(lte)d8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g7,(lte)(K|B|Q)   ,(lte)h8,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g5,(lte)(K|P|B|Q) ,(lte)h4,(lte)(B|Q) 
+    ,(lte)5 ,(lte)e6,(lte)(K|R|Q)   ,(lte)d6,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q)
+    ,(lte)2 ,(lte)g6,(lte)(K|R|Q)   ,(lte)h6,(lte)(R|Q)
+    ,(lte)5 ,(lte)f5,(lte)(K|R|Q)   ,(lte)f4,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q)
+    ,(lte)2 ,(lte)f7,(lte)(K|R|Q)   ,(lte)f8,(lte)(R|Q)
+    ,(lte)5 ,(lte)e5,(lte)(K|P|B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q)
+    ,(lte)2 ,(lte)e7,(lte)(K|B|Q)   ,(lte)d8,(lte)(B|Q)
+    ,(lte)2 ,(lte)g7,(lte)(K|B|Q)   ,(lte)h8,(lte)(B|Q)
+    ,(lte)2 ,(lte)g5,(lte)(K|P|B|Q) ,(lte)h4,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_f7[] =
 {
 (lte)8
-    ,(lte)5 ,(lte)e7,(lte)(K|R|Q)   ,(lte)d7,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g7,(lte)(K|R|Q)   ,(lte)h7,(lte)(R|Q) 
-    ,(lte)6 ,(lte)f6,(lte)(K|R|Q)   ,(lte)f5,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)f8,(lte)(K|R|Q)   
-    ,(lte)5 ,(lte)e6,(lte)(K|P|B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)b3,(lte)(B|Q) ,(lte)a2,(lte)(B|Q) 
-    ,(lte)1 ,(lte)e8,(lte)(K|B|Q)   
-    ,(lte)1 ,(lte)g8,(lte)(K|B|Q)   
-    ,(lte)2 ,(lte)g6,(lte)(K|P|B|Q) ,(lte)h5,(lte)(B|Q) 
+    ,(lte)5 ,(lte)e7,(lte)(K|R|Q)   ,(lte)d7,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q)
+    ,(lte)2 ,(lte)g7,(lte)(K|R|Q)   ,(lte)h7,(lte)(R|Q)
+    ,(lte)6 ,(lte)f6,(lte)(K|R|Q)   ,(lte)f5,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q)
+    ,(lte)1 ,(lte)f8,(lte)(K|R|Q)
+    ,(lte)5 ,(lte)e6,(lte)(K|P|B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)b3,(lte)(B|Q) ,(lte)a2,(lte)(B|Q)
+    ,(lte)1 ,(lte)e8,(lte)(K|B|Q)
+    ,(lte)1 ,(lte)g8,(lte)(K|B|Q)
+    ,(lte)2 ,(lte)g6,(lte)(K|P|B|Q) ,(lte)h5,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_f8[] =
 {
 (lte)5
-    ,(lte)5 ,(lte)e8,(lte)(K|R|Q)   ,(lte)d8,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g8,(lte)(K|R|Q)   ,(lte)h8,(lte)(R|Q) 
-    ,(lte)7 ,(lte)f7,(lte)(K|R|Q)   ,(lte)f6,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)e7,(lte)(K|P|B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)b4,(lte)(B|Q) ,(lte)a3,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g7,(lte)(K|P|B|Q) ,(lte)h6,(lte)(B|Q) 
+    ,(lte)5 ,(lte)e8,(lte)(K|R|Q)   ,(lte)d8,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)2 ,(lte)g8,(lte)(K|R|Q)   ,(lte)h8,(lte)(R|Q)
+    ,(lte)7 ,(lte)f7,(lte)(K|R|Q)   ,(lte)f6,(lte)(R|Q) ,(lte)f5,(lte)(R|Q) ,(lte)f4,(lte)(R|Q) ,(lte)f3,(lte)(R|Q) ,(lte)f2,(lte)(R|Q) ,(lte)f1,(lte)(R|Q)
+    ,(lte)5 ,(lte)e7,(lte)(K|P|B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)b4,(lte)(B|Q) ,(lte)a3,(lte)(B|Q)
+    ,(lte)2 ,(lte)g7,(lte)(K|P|B|Q) ,(lte)h6,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_g1[] =
 {
 (lte)5
-    ,(lte)6 ,(lte)f1,(lte)(K|R|Q)   ,(lte)e1,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h1,(lte)(K|R|Q)   
-    ,(lte)7 ,(lte)g2,(lte)(K|R|Q)   ,(lte)g3,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) 
-    ,(lte)6 ,(lte)f2,(lte)(K|B|Q)   ,(lte)e3,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)b6,(lte)(B|Q) ,(lte)a7,(lte)(B|Q) 
-    ,(lte)1 ,(lte)h2,(lte)(K|B|Q)   
+    ,(lte)6 ,(lte)f1,(lte)(K|R|Q)   ,(lte)e1,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)1 ,(lte)h1,(lte)(K|R|Q)
+    ,(lte)7 ,(lte)g2,(lte)(K|R|Q)   ,(lte)g3,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q)
+    ,(lte)6 ,(lte)f2,(lte)(K|B|Q)   ,(lte)e3,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)c5,(lte)(B|Q) ,(lte)b6,(lte)(B|Q) ,(lte)a7,(lte)(B|Q)
+    ,(lte)1 ,(lte)h2,(lte)(K|B|Q)
 };
 static const lte attacks_black_lookup_g2[] =
 {
 (lte)8
-    ,(lte)6 ,(lte)f2,(lte)(K|R|Q)   ,(lte)e2,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h2,(lte)(K|R|Q)   
-    ,(lte)1 ,(lte)g1,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)g3,(lte)(K|R|Q)   ,(lte)g4,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)f1,(lte)(K|P|B|Q) 
-    ,(lte)6 ,(lte)f3,(lte)(K|B|Q)   ,(lte)e4,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q) 
-    ,(lte)1 ,(lte)h3,(lte)(K|B|Q)   
-    ,(lte)1 ,(lte)h1,(lte)(K|P|B|Q) 
+    ,(lte)6 ,(lte)f2,(lte)(K|R|Q)   ,(lte)e2,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q)
+    ,(lte)1 ,(lte)h2,(lte)(K|R|Q)
+    ,(lte)1 ,(lte)g1,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)g3,(lte)(K|R|Q)   ,(lte)g4,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q)
+    ,(lte)1 ,(lte)f1,(lte)(K|P|B|Q)
+    ,(lte)6 ,(lte)f3,(lte)(K|B|Q)   ,(lte)e4,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q)
+    ,(lte)1 ,(lte)h3,(lte)(K|B|Q)
+    ,(lte)1 ,(lte)h1,(lte)(K|P|B|Q)
 };
 static const lte attacks_black_lookup_g3[] =
 {
 (lte)8
-    ,(lte)6 ,(lte)f3,(lte)(K|R|Q)   ,(lte)e3,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h3,(lte)(K|R|Q)   
-    ,(lte)2 ,(lte)g2,(lte)(K|R|Q)   ,(lte)g1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)g4,(lte)(K|R|Q)   ,(lte)g5,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)f2,(lte)(K|P|B|Q) ,(lte)e1,(lte)(B|Q) 
-    ,(lte)5 ,(lte)f4,(lte)(K|B|Q)   ,(lte)e5,(lte)(B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)c7,(lte)(B|Q) ,(lte)b8,(lte)(B|Q) 
-    ,(lte)1 ,(lte)h4,(lte)(K|B|Q)   
-    ,(lte)1 ,(lte)h2,(lte)(K|P|B|Q) 
+    ,(lte)6 ,(lte)f3,(lte)(K|R|Q)   ,(lte)e3,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q)
+    ,(lte)1 ,(lte)h3,(lte)(K|R|Q)
+    ,(lte)2 ,(lte)g2,(lte)(K|R|Q)   ,(lte)g1,(lte)(R|Q)
+    ,(lte)5 ,(lte)g4,(lte)(K|R|Q)   ,(lte)g5,(lte)(R|Q) ,(lte)g6,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q)
+    ,(lte)2 ,(lte)f2,(lte)(K|P|B|Q) ,(lte)e1,(lte)(B|Q)
+    ,(lte)5 ,(lte)f4,(lte)(K|B|Q)   ,(lte)e5,(lte)(B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)c7,(lte)(B|Q) ,(lte)b8,(lte)(B|Q)
+    ,(lte)1 ,(lte)h4,(lte)(K|B|Q)
+    ,(lte)1 ,(lte)h2,(lte)(K|P|B|Q)
 };
 static const lte attacks_black_lookup_g4[] =
 {
 (lte)8
-    ,(lte)6 ,(lte)f4,(lte)(K|R|Q)   ,(lte)e4,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h4,(lte)(K|R|Q)   
-    ,(lte)3 ,(lte)g3,(lte)(K|R|Q)   ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)g5,(lte)(K|R|Q)   ,(lte)g6,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)f3,(lte)(K|P|B|Q) ,(lte)e2,(lte)(B|Q) ,(lte)d1,(lte)(B|Q) 
-    ,(lte)4 ,(lte)f5,(lte)(K|B|Q)   ,(lte)e6,(lte)(B|Q) ,(lte)d7,(lte)(B|Q) ,(lte)c8,(lte)(B|Q) 
-    ,(lte)1 ,(lte)h5,(lte)(K|B|Q)   
-    ,(lte)1 ,(lte)h3,(lte)(K|P|B|Q) 
+    ,(lte)6 ,(lte)f4,(lte)(K|R|Q)   ,(lte)e4,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q)
+    ,(lte)1 ,(lte)h4,(lte)(K|R|Q)
+    ,(lte)3 ,(lte)g3,(lte)(K|R|Q)   ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q)
+    ,(lte)4 ,(lte)g5,(lte)(K|R|Q)   ,(lte)g6,(lte)(R|Q) ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q)
+    ,(lte)3 ,(lte)f3,(lte)(K|P|B|Q) ,(lte)e2,(lte)(B|Q) ,(lte)d1,(lte)(B|Q)
+    ,(lte)4 ,(lte)f5,(lte)(K|B|Q)   ,(lte)e6,(lte)(B|Q) ,(lte)d7,(lte)(B|Q) ,(lte)c8,(lte)(B|Q)
+    ,(lte)1 ,(lte)h5,(lte)(K|B|Q)
+    ,(lte)1 ,(lte)h3,(lte)(K|P|B|Q)
 };
 static const lte attacks_black_lookup_g5[] =
 {
 (lte)8
-    ,(lte)6 ,(lte)f5,(lte)(K|R|Q)   ,(lte)e5,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h5,(lte)(K|R|Q)   
-    ,(lte)4 ,(lte)g4,(lte)(K|R|Q)   ,(lte)g3,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)g6,(lte)(K|R|Q)   ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q) 
-    ,(lte)4 ,(lte)f4,(lte)(K|P|B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)d2,(lte)(B|Q) ,(lte)c1,(lte)(B|Q) 
-    ,(lte)3 ,(lte)f6,(lte)(K|B|Q)   ,(lte)e7,(lte)(B|Q) ,(lte)d8,(lte)(B|Q) 
-    ,(lte)1 ,(lte)h6,(lte)(K|B|Q)   
-    ,(lte)1 ,(lte)h4,(lte)(K|P|B|Q) 
+    ,(lte)6 ,(lte)f5,(lte)(K|R|Q)   ,(lte)e5,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q)
+    ,(lte)1 ,(lte)h5,(lte)(K|R|Q)
+    ,(lte)4 ,(lte)g4,(lte)(K|R|Q)   ,(lte)g3,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q)
+    ,(lte)3 ,(lte)g6,(lte)(K|R|Q)   ,(lte)g7,(lte)(R|Q) ,(lte)g8,(lte)(R|Q)
+    ,(lte)4 ,(lte)f4,(lte)(K|P|B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)d2,(lte)(B|Q) ,(lte)c1,(lte)(B|Q)
+    ,(lte)3 ,(lte)f6,(lte)(K|B|Q)   ,(lte)e7,(lte)(B|Q) ,(lte)d8,(lte)(B|Q)
+    ,(lte)1 ,(lte)h6,(lte)(K|B|Q)
+    ,(lte)1 ,(lte)h4,(lte)(K|P|B|Q)
 };
 static const lte attacks_black_lookup_g6[] =
 {
 (lte)8
-    ,(lte)6 ,(lte)f6,(lte)(K|R|Q)   ,(lte)e6,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h6,(lte)(K|R|Q)   
-    ,(lte)5 ,(lte)g5,(lte)(K|R|Q)   ,(lte)g4,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g7,(lte)(K|R|Q)   ,(lte)g8,(lte)(R|Q) 
-    ,(lte)5 ,(lte)f5,(lte)(K|P|B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)c2,(lte)(B|Q) ,(lte)b1,(lte)(B|Q) 
-    ,(lte)2 ,(lte)f7,(lte)(K|B|Q)   ,(lte)e8,(lte)(B|Q) 
-    ,(lte)1 ,(lte)h7,(lte)(K|B|Q)   
-    ,(lte)1 ,(lte)h5,(lte)(K|P|B|Q) 
+    ,(lte)6 ,(lte)f6,(lte)(K|R|Q)   ,(lte)e6,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q)
+    ,(lte)1 ,(lte)h6,(lte)(K|R|Q)
+    ,(lte)5 ,(lte)g5,(lte)(K|R|Q)   ,(lte)g4,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q)
+    ,(lte)2 ,(lte)g7,(lte)(K|R|Q)   ,(lte)g8,(lte)(R|Q)
+    ,(lte)5 ,(lte)f5,(lte)(K|P|B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)c2,(lte)(B|Q) ,(lte)b1,(lte)(B|Q)
+    ,(lte)2 ,(lte)f7,(lte)(K|B|Q)   ,(lte)e8,(lte)(B|Q)
+    ,(lte)1 ,(lte)h7,(lte)(K|B|Q)
+    ,(lte)1 ,(lte)h5,(lte)(K|P|B|Q)
 };
 static const lte attacks_black_lookup_g7[] =
 {
 (lte)8
-    ,(lte)6 ,(lte)f7,(lte)(K|R|Q)   ,(lte)e7,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h7,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)g6,(lte)(K|R|Q)   ,(lte)g5,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)g8,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)f6,(lte)(K|P|B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q) 
-    ,(lte)1 ,(lte)f8,(lte)(K|B|Q)   
-    ,(lte)1 ,(lte)h8,(lte)(K|B|Q)   
-    ,(lte)1 ,(lte)h6,(lte)(K|P|B|Q) 
+    ,(lte)6 ,(lte)f7,(lte)(K|R|Q)   ,(lte)e7,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q)
+    ,(lte)1 ,(lte)h7,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)g6,(lte)(K|R|Q)   ,(lte)g5,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q)
+    ,(lte)1 ,(lte)g8,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)f6,(lte)(K|P|B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q)
+    ,(lte)1 ,(lte)f8,(lte)(K|B|Q)
+    ,(lte)1 ,(lte)h8,(lte)(K|B|Q)
+    ,(lte)1 ,(lte)h6,(lte)(K|P|B|Q)
 };
 static const lte attacks_black_lookup_g8[] =
 {
 (lte)5
-    ,(lte)6 ,(lte)f8,(lte)(K|R|Q)   ,(lte)e8,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h8,(lte)(K|R|Q)   
-    ,(lte)7 ,(lte)g7,(lte)(K|R|Q)   ,(lte)g6,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q) 
-    ,(lte)6 ,(lte)f7,(lte)(K|P|B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)b3,(lte)(B|Q) ,(lte)a2,(lte)(B|Q) 
-    ,(lte)1 ,(lte)h7,(lte)(K|P|B|Q) 
+    ,(lte)6 ,(lte)f8,(lte)(K|R|Q)   ,(lte)e8,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)1 ,(lte)h8,(lte)(K|R|Q)
+    ,(lte)7 ,(lte)g7,(lte)(K|R|Q)   ,(lte)g6,(lte)(R|Q) ,(lte)g5,(lte)(R|Q) ,(lte)g4,(lte)(R|Q) ,(lte)g3,(lte)(R|Q) ,(lte)g2,(lte)(R|Q) ,(lte)g1,(lte)(R|Q)
+    ,(lte)6 ,(lte)f7,(lte)(K|P|B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)c4,(lte)(B|Q) ,(lte)b3,(lte)(B|Q) ,(lte)a2,(lte)(B|Q)
+    ,(lte)1 ,(lte)h7,(lte)(K|P|B|Q)
 };
 static const lte attacks_black_lookup_h1[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)g1,(lte)(K|R|Q)   ,(lte)f1,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q) 
-    ,(lte)7 ,(lte)h2,(lte)(K|R|Q)   ,(lte)h3,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)7 ,(lte)g2,(lte)(K|B|Q)   ,(lte)f3,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q) 
+    ,(lte)7 ,(lte)g1,(lte)(K|R|Q)   ,(lte)f1,(lte)(R|Q) ,(lte)e1,(lte)(R|Q) ,(lte)d1,(lte)(R|Q) ,(lte)c1,(lte)(R|Q) ,(lte)b1,(lte)(R|Q) ,(lte)a1,(lte)(R|Q)
+    ,(lte)7 ,(lte)h2,(lte)(K|R|Q)   ,(lte)h3,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)7 ,(lte)g2,(lte)(K|B|Q)   ,(lte)f3,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)d5,(lte)(B|Q) ,(lte)c6,(lte)(B|Q) ,(lte)b7,(lte)(B|Q) ,(lte)a8,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_h2[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)g2,(lte)(K|R|Q)   ,(lte)f2,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h1,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)h3,(lte)(K|R|Q)   ,(lte)h4,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)1 ,(lte)g1,(lte)(K|P|B|Q) 
-    ,(lte)6 ,(lte)g3,(lte)(K|B|Q)   ,(lte)f4,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)c7,(lte)(B|Q) ,(lte)b8,(lte)(B|Q) 
+    ,(lte)7 ,(lte)g2,(lte)(K|R|Q)   ,(lte)f2,(lte)(R|Q) ,(lte)e2,(lte)(R|Q) ,(lte)d2,(lte)(R|Q) ,(lte)c2,(lte)(R|Q) ,(lte)b2,(lte)(R|Q) ,(lte)a2,(lte)(R|Q)
+    ,(lte)1 ,(lte)h1,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)h3,(lte)(K|R|Q)   ,(lte)h4,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)1 ,(lte)g1,(lte)(K|P|B|Q)
+    ,(lte)6 ,(lte)g3,(lte)(K|B|Q)   ,(lte)f4,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)d6,(lte)(B|Q) ,(lte)c7,(lte)(B|Q) ,(lte)b8,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_h3[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)g3,(lte)(K|R|Q)   ,(lte)f3,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q) 
-    ,(lte)2 ,(lte)h2,(lte)(K|R|Q)   ,(lte)h1,(lte)(R|Q) 
-    ,(lte)5 ,(lte)h4,(lte)(K|R|Q)   ,(lte)h5,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)2 ,(lte)g2,(lte)(K|P|B|Q) ,(lte)f1,(lte)(B|Q) 
-    ,(lte)5 ,(lte)g4,(lte)(K|B|Q)   ,(lte)f5,(lte)(B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)d7,(lte)(B|Q) ,(lte)c8,(lte)(B|Q) 
+    ,(lte)7 ,(lte)g3,(lte)(K|R|Q)   ,(lte)f3,(lte)(R|Q) ,(lte)e3,(lte)(R|Q) ,(lte)d3,(lte)(R|Q) ,(lte)c3,(lte)(R|Q) ,(lte)b3,(lte)(R|Q) ,(lte)a3,(lte)(R|Q)
+    ,(lte)2 ,(lte)h2,(lte)(K|R|Q)   ,(lte)h1,(lte)(R|Q)
+    ,(lte)5 ,(lte)h4,(lte)(K|R|Q)   ,(lte)h5,(lte)(R|Q) ,(lte)h6,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)2 ,(lte)g2,(lte)(K|P|B|Q) ,(lte)f1,(lte)(B|Q)
+    ,(lte)5 ,(lte)g4,(lte)(K|B|Q)   ,(lte)f5,(lte)(B|Q) ,(lte)e6,(lte)(B|Q) ,(lte)d7,(lte)(B|Q) ,(lte)c8,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_h4[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)g4,(lte)(K|R|Q)   ,(lte)f4,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q) 
-    ,(lte)3 ,(lte)h3,(lte)(K|R|Q)   ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)4 ,(lte)h5,(lte)(K|R|Q)   ,(lte)h6,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)3 ,(lte)g3,(lte)(K|P|B|Q) ,(lte)f2,(lte)(B|Q) ,(lte)e1,(lte)(B|Q) 
-    ,(lte)4 ,(lte)g5,(lte)(K|B|Q)   ,(lte)f6,(lte)(B|Q) ,(lte)e7,(lte)(B|Q) ,(lte)d8,(lte)(B|Q) 
+    ,(lte)7 ,(lte)g4,(lte)(K|R|Q)   ,(lte)f4,(lte)(R|Q) ,(lte)e4,(lte)(R|Q) ,(lte)d4,(lte)(R|Q) ,(lte)c4,(lte)(R|Q) ,(lte)b4,(lte)(R|Q) ,(lte)a4,(lte)(R|Q)
+    ,(lte)3 ,(lte)h3,(lte)(K|R|Q)   ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)4 ,(lte)h5,(lte)(K|R|Q)   ,(lte)h6,(lte)(R|Q) ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)3 ,(lte)g3,(lte)(K|P|B|Q) ,(lte)f2,(lte)(B|Q) ,(lte)e1,(lte)(B|Q)
+    ,(lte)4 ,(lte)g5,(lte)(K|B|Q)   ,(lte)f6,(lte)(B|Q) ,(lte)e7,(lte)(B|Q) ,(lte)d8,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_h5[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)g5,(lte)(K|R|Q)   ,(lte)f5,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q) 
-    ,(lte)4 ,(lte)h4,(lte)(K|R|Q)   ,(lte)h3,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)3 ,(lte)h6,(lte)(K|R|Q)   ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q) 
-    ,(lte)4 ,(lte)g4,(lte)(K|P|B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)e2,(lte)(B|Q) ,(lte)d1,(lte)(B|Q) 
-    ,(lte)3 ,(lte)g6,(lte)(K|B|Q)   ,(lte)f7,(lte)(B|Q) ,(lte)e8,(lte)(B|Q) 
+    ,(lte)7 ,(lte)g5,(lte)(K|R|Q)   ,(lte)f5,(lte)(R|Q) ,(lte)e5,(lte)(R|Q) ,(lte)d5,(lte)(R|Q) ,(lte)c5,(lte)(R|Q) ,(lte)b5,(lte)(R|Q) ,(lte)a5,(lte)(R|Q)
+    ,(lte)4 ,(lte)h4,(lte)(K|R|Q)   ,(lte)h3,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)3 ,(lte)h6,(lte)(K|R|Q)   ,(lte)h7,(lte)(R|Q) ,(lte)h8,(lte)(R|Q)
+    ,(lte)4 ,(lte)g4,(lte)(K|P|B|Q) ,(lte)f3,(lte)(B|Q) ,(lte)e2,(lte)(B|Q) ,(lte)d1,(lte)(B|Q)
+    ,(lte)3 ,(lte)g6,(lte)(K|B|Q)   ,(lte)f7,(lte)(B|Q) ,(lte)e8,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_h6[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)g6,(lte)(K|R|Q)   ,(lte)f6,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q) 
-    ,(lte)5 ,(lte)h5,(lte)(K|R|Q)   ,(lte)h4,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)2 ,(lte)h7,(lte)(K|R|Q)   ,(lte)h8,(lte)(R|Q) 
-    ,(lte)5 ,(lte)g5,(lte)(K|P|B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)d2,(lte)(B|Q) ,(lte)c1,(lte)(B|Q) 
-    ,(lte)2 ,(lte)g7,(lte)(K|B|Q)   ,(lte)f8,(lte)(B|Q) 
+    ,(lte)7 ,(lte)g6,(lte)(K|R|Q)   ,(lte)f6,(lte)(R|Q) ,(lte)e6,(lte)(R|Q) ,(lte)d6,(lte)(R|Q) ,(lte)c6,(lte)(R|Q) ,(lte)b6,(lte)(R|Q) ,(lte)a6,(lte)(R|Q)
+    ,(lte)5 ,(lte)h5,(lte)(K|R|Q)   ,(lte)h4,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)2 ,(lte)h7,(lte)(K|R|Q)   ,(lte)h8,(lte)(R|Q)
+    ,(lte)5 ,(lte)g5,(lte)(K|P|B|Q) ,(lte)f4,(lte)(B|Q) ,(lte)e3,(lte)(B|Q) ,(lte)d2,(lte)(B|Q) ,(lte)c1,(lte)(B|Q)
+    ,(lte)2 ,(lte)g7,(lte)(K|B|Q)   ,(lte)f8,(lte)(B|Q)
 };
 static const lte attacks_black_lookup_h7[] =
 {
 (lte)5
-    ,(lte)7 ,(lte)g7,(lte)(K|R|Q)   ,(lte)f7,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q) 
-    ,(lte)6 ,(lte)h6,(lte)(K|R|Q)   ,(lte)h5,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)1 ,(lte)h8,(lte)(K|R|Q)   
-    ,(lte)6 ,(lte)g6,(lte)(K|P|B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)c2,(lte)(B|Q) ,(lte)b1,(lte)(B|Q) 
-    ,(lte)1 ,(lte)g8,(lte)(K|B|Q)   
+    ,(lte)7 ,(lte)g7,(lte)(K|R|Q)   ,(lte)f7,(lte)(R|Q) ,(lte)e7,(lte)(R|Q) ,(lte)d7,(lte)(R|Q) ,(lte)c7,(lte)(R|Q) ,(lte)b7,(lte)(R|Q) ,(lte)a7,(lte)(R|Q)
+    ,(lte)6 ,(lte)h6,(lte)(K|R|Q)   ,(lte)h5,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)1 ,(lte)h8,(lte)(K|R|Q)
+    ,(lte)6 ,(lte)g6,(lte)(K|P|B|Q) ,(lte)f5,(lte)(B|Q) ,(lte)e4,(lte)(B|Q) ,(lte)d3,(lte)(B|Q) ,(lte)c2,(lte)(B|Q) ,(lte)b1,(lte)(B|Q)
+    ,(lte)1 ,(lte)g8,(lte)(K|B|Q)
 };
 static const lte attacks_black_lookup_h8[] =
 {
 (lte)3
-    ,(lte)7 ,(lte)g8,(lte)(K|R|Q)   ,(lte)f8,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q) 
-    ,(lte)7 ,(lte)h7,(lte)(K|R|Q)   ,(lte)h6,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q) 
-    ,(lte)7 ,(lte)g7,(lte)(K|P|B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q) 
+    ,(lte)7 ,(lte)g8,(lte)(K|R|Q)   ,(lte)f8,(lte)(R|Q) ,(lte)e8,(lte)(R|Q) ,(lte)d8,(lte)(R|Q) ,(lte)c8,(lte)(R|Q) ,(lte)b8,(lte)(R|Q) ,(lte)a8,(lte)(R|Q)
+    ,(lte)7 ,(lte)h7,(lte)(K|R|Q)   ,(lte)h6,(lte)(R|Q) ,(lte)h5,(lte)(R|Q) ,(lte)h4,(lte)(R|Q) ,(lte)h3,(lte)(R|Q) ,(lte)h2,(lte)(R|Q) ,(lte)h1,(lte)(R|Q)
+    ,(lte)7 ,(lte)g7,(lte)(K|P|B|Q) ,(lte)f6,(lte)(B|Q) ,(lte)e5,(lte)(B|Q) ,(lte)d4,(lte)(B|Q) ,(lte)c3,(lte)(B|Q) ,(lte)b2,(lte)(B|Q) ,(lte)a1,(lte)(B|Q)
 };
 
 // attacks_black_lookup

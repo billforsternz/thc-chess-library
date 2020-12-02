@@ -2,7 +2,7 @@
  * ChessPosition.cpp Chess classes - Representation of the position on the board
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 
 /* Some project notes */
@@ -32,11 +32,13 @@
  *    ChessEngine     extends ChessEvaluation
  *      ;ChessEngine adds a search tree to ChessEvaluation to make a
  *      ;complete simple engine (the Tarrasch Toy Engine)
+ *      ;ChessEngine is now split off from the rest of the thc chess library
+ *      ;and is part of the Tarrasch Toy Engine project instead
  ****************************************************************************/
 
 /****************************************************************************
  * Explanation of namespace thc:
- * 
+ *
  *  The Chess classes use the C++ namespace facility to ensure they can be
  *  used without name conflicts with other 3rd party code. A short, but
  *  highly likely to be unique namespace name is best, we choose "thc" which
@@ -46,13 +48,13 @@
 /****************************************************************************
  * My original license, now replaced by MIT license full text of which is
  * in file LICENSE in project's root directory.
- * 
+ *
  * Licensing provisions for all TripleHappy Chess source code;
  *
  * Start Date: 15 February 2003.
  * This software is licensed to be used freely. The following licensing
  * provisions apply;
- * 
+ *
  * 1) The 'author' is asserted to be the original author of the code, Bill
  *    Forster of Wellington, New Zealand.
  * 2) The 'licensee' is anyone else who wishes to use the software.
@@ -76,7 +78,6 @@
 #include "Move.h"
 #include "PrivateChessDefs.h"
 #include "HashLookup.h"
-#include "DebugPrintf.h"
 using namespace std;
 using namespace thc;
 
@@ -115,7 +116,7 @@ std::string ChessPosition::ToDebugStr( const char *label )
  *   return bool okay
  ****************************************************************************/
 bool ChessPosition::Forsyth( const char *txt )
-{    
+{
     int   file, rank, skip, store, temp;
     int   count_wking=0, count_bking=0;
     char  c, cross;
@@ -157,22 +158,22 @@ bool ChessPosition::Forsyth( const char *txt )
             {
                 case 'x':   cross = 'x';
                             skip = 1;
-                            break;   
+                            break;
                 case ' ':
                 case '\t':  done = true;            break;
                 case 'k':   p = 'k';
                             count_bking++;          break;
                 case 'K':   p = 'K';
                             count_wking++;          break;
-                case 'p':   
-                case 'r':   
-                case 'n':   
-                case 'b':   
-                case 'q':   
-                case 'P':   
-                case 'R':   
-                case 'N':   
-                case 'B':   
+                case 'p':
+                case 'r':
+                case 'n':
+                case 'b':
+                case 'q':
+                case 'P':
+                case 'R':
+                case 'N':
+                case 'B':
                 case 'Q':   p = c;   break;
                 case '1':   case '2':   case '3':   case '4':
                 case '5':   case '6':   case '7':   case '8':
@@ -191,7 +192,7 @@ bool ChessPosition::Forsyth( const char *txt )
                     {
                         txt++;
                         skip += 8;
-                    }   
+                    }
                     break;
                 }
                 default:    okay=false;
@@ -216,9 +217,9 @@ bool ChessPosition::Forsyth( const char *txt )
                     rank--;
                 }
                 if( sq == h1 )
-                    done = true;        // last square, we're done !            
+                    done = true;        // last square, we're done !
             }
-        }   
+        }
 
         // In validation pass make sure there's 1 white king and 1 black king
    /*   if( store==0 )  // disabled to allow ILLEGAL_NOT_ONE_KING_EACH message
@@ -251,8 +252,8 @@ bool ChessPosition::Forsyth( const char *txt )
         // Who to move
         if( okay )
         {
-            if( *txt == '/' 
-             || *txt == '|' 
+            if( *txt == '/'
+             || *txt == '|'
              || *txt == '\\' )
                 txt++;
             while( *txt==' ' || *txt=='\t' )
@@ -313,7 +314,7 @@ bool ChessPosition::Forsyth( const char *txt )
                 }
             }
         }
-            
+
         // Enpassant target
         if( okay )
         {
@@ -398,7 +399,7 @@ std::string ChessPosition::ForsythPublish()
         {
             save_file = file;
             save_rank = rank;
-        }           
+        }
         p = squares[sq];
         if( p == ' ' )
             empty++;
@@ -447,7 +448,7 @@ std::string ChessPosition::ForsythPublish()
         if( bqueen_allowed() )
             str += 'q';
     }
-    
+
     // Enpassant target square
     str += ' ';
     if( enpassant_target==SQUARE_INVALID || save_rank==0 )
@@ -523,7 +524,7 @@ unsigned short ChessPosition::Compress( CompressedPosition &dst ) const
         int idx = ep_target+8; //idx = SOUTH(enpassant_target) is black pawn
         src.squares[idx] = src.squares[idx-24]; // store 1st rank
         src.squares[idx-24] = 'p';              // indicate ep
-    }        
+    }
 
     // Black captures enpassant on a3,b3...h3
     else if( !src.white && ep_target!=SQUARE_INVALID )
@@ -531,7 +532,7 @@ unsigned short ChessPosition::Compress( CompressedPosition &dst ) const
         int idx = ep_target-8; //idx = NORTH(enpassant_target) is white pawn
         src.squares[idx] = src.squares[idx+24]; // store 1st rank
         src.squares[idx+24] = 'P';              // indicate ep
-    }        
+    }
 
     // This old ugly one has a bug ... (search for bug below)
     #else
@@ -553,8 +554,8 @@ unsigned short ChessPosition::Compress( CompressedPosition &dst ) const
             src.squares[idx] = src.squares[idx-24]; // store 1st rank
             src.squares[idx-24] = 'p';              // indicate ep
         }
-    }        
-    
+    }
+
     // Black captures enpassant on a3,b3...h3
     else if( !src.white && a3<=src.enpassant_target && src.enpassant_target<=h3 )
     {
@@ -571,10 +572,10 @@ unsigned short ChessPosition::Compress( CompressedPosition &dst ) const
             src.squares[idx] = src.squares[idx+24]; // store 1st rank
             src.squares[idx+24] = 'P';              // indicate ep
         }
-    }        
+    }
     #endif
-    
-    
+
+
     // Encode empty square with 2 bits, and other 12 possibilities with
     //  all the other possible nibbles that don't start with those 2 bits
     #define CEMPTY      2   // 10
@@ -872,7 +873,7 @@ void ChessPosition::Decompress( const CompressedPosition &src )
             enpassant_target = (Square)(idx-16);
         }
     }
-    
+
     // Decode "castling possible" as opposition pawn on rook's home square
     //  (which is otherwise impossible)
     if( squares[e1] == 'K' )
@@ -1005,7 +1006,7 @@ uint32_t ChessPosition::HashUpdate( uint32_t hash_in, Move move )
             hash ^= hash_lookup[a8]['a'-'B'];     // replace with empty square
             hash ^= hash_lookup[d8][target-'B'];  // remove target piece
             hash ^= hash_lookup[d8][piece-'B'];   // replace with moving piece
-            
+
             break;
         }
         case SPECIAL_PROMOTION_QUEEN:
@@ -1185,7 +1186,7 @@ uint64_t ChessPosition::Hash64Update( uint64_t hash_in, Move move )
             hash ^= hash64_lookup[a8]['a'-'B'];     // replace with empty square
             hash ^= hash64_lookup[d8][target-'B'];  // remove target piece
             hash ^= hash64_lookup[d8][piece-'B'];   // replace with moving piece
-            
+
             break;
         }
         case SPECIAL_PROMOTION_QUEEN:

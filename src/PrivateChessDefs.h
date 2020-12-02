@@ -2,7 +2,7 @@
  * PrivateChessDefs.h Chess classes - Internal implementation details
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 #ifndef PRIVATE_CHESS_DEFS_H_INCLUDED
 #define PRIVATE_CHESS_DEFS_H_INCLUDED

@@ -2,7 +2,7 @@
  * Move.h Chess classes - Move
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 #ifndef MOVE_H
 #define MOVE_H
@@ -37,7 +37,7 @@ public:
     Square  src       : 8;
     Square  dst       : 8;
     SPECIAL special   : 8;
-    int     capture   : 8;      // ' ' (empty) if move not a capture   
+    int     capture   : 8;      // ' ' (empty) if move not a capture
                                 // for some reason Visual C++ 2005 (at least)
                                 // blows sizeof(Move) out to 64 bits if
                                 // capture is defined as char instead of int
@@ -82,7 +82,7 @@ public:
 // List of moves
 struct MOVELIST
 {
-    int count;	// number of moves
+    int count;  // number of moves
     Move moves[MAXMOVES];
 };
 
