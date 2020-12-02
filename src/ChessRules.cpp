@@ -40,7 +40,7 @@ static unsigned char castling_prohibited_table[] =
  *   thoughtfully with a debugger. It is not set up to automatically
  *   check whether THC is going to work in the new environment
  ****************************************************************************/
-static int log_discard( const char *format, ... ) { return 0; }
+static int log_discard( const char *, ... ) { return 0; }
 bool ChessRules::TestInternals( int (*log)(const char *,...) )
 {
     if( log == NULL )
