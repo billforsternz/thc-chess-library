@@ -6,9 +6,14 @@
  ****************************************************************************/
 #ifndef CHESSPOSITION_H
 #define CHESSPOSITION_H
-#include <string>
 #include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+#include <string>
+#include <iosfwd>
+
 #include "ChessPositionRaw.h"
+#include "ChessDefs.h"
 
 // TripleHappyChess
 namespace thc
