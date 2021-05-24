@@ -5,10 +5,10 @@
  *
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 
-/* 
+/*
     thc.h The basic idea is to concatenate the following into one .h file;
 
         ChessDefs.h
@@ -17,24 +17,25 @@
         ChessPosition.h
         ChessRules.h
         ChessEvaluation.h
-        ChessEngine.h
 
  */
 
-#include "Portability.h"
 #include <stddef.h>
 #include <string>
 #include <vector>
-
 /****************************************************************************
  * Chessdefs.h Chess classes - Common definitions
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 #ifndef CHESSDEFS_H
 #define CHESSDEFS_H
 
+// Simple definition to aid platform portability (only remains of former Portability.h)
+int strcmp_ignore( const char *s, const char *t ); // return 0 if case insensitive match
+
+// Fast test for is square white or black. Intend to move this to namespace thc when convenient...
 inline bool is_dark( int sq )
 {
     bool dark = (!(sq&8) &&  (sq&1))    // eg (a8,b8,c8...h8) && (b8|d8|f8|h8) odd rank + odd file
@@ -66,9 +67,17 @@ enum Square
     SQUARE_INVALID
 };
 
+// thc::Square utilities
+inline char get_file( Square sq )
+    { return static_cast<char> (  (static_cast<int>(sq)&0x07) + 'a' ); }           // eg c5->'c'
+inline char get_rank( Square sq )
+    { return static_cast<char> (  '8' - ((static_cast<int>(sq)>>3) & 0x07) ); }    // eg c5->'5'
+inline Square make_square( char file, char rank )
+    { return static_cast<Square> ( ('8'-(rank))*8 + ((file)-'a') );  }            // eg ('c','5') -> c5
+
 // Special (i.e. not ordinary) move types
 enum SPECIAL
-{           
+{
     NOT_SPECIAL = 0,
     SPECIAL_KING_MOVE,     // special only because it changes wking_square, bking_square
     SPECIAL_WK_CASTLING,
@@ -118,11 +127,11 @@ enum TERMINAL
     TERMINAL_BSTALEMATE = 2     // Black is stalemated
 };
 
-// Calculate an upper limit to the length of a list of moves   
+// Calculate an upper limit to the length of a list of moves
 #define MAXMOVES (27 + 2*13 + 2*14 + 2*8 + 8 + 8*4  +  3*27)
                 //[Q   2*B    2*R    2*N   K   8*P] +  [3*Q]
-                //             ^                         ^       
-                //[calculated practical maximum   ] + [margin]   
+                //             ^                         ^
+                //[calculated practical maximum   ] + [margin]
 
 // We have developed an algorithm to compress any legal chess position,
 //  including who to move, castling allowed flags and enpassant_target
@@ -142,12 +151,11 @@ typedef int32_t DETAIL;
 } //namespace thc
 
 #endif // CHESSDEFS_H
-
 /****************************************************************************
  * Move.h Chess classes - Move
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 #ifndef MOVE_H
 #define MOVE_H
@@ -180,7 +188,7 @@ public:
     Square  src       : 8;
     Square  dst       : 8;
     SPECIAL special   : 8;
-    int     capture   : 8;      // ' ' (empty) if move not a capture   
+    int     capture   : 8;      // ' ' (empty) if move not a capture
                                 // for some reason Visual C++ 2005 (at least)
                                 // blows sizeof(Move) out to 64 bits if
                                 // capture is defined as char instead of int
@@ -225,22 +233,22 @@ public:
 // List of moves
 struct MOVELIST
 {
-    int count;	// number of moves
+    int count;  // number of moves
     Move moves[MAXMOVES];
 };
 
 } //namespace thc
 
 #endif //MOVE_H
-
 /****************************************************************************
  * ChessPositionRaw.h Chess classes - A raw chess position, could be used as a C style POD
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 #ifndef CHESSPOSITIONRAW_H
 #define CHESSPOSITIONRAW_H
+
 
 // TripleHappyChess
 namespace thc
@@ -283,9 +291,9 @@ struct ChessPositionRaw
     Square wking_square     : 8;
     Square bking_square     : 8;
     unsigned int  wking     : 1;    // Castling still allowed flags
-	unsigned int  wqueen    : 1;    //  unfortunately if the castling
-	unsigned int  bking     : 1;    //  flags are declared as bool, 
-	unsigned int  bqueen    : 1;    //  with Visual C++ at least, 
+    unsigned int  wqueen    : 1;    //  unfortunately if the castling
+    unsigned int  bking     : 1;    //  flags are declared as bool,
+    unsigned int  bqueen    : 1;    //  with Visual C++ at least,
                                     //  the details blow out and use
                                     //  another 32 bits (??!!)
     // Note that for say white king side castling to be allowed in
@@ -299,12 +307,11 @@ struct ChessPositionRaw
 } //namespace thc
 
 #endif //CHESSPOSITIONRAW_H
-
 /****************************************************************************
  * ChessPosition.h Chess classes - Representation of the position on the board
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 #ifndef CHESSPOSITION_H
 #define CHESSPOSITION_H
@@ -327,7 +334,7 @@ public:
     void Init()
     {
         white = true;
-        strcpy( squares,
+        strcpy_s( squares, sizeof(squares),
            "rnbqkbnr"
            "pppppppp"
            "        "
@@ -348,10 +355,10 @@ public:
     }
 
     // Copy constructor and Assignment operator. Defining them this way
-	//  generates simple bitwise memory copy, which is exactly what we
-	//  want and is better practice than the old memcpy() versions (which
-	//  copy the vtable ptr as well - we don't want that). Thanks to Github
-	//  user metiscus for the pull request that fixed this.
+    //  generates simple bitwise memory copy, which is exactly what we
+    //  want and is better practice than the old memcpy() versions (which
+    //  copy the vtable ptr as well - we don't want that). Thanks to Github
+    //  user metiscus for the pull request that fixed this.
     ChessPosition( const ChessPosition& src ) = default;
     ChessPosition& operator=( const ChessPosition& src ) = default;
 
@@ -449,7 +456,7 @@ public:
     bool wqueen_allowed() const { return wqueen && squares[e1]=='K' && squares[a1]=='R'; }
     bool bking_allowed()  const { return bking  && squares[e8]=='k' && squares[h8]=='r'; }
     bool bqueen_allowed() const { return bqueen && squares[e8]=='k' && squares[a8]=='r'; }
-    
+
     // Return true if Positions are the same (including counts)
     bool CmpStrict( const ChessPosition &other ) const;
 
@@ -468,19 +475,19 @@ public:
 
     // Decompress chess position
     void Decompress( const CompressedPosition &src );
-    
+
     // Calculate a hash value for position (not same as CompressPosition algorithm hash)
     uint32_t HashCalculate();
-    
+
     // Incremental hash value update
     uint32_t HashUpdate( uint32_t hash_in, Move move );
-    
+
     // Calculate a hash value for position (64 bit version)
     uint64_t Hash64Calculate();
-    
+
     // Incremental hash value update (64 bit version)
     uint64_t Hash64Update( uint64_t hash_in, Move move );
- 
+
     // Whos turn is it anyway
     inline bool WhiteToPlay() const { return white; }
     void Toggle() { white = !white; }
@@ -489,12 +496,11 @@ public:
 } //namespace thc
 
 #endif //CHESSPOSITION_H
-
 /****************************************************************************
  * ChessRules.h Chess classes - Rules of chess
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 #ifndef CHESSRULES_H
 #define CHESSRULES_H
@@ -523,7 +529,7 @@ public:
     }
 
     // Copy constructor
-    ChessRules( const ChessPosition& src ) : ChessPosition( src ) 
+    ChessRules( const ChessPosition& src ) : ChessPosition( src )
     {
         Init();   // even if src is eg ChessRules or ChessEngine don't
                   //   copy stuff for repitition, 50 move rule
@@ -537,6 +543,9 @@ public:
                   //   copy stuff for repitition, 50 move rule
         return *this;
     }
+
+    // Test internals, for porting to new environments etc
+    bool TestInternals( int (*log)(const char *,...) = NULL );
 
     // Initialise from Forsyth string
     bool Forsyth( const char *txt )
@@ -563,6 +572,7 @@ public:
     bool IsInsufficientDraw( bool white_asks, DRAWTYPE &result );
 
     // Evaluate a position, returns bool okay (not okay means illegal position)
+    bool Evaluate();
     bool Evaluate( TERMINAL &score_terminal );
 
     // Is a square is attacked by enemy ?
@@ -599,7 +609,7 @@ public:
 
     // Undo a move
     void PopMove( Move& m );
-    
+
     // Test fundamental internal assumptions and operations
     void TestInternals();
 
@@ -633,7 +643,7 @@ protected:
     // Move history is a ring array
     Move history[256];                 // must be 256 ..
     unsigned char history_idx;          // .. so this loops around naturally
-    
+
     // Detail stack is a ring array
     DETAIL detail_stack[256];           // must be 256 ..
     unsigned char detail_idx;           // .. so this loops around naturally
@@ -642,12 +652,11 @@ protected:
 } //namespace thc
 
 #endif //CHESSRULES_H
-
 /****************************************************************************
  * ChessEvaluation.h Chess classes - Simple chess AI, leaf scoring function for position
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 #ifndef CHESSEVALUATION_H
 #define CHESSEVALUATION_H
@@ -660,12 +669,12 @@ class ChessEvaluation: public ChessRules
 {
 public:
     // Default contructor
-    ChessEvaluation() : ChessRules() 
+    ChessEvaluation() : ChessRules()
     {
     }
 
     // Copy constructor
-    ChessEvaluation( const ChessPosition& src ) : ChessRules( src ) 
+    ChessEvaluation( const ChessPosition& src ) : ChessRules( src )
     {
     }
 
@@ -708,89 +717,3 @@ private:
 } //namespace thc
 
 #endif //CHESSEVALUATION_H
-
-/****************************************************************************
- * ChessEngine.h Chess classes - Simple chess AI, add search to ChessEvaluation
- *  Author:  Bill Forster
- *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
- ****************************************************************************/
-#ifndef CHESSENGINE_H
-#define CHESSENGINE_H
-
-// TripleHappyChess
-namespace thc
-{
-
-class ChessEngine: public ChessEvaluation
-{
-public:
-
-    // Default contructor
-    ChessEngine() : ChessEvaluation() 
-    {
-    }
-
-    // Copy constructor
-    ChessEngine( const ChessPosition& src ) : ChessEvaluation( src ) 
-    {
-    }
-
-    // Assignment operator
-    ChessEngine& operator=( const ChessPosition& src )
-    {
-        *((ChessEvaluation *)this) = src;
-        return *this;
-    }
-
-    // Calculate a new move, returns bool have_move, sets score in units of balance*decipawns (white positive)
-    bool CalculateNextMove( bool &only_move, int &score, Move &move, int balance, int depth );
-
-    // A version for Multi-PV mode, called repeatedly, removes best move from
-    //  movelist each time
-    bool CalculateNextMove( int &score, Move &move, int balance, int depth, bool first );
-
-    // Public interface to version for repitition avoidance
-    bool CalculateNextMove( bool new_game, std::vector<Move> &pv, Move &bestmove, int &score_cp,
-                            unsigned long ms_time,
-                            unsigned long ms_budget,
-                            int balance,
-                            int &depth );
-
-    // Retrieve PV (primary variation?), call after CalculateNextMove()
-    void GetPV( std::vector<Move> &pv );
-
-    // Run test(s)
-    void Test();
-
-private:
-    //###################################
-    //#
-    //#  Internal stuff
-    //#
-    //###################################
-
-    // Internal version for repitition avoidance
-    bool CalculateNextMove( MOVELIST &ml, bool &only_move, int &score, int &besti, int balance, int depth );
-
-    // Has this position occurred before ?
-    bool IsRepitition();
-
-    // Do an careful (i.e. expensive) sort on the movelist
-    void CarefulSort( MOVELIST &ml );
-
-    // Recursive scoring function
-    int Score( MOVELIST &ml, int &besti );
-    int ScoreBlackToMove( MOVELIST &ml, int &besti, int white_mobility );
-    int ScoreWhiteToMove( MOVELIST &ml, int &besti, int black_mobility );
-
-    // Internal test suite
-    void TestInternals();
-    void TestGame();
-    void TestPosition();
-    void TestEnprise();
-};
-
-} //namespace thc
-
-#endif //CHESSENGINE_H

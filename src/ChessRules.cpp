@@ -2,7 +2,7 @@
  * ChessRules.cpp Chess classes - Rules of chess
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 #define _CRT_SECURE_NO_DEPRECATE
 #include <stdio.h>
@@ -11,8 +11,6 @@
 #include <ctype.h>
 #include <assert.h>
 #include <algorithm>
-#include "Portability.h"
-#include "DebugPrintf.h"
 #include "ChessRules.h"
 #include "PrivateChessDefs.h"
 using namespace std;
@@ -36,26 +34,42 @@ static unsigned char castling_prohibited_table[] =
     (unsigned char)(~(WQUEEN+WKING)),  0xff, 0xff, (unsigned char)(~WKING)  // e1-h1
 };
 
-void ChessRules::TestInternals()
+/****************************************************************************
+ * Test internals, for porting to new environments etc
+ *   For the moment at least, this is best used by stepping through it
+ *   thoughtfully with a debugger. It is not set up to automatically
+ *   check whether THC is going to work in the new environment
+ ****************************************************************************/
+static int log_discard( const char *, ... ) { return 0; }
+bool ChessRules::TestInternals( int (*log)(const char *,...) )
 {
+    if( log == NULL )
+        log = log_discard;
     Init();
     Move mv;
-    cprintf( "All castling allowed %08x\n", *DETAIL_ADDR );
+    log( "All castling allowed %08x\n", *DETAIL_ADDR );
     mv.TerseIn(this,"g1f3");
     PlayMove(mv);
     mv.TerseIn(this,"g8f6");
     PlayMove(mv);
-    cprintf( "All castling allowed %08x\n", *DETAIL_ADDR );
+    log( "All castling allowed %08x\n", *DETAIL_ADDR );
+    bool KQkq_allowed   = wking && bking && wqueen && bqueen;
+    bool KQkq_allowed_f = wking_allowed() && bking_allowed() && wqueen_allowed() && bqueen_allowed();
     mv.TerseIn(this,"h1g1");
     PlayMove(mv);
     mv.TerseIn(this,"h8g8");
     PlayMove(mv);
-    mv.TerseIn(this,"g1h1");
+    mv.TerseIn(this,"g1h1");  // return of rook to h1 clears wking
     PlayMove(mv);
-    cprintf( "WKING castling not allowed %08x\n", *DETAIL_ADDR );
-    mv.TerseIn(this,"g8h8");
+    log( "WKING castling not allowed %08x\n", *DETAIL_ADDR );
+    bool Qkq_allowed  = !wking && bking && wqueen && bqueen;
+    bool Qkq_allowed_f = !wking_allowed() && !bking_allowed() && wqueen_allowed() && bqueen_allowed();
+    // The _f version is different, !bking_allowed() because it checks and finds no rook on h8
+    mv.TerseIn(this,"g8h8");  // return of rook to h8 clears bking
     PlayMove(mv);
-    cprintf( "WKING BKING castling not allowed %08x\n", *DETAIL_ADDR );
+    log( "WKING BKING castling not allowed %08x\n", *DETAIL_ADDR );
+    bool Qq_allowed   = !wking && !bking && wqueen && bqueen;
+    bool Qq_allowed_f = !wking_allowed() && !bking_allowed() && wqueen_allowed() && bqueen_allowed();
     mv.TerseIn(this,"b1c3");
     PlayMove(mv);
     mv.TerseIn(this,"b8c6");
@@ -64,47 +78,57 @@ void ChessRules::TestInternals()
     PlayMove(mv);
     mv.TerseIn(this,"a8b8");
     PlayMove(mv);
-    mv.TerseIn(this,"b1a1");
+    mv.TerseIn(this,"b1a1");  // return of rook to a1 clears wqueen
     PlayMove(mv);
-    cprintf( "WKING BKING WQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
-    mv.TerseIn(this,"b8a8");
+    log( "WKING BKING WQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
+    bool q_allowed   = !wking && !bking && !wqueen && bqueen;
+    bool q_allowed_f = !wking_allowed() && !bking_allowed() && !wqueen_allowed() && !bqueen_allowed();
+    // The _f version is different, !bqueen_allowed() because it checks and finds no rook on a8
+    mv.TerseIn(this,"b8a8");  // return of rook to a8 clears bqueen
     PlayMove(mv);
-    cprintf( "WKING BKING WQUEEN BQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
+    log( "WKING BKING WQUEEN BQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
+    bool none_allowed   = !wking && !bking && !wqueen && !bqueen;
+    bool none_allowed_f = !wking_allowed() && !bking_allowed() && !wqueen_allowed() && !bqueen_allowed();
     ChessPosition::Init();
-    cprintf( "All castling allowed %08x\n", *DETAIL_ADDR );
+    log( "All castling allowed %08x\n", *DETAIL_ADDR );
     mv.TerseIn(this,"e2e3");
     PlayMove(mv);
     mv.TerseIn(this,"e7e6");
     PlayMove(mv);
-    cprintf( "All castling allowed %08x\n", *DETAIL_ADDR );
+    log( "All castling allowed %08x\n", *DETAIL_ADDR );
     mv.TerseIn(this,"e1e2");
     PlayMove(mv);
     mv.TerseIn(this,"e8e7");
     PlayMove(mv);
-    mv.TerseIn(this,"e2e1");
+    mv.TerseIn(this,"e2e1");  // return of king to e1 clears wking, wqueen
     PlayMove(mv);
-    cprintf( "WKING WQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
+    log( "WKING WQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
+    bool kq_allowed   = !wking && bking && !wqueen && bqueen;
+    bool kq_allowed_f = !wking_allowed() && !bking_allowed() && !wqueen_allowed() && !bqueen_allowed();
+    // The _f version is different, !bking_allowed() and !bqueen_allowed() because they check and finds no king on e8
     mv.TerseIn(this,"e7e8");
     PlayMove(mv);
-    cprintf( "WKING WQUEEN BKING BQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
+    log( "WKING WQUEEN BKING BQUEEN castling not allowed %08x\n", *DETAIL_ADDR );
+    bool none_allowed2   = !wking && !bking && !wqueen && !bqueen;
+    bool none_allowed2_f = !wking_allowed() && !bking_allowed() && !wqueen_allowed() && !bqueen_allowed();
     const char *fen = "b3k2r/8/8/8/8/8/8/R3K2R w KQk - 0 1";
     Move move;
     Forsyth(fen);
-    cprintf( "Addresses etc.;\n" );
-    cprintf( " this = 0x%p\n",                         this );
-    cprintf( " (void *)this = 0x%p\n",                 (void *)this );
-    cprintf( " &white = 0x%p\n",                       &white );
-    cprintf( " &squares[0] = 0x%p\n",                  &squares[0] );
-    cprintf( " &half_move_clock = 0x%p\n",             &half_move_clock );
-    cprintf( " &full_move_count = 0x%p\n",             &full_move_count );
-    cprintf( " size to end of full_move_count = %lu", ((char *)&full_move_count - (char *)this) + sizeof(full_move_count) );
-    cprintf( " sizeof(ChessPosition) = %lu (should be 4 more than size to end of full_move_count)\n",
+    log( "Addresses etc.;\n" );
+    log( " this = 0x%p\n",                         this );
+    log( " (void *)this = 0x%p\n",                 (void *)this );
+    log( " &white = 0x%p\n",                       &white );
+    log( " &squares[0] = 0x%p\n",                  &squares[0] );
+    log( " &half_move_clock = 0x%p\n",             &half_move_clock );
+    log( " &full_move_count = 0x%p\n",             &full_move_count );
+    log( " size to end of full_move_count = %lu", ((char *)&full_move_count - (char *)this) + sizeof(full_move_count) );
+    log( " sizeof(ChessPosition) = %lu (should be 4 more than size to end of full_move_count)\n",
            sizeof(ChessPosition) );
-    cprintf( " sizeof(Move) = %lu\n",                  sizeof(Move) );
-    
-    cprintf( " sizeof(ChessPositionRaw) = %lu\n", sizeof(ChessPositionRaw) );
-    cprintf( " (offsetof(ChessPositionRaw,full_move_count) + sizeof(full_move_count) + sizeof(DETAIL) =");
-    cprintf( " %lu + %lu + %lu = %lu\n",
+    log( " sizeof(Move) = %lu\n",                  sizeof(Move) );
+
+    log( " sizeof(ChessPositionRaw) = %lu\n", sizeof(ChessPositionRaw) );
+    log( " (offsetof(ChessPositionRaw,full_move_count) + sizeof(full_move_count) + sizeof(DETAIL) =");
+    log( " %lu + %lu + %lu = %lu\n",
            offsetof(ChessPositionRaw,full_move_count), sizeof(full_move_count), sizeof(DETAIL),
            offsetof(ChessPositionRaw,full_move_count) + sizeof(full_move_count) + sizeof(DETAIL)
            );
@@ -120,12 +144,12 @@ void ChessRules::TestInternals()
             case 5: move.TerseIn(this,"e8g8");    break;
         }
         unsigned char *p = (unsigned char *)DETAIL_ADDR;
-        cprintf( " DETAIL_ADDR = 0x%p\n",  p );
-        cprintf( " DETAIL_ADDR[0] = %02x\n",  p[0] );
-        cprintf( " DETAIL_ADDR[1] = %02x\n",  p[1] );
-        cprintf( " DETAIL_ADDR[2] = %02x\n",  p[2] );
-        cprintf( " DETAIL_ADDR[3] = %02x\n",  p[3] );
-        cprintf( "Before %s: enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
+        log( " DETAIL_ADDR = 0x%p\n",  p );
+        log( " DETAIL_ADDR[0] = %02x\n",  p[0] );
+        log( " DETAIL_ADDR[1] = %02x\n",  p[1] );
+        log( " DETAIL_ADDR[2] = %02x\n",  p[2] );
+        log( " DETAIL_ADDR[3] = %02x\n",  p[3] );
+        log( "Before %s: enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
                " wking=%s, wqueen=%s, bking=%s, bqueen=%s\n",
                move.TerseOut().c_str(),
                enpassant_target,
@@ -136,7 +160,7 @@ void ChessRules::TestInternals()
                bking ?"true":"false",
                bqueen?"true":"false" );
         PushMove(move);
-        cprintf( "After PushMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
+        log( "After PushMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
                " wking=%s, wqueen=%s, bking=%s, bqueen=%s\n",
                enpassant_target,
                wking_square,
@@ -146,7 +170,7 @@ void ChessRules::TestInternals()
                bking ?"true":"false",
                bqueen?"true":"false" );
         PopMove(move);
-        cprintf( "After PopMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
+        log( "After PopMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
                " wking=%s, wqueen=%s, bking=%s, bqueen=%s\n",
                enpassant_target,
                wking_square,
@@ -156,7 +180,7 @@ void ChessRules::TestInternals()
                bking ?"true":"false",
                bqueen?"true":"false" );
         PushMove(move);
-        cprintf( "After PushMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
+        log( "After PushMove(): enpassant_target=0x%02x, wking_square=0x%02x, bking_square=0x%02x,"
                " wking=%s, wqueen=%s, bking=%s, bqueen=%s\n",
                enpassant_target,
                wking_square,
@@ -166,9 +190,11 @@ void ChessRules::TestInternals()
                bking ?"true":"false",
                bqueen?"true":"false" );
     }
+
+    // Later, extend this to check addresses etc
+    return KQkq_allowed && Qkq_allowed && Qq_allowed && q_allowed && none_allowed && kq_allowed && none_allowed2 &&
+           KQkq_allowed_f && Qkq_allowed_f && Qq_allowed_f && q_allowed_f && none_allowed_f && kq_allowed_f && none_allowed2_f;
 }
-
-
 
 /****************************************************************************
  * Play a move
@@ -235,7 +261,6 @@ void ChessRules::GenLegalMoveList( MOVELIST *list )
 {
     int i, j;
     bool okay;
-    TERMINAL terminal_score;
     MOVELIST list2;
 
     // Generate all moves, including illegal (eg put king in check) moves
@@ -245,7 +270,7 @@ void ChessRules::GenLegalMoveList( MOVELIST *list )
     for( i=j=0; i<list2.count; i++ )
     {
         PushMove( list2.moves[i] );
-        okay = Evaluate(terminal_score);
+        okay = Evaluate();
         PopMove( list2.moves[i] );
         if( okay )
             list->moves[j++] = list2.moves[i];
@@ -274,9 +299,9 @@ void ChessRules::GenLegalMoveList( MOVELIST *list, bool check[MAXMOVES],
         PushMove( list2.moves[i] );
         okay = Evaluate(terminal_score);
         Square king_to_move = (Square)(white ? wking_square : bking_square );
-		bool bcheck = false;
+        bool bcheck = false;
         if( AttackedPiece(king_to_move) )
-		    bcheck = true;
+            bcheck = true;
         PopMove( list2.moves[i] );
         if( okay )
         {
@@ -318,7 +343,7 @@ bool ChessRules::IsDraw( bool white_asks, DRAWTYPE &result )
     if( !draw )
         result = NOT_DRAW;
     return( draw );
-}       
+}
 
 /****************************************************************************
  * Get number of times position has been repeated
@@ -327,7 +352,7 @@ int ChessRules::GetRepetitionCount()
 {
     int matches=0;
 
-    //  Save those aspects of current position that are changed by multiple 
+    //  Save those aspects of current position that are changed by multiple
     //  PopMove() calls as we search backwards (i.e. squares, white,
     //  detail, detail_idx)
     char save_squares[sizeof(squares)];
@@ -457,7 +482,7 @@ int ChessRules::GetRepetitionCount()
     detail_idx = save_detail_idx;
     DETAIL_RESTORE;
     return( matches+1 );  // +1 counts original position
-}       
+}
 
 /****************************************************************************
  * Check insufficient material draw rule
@@ -475,9 +500,9 @@ bool ChessRules::IsInsufficientDraw( bool white_asks, DRAWTYPE &result )
         piece = squares[square];
         switch( piece )
         {
-            case 'B':    
-            case 'b':    
-            case 'N':    
+            case 'B':
+            case 'b':
+            case 'N':
             case 'n':       bishop_or_knight=true;  // and fall through
             case 'Q':
             case 'q':
@@ -490,7 +515,7 @@ bool ChessRules::IsInsufficientDraw( bool white_asks, DRAWTYPE &result )
                             else
                                 lone_bking = false;
                             break;
-        }       
+        }
         if( !lone_wking && !lone_bking )
             break;  // quit early for performance
     }
@@ -524,10 +549,10 @@ bool ChessRules::IsInsufficientDraw( bool white_asks, DRAWTYPE &result )
 }
 
 /****************************************************************************
- * Generate a list of all possible moves in a position                
+ * Generate a list of all possible moves in a position
  ****************************************************************************/
 void ChessRules::GenMoveList( MOVELIST *l )
-{    
+{
     Square square;
 
     // Convenient spot for some asserts
@@ -547,16 +572,16 @@ void ChessRules::GenMoveList( MOVELIST *l )
 
     // Loop through all squares
     for( square=a8; square<=h1; ++square )
-    {    
-        
+    {
+
         // If square occupied by a piece of the right colour
         char piece=squares[square];
         if( (white&&IsWhite(piece)) || (!white&&IsBlack(piece)) )
-        {   
+        {
 
             // Generate moves according to the occupying piece
             switch( piece )
-            {    
+            {
                 case 'P':
                 {
                     WhitePawnMoves( l, square );
@@ -569,7 +594,7 @@ void ChessRules::GenMoveList( MOVELIST *l )
                 }
                 case 'N':
                 case 'n':
-                {    
+                {
                     const lte *ptr = knight_lookup[square];
                     ShortMoves( l, square, ptr, NOT_SPECIAL );
                     break;
@@ -601,10 +626,10 @@ void ChessRules::GenMoveList( MOVELIST *l )
                     KingMoves( l, square );
                     break;
                 }
-            }    
-        }    
+            }
+        }
     }
-}    
+}
 
 /****************************************************************************
  * Generate moves for pieces that move along multi-move rays (B,R,Q)
@@ -631,7 +656,7 @@ void ChessRules::LongMoves( MOVELIST *l, Square square, const lte *ptr )
                 m->special = NOT_SPECIAL;
                 m++;
                 l->count++;
-            }    
+            }
 
             // Else must move to end of ray
             else
@@ -648,16 +673,16 @@ void ChessRules::LongMoves( MOVELIST *l, Square square, const lte *ptr )
                     m->capture = piece;
                     l->count++;
                     m++;
-                }    
+                }
             }
-        }    
-    }    
+        }
+    }
 }
 
 /****************************************************************************
  * Generate moves for pieces that move along single move rays (N,K)
  ****************************************************************************/
-void ChessRules::ShortMoves( MOVELIST *l, Square square, 
+void ChessRules::ShortMoves( MOVELIST *l, Square square,
                                          const lte *ptr, SPECIAL special  )
 {
     Move *m=&l->moves[l->count];
@@ -677,7 +702,7 @@ void ChessRules::ShortMoves( MOVELIST *l, Square square,
             m->capture = ' ';
             m++;
             l->count++;
-        }    
+        }
 
         // Else if occupied by enemy man, add move to list as a capture
         else if( (white&&IsBlack(piece)) || (!white&&IsWhite(piece)) )
@@ -688,15 +713,15 @@ void ChessRules::ShortMoves( MOVELIST *l, Square square,
             m->capture = piece;
             m++;
             l->count++;
-        }    
-    }    
+        }
+    }
 }
 
 /****************************************************************************
  * Generate list of king moves
  ****************************************************************************/
 void ChessRules::KingMoves( MOVELIST *l, Square square )
-{    
+{
     const lte *ptr = king_lookup[square];
     ShortMoves( l, square, ptr, SPECIAL_KING_MOVE );
 
@@ -706,10 +731,10 @@ void ChessRules::KingMoves( MOVELIST *l, Square square )
 
     // White castling
     if( square == e1 )   // king on e1 ?
-    { 
+    {
 
         // King side castling
-        if( 
+        if(
             squares[g1] == ' '   &&
             squares[f1] == ' '   &&
             squares[h1] == 'R'   &&
@@ -725,10 +750,10 @@ void ChessRules::KingMoves( MOVELIST *l, Square square )
             m->capture = ' ';
             m++;
             l->count++;
-        }    
+        }
 
         // Queen side castling
-        if( 
+        if(
             squares[b1] == ' '         &&
             squares[c1] == ' '         &&
             squares[d1] == ' '         &&
@@ -750,10 +775,10 @@ void ChessRules::KingMoves( MOVELIST *l, Square square )
 
     // Black castling
     if( square == e8 )   // king on e8 ?
-    { 
+    {
 
         // King side castling
-        if( 
+        if(
             squares[g8] == ' '         &&
             squares[f8] == ' '         &&
             squares[h8] == 'r'         &&
@@ -769,7 +794,7 @@ void ChessRules::KingMoves( MOVELIST *l, Square square )
             m->capture = ' ';
             m++;
             l->count++;
-        }    
+        }
 
         // Queen side castling
         if(
@@ -791,13 +816,13 @@ void ChessRules::KingMoves( MOVELIST *l, Square square )
             l->count++;
         }
     }
-}    
+}
 
 /****************************************************************************
  * Generate list of white pawn moves
  ****************************************************************************/
 void ChessRules::WhitePawnMoves( MOVELIST *l,  Square square )
-{    
+{
     Move *m = &l->moves[l->count];
     const lte *ptr = pawn_white_lookup[square];
     bool promotion = (RANK(square) == '7');
@@ -828,9 +853,9 @@ void ChessRules::WhitePawnMoves( MOVELIST *l,  Square square )
                 l->count++;
             }
             else
-            {    
+            {
 
-                // Generate (under)promotions in the order (Q),N,B,R               
+                // Generate (under)promotions in the order (Q),N,B,R
                 //  but we no longer rely on this elsewhere as it
                 //  stops us reordering moves
                 m->special   = SPECIAL_PROMOTION_QUEEN;
@@ -854,7 +879,7 @@ void ChessRules::WhitePawnMoves( MOVELIST *l,  Square square )
                 m->special   = SPECIAL_PROMOTION_ROOK;
                 m++;
                 l->count++;
-            }    
+            }
         }
     }
 
@@ -877,9 +902,9 @@ void ChessRules::WhitePawnMoves( MOVELIST *l,  Square square )
             l->count++;
         }
         else
-        {    
+        {
 
-            // Generate (under)promotions in the order (Q),N,B,R               
+            // Generate (under)promotions in the order (Q),N,B,R
             //  but we no longer rely on this elsewhere as it
             //  stops us reordering moves
             m->special   = SPECIAL_PROMOTION_QUEEN;
@@ -903,15 +928,15 @@ void ChessRules::WhitePawnMoves( MOVELIST *l,  Square square )
             m->special   = SPECIAL_PROMOTION_ROOK;
             m++;
             l->count++;
-        }    
+        }
     }
-}    
+}
 
 /****************************************************************************
  * Generate list of black pawn moves
  ****************************************************************************/
 void ChessRules::BlackPawnMoves( MOVELIST *l, Square square )
-{    
+{
     Move *m = &l->moves[l->count];
     const lte *ptr = pawn_black_lookup[square];
     bool promotion = (RANK(square) == '2');
@@ -942,9 +967,9 @@ void ChessRules::BlackPawnMoves( MOVELIST *l, Square square )
                 l->count++;
             }
             else
-            {    
+            {
 
-                // Generate (under)promotions in the order (Q),N,B,R               
+                // Generate (under)promotions in the order (Q),N,B,R
                 //  but we no longer rely on this elsewhere as it
                 //  stops us reordering moves
                 m->special   = SPECIAL_PROMOTION_QUEEN;
@@ -968,7 +993,7 @@ void ChessRules::BlackPawnMoves( MOVELIST *l, Square square )
                 m->special   = SPECIAL_PROMOTION_ROOK;
                 m++;
                 l->count++;
-            }    
+            }
         }
     }
 
@@ -991,9 +1016,9 @@ void ChessRules::BlackPawnMoves( MOVELIST *l, Square square )
             l->count++;
         }
         else
-        {    
+        {
 
-            // Generate (under)promotions in the order (Q),N,B,R               
+            // Generate (under)promotions in the order (Q),N,B,R
             //  but we no longer rely on this elsewhere as it
             //  stops us reordering moves
             m->special   = SPECIAL_PROMOTION_QUEEN;
@@ -1017,15 +1042,15 @@ void ChessRules::BlackPawnMoves( MOVELIST *l, Square square )
             m->special   = SPECIAL_PROMOTION_ROOK;
             m++;
             l->count++;
-        }    
+        }
     }
-}    
+}
 
 /****************************************************************************
  * Make a move (with the potential to undo)
  ****************************************************************************/
-void ChessRules::PushMove( Move& m ) 
-{    
+void ChessRules::PushMove( Move& m )
+{
     // Push old details onto stack
     DETAIL_PUSH;
 
@@ -1065,25 +1090,25 @@ void ChessRules::PushMove( Move& m )
         squares[m.src] = ' ';
         squares[m.dst] = (white?'Q':'q');
         break;
-        
+
         // In promotion case, dst piece doesn't equal src piece
         case SPECIAL_PROMOTION_ROOK:
         squares[m.src] = ' ';
         squares[m.dst] = (white?'R':'r');
         break;
-        
+
         // In promotion case, dst piece doesn't equal src piece
         case SPECIAL_PROMOTION_BISHOP:
         squares[m.src] = ' ';
         squares[m.dst] = (white?'B':'b');
         break;
-        
+
         // In promotion case, dst piece doesn't equal src piece
         case SPECIAL_PROMOTION_KNIGHT:
         squares[m.src] = ' ';
         squares[m.dst] = (white?'N':'n');
         break;
-        
+
         // White enpassant removes pawn south of destination
         case SPECIAL_WEN_PASSANT:
         squares[m.src] = ' ';
@@ -1141,23 +1166,23 @@ void ChessRules::PushMove( Move& m )
         squares[a8] = ' ';
         bking_square = c8;
         break;
-    }    
+    }
 
     // Toggle who-to-move
     Toggle();
-}    
+}
 
 /****************************************************************************
  * Undo a move
  ****************************************************************************/
-void ChessRules::PopMove( Move& m ) 
-{    
+void ChessRules::PopMove( Move& m )
+{
     // Previous detail field
     DETAIL_POP;
 
     // Toggle who-to-move
     Toggle();
-    
+
     // Special handling might be required
     switch( m.special )
     {
@@ -1177,7 +1202,7 @@ void ChessRules::PopMove( Move& m )
             squares[m.src] = 'p';
         squares[m.dst] = m.capture;
         break;
-        
+
         // White enpassant re-insert black pawn south of destination
         case SPECIAL_WEN_PASSANT:
         squares[m.src] = 'P';
@@ -1217,15 +1242,15 @@ void ChessRules::PopMove( Move& m )
         squares[c8] = ' ';
         squares[a8] = 'r';
         break;
-    }    
-}    
+    }
+}
 
 
 /****************************************************************************
  * Determine if an occupied square is attacked
  ****************************************************************************/
 bool ChessRules::AttackedPiece( Square square )
-{    
+{
     bool enemy_is_white  =  IsBlack(squares[square]);
     return( AttackedSquare(square,enemy_is_white) );
 }
@@ -1234,7 +1259,7 @@ bool ChessRules::AttackedPiece( Square square )
  * Is a square is attacked by enemy ?
  ****************************************************************************/
 bool ChessRules::AttackedSquare( Square square, bool enemy_is_white )
-{    
+{
     Square dst;
     const lte *ptr = (enemy_is_white ? attacks_black_lookup[square] : attacks_white_lookup[square] );
     lte nbr_rays = *ptr++;
@@ -1272,9 +1297,9 @@ bool ChessRules::AttackedSquare( Square square, bool enemy_is_white )
                 // Goto end of ray
                 ptr += (2*ray_len);
                 ray_len = 0;
-            }    
-        }    
-    }    
+            }
+        }
+    }
 
     ptr = knight_lookup[square];
     lte nbr_squares = *ptr++;
@@ -1288,69 +1313,76 @@ bool ChessRules::AttackedSquare( Square square, bool enemy_is_white )
             return true;
     }
     return false;
-}    
+}
 
 /****************************************************************************
  * Evaluate a position, returns bool okay (not okay means illegal position)
  ****************************************************************************/
+bool ChessRules::Evaluate()
+{
+    Square enemy_king = (Square)(white ? bking_square : wking_square);
+    // Enemy king is attacked and our move, position is illegal
+    return !AttackedPiece(enemy_king);
+}
+
 bool ChessRules::Evaluate( TERMINAL &score_terminal )
 {
-	return( Evaluate(NULL,score_terminal) );
+    return( Evaluate(NULL,score_terminal) );
 }
 
 bool ChessRules::Evaluate( MOVELIST *p, TERMINAL &score_terminal )
-{    
+{
     /* static ;remove for thread safety */ MOVELIST local_list;
-	MOVELIST &list = p?*p:local_list;
+    MOVELIST &list = p?*p:local_list;
     int i, any;
     Square my_king, enemy_king;
-	bool okay;    
+    bool okay;
     score_terminal=NOT_TERMINAL;
 
-	//DIAG_evaluate_count++;	
+    //DIAG_evaluate_count++;
 
     // Enemy king is attacked and our move, position is illegal
     enemy_king = (Square)(white ? bking_square : wking_square);
     if( AttackedPiece(enemy_king) )
-		okay = false;
+        okay = false;
 
-	// Else legal position
-	else
+    // Else legal position
+    else
     {
-		okay = true;
+        okay = true;
 
-		// Work out if the game is over by checking for any legal moves
-		GenMoveList( &list );
-		for( any=i=0 ; i<list.count && any==0 ; i++ )
-		{    
-			PushMove( list.moves[i] );
-			my_king = (Square)(white ? bking_square : wking_square);
-			if( !AttackedPiece(my_king) )
-				any++;
-			PopMove( list.moves[i] );
-		}    
+        // Work out if the game is over by checking for any legal moves
+        GenMoveList( &list );
+        for( any=i=0 ; i<list.count && any==0 ; i++ )
+        {
+            PushMove( list.moves[i] );
+            my_king = (Square)(white ? bking_square : wking_square);
+            if( !AttackedPiece(my_king) )
+                any++;
+            PopMove( list.moves[i] );
+        }
 
-		// If no legal moves, position is either checkmate or stalemate
-		if( any == 0 )
-		{    
-			my_king = (Square)(white ? wking_square : bking_square);
-			if( AttackedPiece(my_king) )
-				score_terminal = (white ? TERMINAL_WCHECKMATE
-									    : TERMINAL_BCHECKMATE);
-			else
-				score_terminal = (white ? TERMINAL_WSTALEMATE
-									    : TERMINAL_BSTALEMATE);
-		}    
-	}
-	return(okay);
-}    
+        // If no legal moves, position is either checkmate or stalemate
+        if( any == 0 )
+        {
+            my_king = (Square)(white ? wking_square : bking_square);
+            if( AttackedPiece(my_king) )
+                score_terminal = (white ? TERMINAL_WCHECKMATE
+                                        : TERMINAL_BCHECKMATE);
+            else
+                score_terminal = (white ? TERMINAL_WSTALEMATE
+                                        : TERMINAL_BSTALEMATE);
+        }
+    }
+    return(okay);
+}
 
 // Transform a position with W to move into an equivalent with B to move and vice-versa
 void ChessRules::Transform()
 {
     Toggle();
-    Square wking_square_ = (Square)0;           
-    Square bking_square_ = (Square)0;           
+    Square wking_square_ = (Square)0;
+    Square bking_square_ = (Square)0;
     Square enpassant_target_ = (Square)this->enpassant_target;
 
     // swap wking <-> bking
@@ -1372,18 +1404,18 @@ void ChessRules::Transform()
         {
             src = SQ(file,r1);
             dst = SQ(file,r2);
-            if( wking_square_ == src )
+            if( wking_square == src )
                 bking_square_ = dst;
-            if( bking_square_ == src )
+            if( bking_square == src )
                 wking_square_ = dst;
-            if( enpassant_target_ == src )
+            if( enpassant_target == src )
                 enpassant_target_ = dst;
         }
     }
     this->wking_square      = wking_square_;
     this->bking_square      = bking_square_;
     this->enpassant_target  = enpassant_target_;
-    
+
     // Loop through half the board
     for( file='a'; file<='h'; file++ )
     {
@@ -1444,7 +1476,7 @@ Move ChessRules::Transform( Move move )
 
     // Special moves
     switch( move.special )
-    {           
+    {
         case SPECIAL_WK_CASTLING:       ret.special = SPECIAL_BK_CASTLING;          break;
         case SPECIAL_BK_CASTLING:       ret.special = SPECIAL_WK_CASTLING;          break;
         case SPECIAL_WQ_CASTLING:       ret.special = SPECIAL_BQ_CASTLING;          break;
@@ -1462,13 +1494,13 @@ Move ChessRules::Transform( Move move )
     else if( isupper(move.capture) )
         ret.capture = tolower(move.capture);
     return ret;
-}                
-                 
+}
+
 /****************************************************************************
  *  Test for legal position, sets reason to a mask of possibly multiple reasons
  ****************************************************************************/
 bool ChessRules::IsLegal( ILLEGAL_REASON& reason )
-{    
+{
     int  ireason = 0;
     int  wkings=0, bkings=0, wpawns=0, bpawns=0, wpieces=0, bpieces=0;
     bool legal = true;
@@ -1529,12 +1561,12 @@ bool ChessRules::IsLegal( ILLEGAL_REASON& reason )
                 rank--;
             }
         }
-    }   
+    }
     if( wkings!=1 || bkings!=1 )
     {
         legal = false;
         ireason |= IR_NOT_ONE_KING_EACH;
-    }        
+    }
     if( opposition_king_location!=SQUARE_INVALID && AttackedPiece(opposition_king_location) )
     {
         legal = false;
@@ -1544,22 +1576,22 @@ bool ChessRules::IsLegal( ILLEGAL_REASON& reason )
     {
         legal = false;
         ireason |= IR_WHITE_TOO_MANY_PIECES;
-    }        
+    }
     if( bpieces>8 && (bpieces+bpawns)>16 )
     {
         legal = false;
         ireason |= IR_BLACK_TOO_MANY_PIECES;
-    }        
+    }
     if( wpawns > 8 )
     {
         legal = false;
         ireason |= IR_WHITE_TOO_MANY_PAWNS;
-    }        
+    }
     if( bpawns > 8 )
     {
         legal = false;
         ireason |= IR_BLACK_TOO_MANY_PAWNS;
-    }        
+    }
     reason = (ILLEGAL_REASON)ireason;
     return( legal );
 }

@@ -2,7 +2,7 @@
  * HashLookup.h Quickly generate position hash codes with these lookup tables
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 static uint32_t hash_lookup[64]['r'-'B'+1] =
 {  // B                          K              N            P          Q          R

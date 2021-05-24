@@ -3,7 +3,7 @@
  *  the automatically generated lookup tables.
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 #include "PrivateChessDefs.h"
 namespace thc
@@ -18,7 +18,7 @@ namespace thc
 #define K 32
 
 // GeneratedLookupTables.h assumes a suitable type lte = lookup tables element
-//  plus a bitmask convention for pieces using identifiers P,R,N,B,Q,K is 
+//  plus a bitmask convention for pieces using identifiers P,R,N,B,Q,K is
 //  defined
 #include "GeneratedLookupTables.h"
 

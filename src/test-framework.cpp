@@ -1,6 +1,6 @@
 /*
 
-    Test harness for THC Chess Library
+    Rebuild and Test THC Chess Library
 
     Does two jobs;
 
@@ -8,12 +8,12 @@
     2) Do some basic testing of the library
 
     Note that 1) generates thc-regen.cpp and thc-regen.h and 2) relies upon thc.h being
-    included and thc.cpp being linked in. At the moment the thc-regen files differ from the
-    thc files in a few superficial ways (mainly whitespace) - will fix next time we change
-    thc.cpp and .h (at the time of writinging thc.cpp and .h were a binary match to the
-    Tarrasch Chess GUI V3.12a versions)
+    included and thc.cpp being linked in.
+    
+    After some rework (refactoring, synchronising, harmonising) on 2 December 2020 the
+    thc and thc-regen files do match (and a test is now included to check for this match)
 
-*/
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,6 +34,7 @@
 // Prototypes
 bool regenerate_h_file();
 bool regenerate_cpp_file();
+bool files_match( const std::string &file1, const std::string &file2 );
 
 int main()
 {
@@ -46,39 +47,20 @@ int main()
     // Step 2)
     if( ok )
     {
-        thc::ChessEngine cr;
+        bool match = files_match( "../src/thc.cpp", "../src/thc-regen.cpp" );
+        printf( "File ../src/thc.cpp does %s regenerated file ../src/thc-regen.cpp as intended\n", match ? "match":"not match" );
+        match = files_match( "../src/thc.h", "../src/thc-regen.h" );
+        printf( "File ../src/thc.h does %s regenerated file ../src/thc-regen.h as intended\n", match ? "match":"not match" );
+    }
 
-        // We need some new better test code - this old code does interesting stuff without
-        //  actually explicitly reporting whether the outputs generated are expected
-        cr.Test();
+    // Step 3)
+    if( ok )
+    {
+        thc::ChessRules cr;
+        bool ok = cr.TestInternals( printf );
+        printf( "Internal THC library tests %s\n", ok ? "pass":"fail" );
     }
     return -1;
-}
-
-// Just reproduce printf, a hook required by the thc library
-int core_printf( const char *fmt, ... )
-{
-    int ret=0;
-	va_list args;
-	va_start( args, fmt );
-    char buf[1000];
-    char *p = buf;
-    vsnprintf( p, sizeof(buf)-2-(p-buf), fmt, args ); 
-    fputs(buf,stdout);
-    va_end(args);
-    return ret;
-}
-
-// Stub out another hook required by the thc library
-void ReportOnProgress
-(
-    bool ,//init,
-    int  ,//multipv,
-    std::vector<thc::Move> &, //pv,
-    int  ,//   score_cp,
-    int   //   depth
-)
-{
 }
 
 #define nbrof(array) (sizeof(array)/sizeof((array)[0]))
@@ -94,7 +76,7 @@ bool regenerate_h_file()
         " *",
         " *  Author:  Bill Forster",
         " *  License: MIT license. Full text of license is in associated file LICENSE",
-        " *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>",
+        " *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>",
         " ****************************************************************************/",
         "",
         "/*" ,
@@ -106,11 +88,9 @@ bool regenerate_h_file()
         "        ChessPosition.h",
         "        ChessRules.h",
         "        ChessEvaluation.h",
-        "        ChessEngine.h",
         "",
         " */",
         "",
-        "#include \"Portability.h\"",
         "#include <stddef.h>",
         "#include <string>",
         "#include <vector>"
@@ -118,16 +98,15 @@ bool regenerate_h_file()
 
     const char *hdr_files[]=
     {
-        "src/ChessDefs.h",
-        "src/Move.h",
-        "src/ChessPositionRaw.h",
-        "src/ChessPosition.h",
-        "src/ChessRules.h",
-        "src/ChessEvaluation.h",
-        "src/ChessEngine.h"
+        "../src/ChessDefs.h",
+        "../src/Move.h",
+        "../src/ChessPositionRaw.h",
+        "../src/ChessPosition.h",
+        "../src/ChessRules.h",
+        "../src/ChessEvaluation.h"
     };
 
-    std::ofstream out("src/thc-regen.h");
+    std::ofstream out("../src/thc-regen.h");
     if( !out )
     {
         printf( "Cannot open src/thc-regen.h\n" );
@@ -177,7 +156,7 @@ bool regenerate_cpp_file()
         " *",
         " *  Author:  Bill Forster",
         " *  License: MIT license. Full text of license is in associated file LICENSE",
-        " *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>",
+        " *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>",
         " ****************************************************************************/",
         "",
         "/*",
@@ -189,21 +168,18 @@ bool regenerate_cpp_file()
         "        ChessPosition.cpp",
         "        ChessRules.cpp",
         "        ChessEvaluation.cpp",
-        "        ChessEngine.cpp",
         "        Move.cpp",
         "        PrivateChessDefs.cpp",
         "         nested inline expansion of -> GeneratedLookupTables.h",
         " */",
         "",
-        "// Don't reproduce this section",
+        "#define _CRT_SECURE_NO_WARNINGS",
         "#include <stdio.h>",
         "#include <stdlib.h>",
         "#include <string.h>",
         "#include <ctype.h>",
         "#include <assert.h>",
         "#include <algorithm>",
-        "#include \"Portability.h\"",
-        "#include \"DebugPrintf.h\"",
         "#include \"thc.h\"",
         "using namespace std;",
         "using namespace thc;"
@@ -211,18 +187,17 @@ bool regenerate_cpp_file()
 
     const char *cpp_files[]=
     {
-        "src/Portability.cpp",
-        "src/PrivateChessDefs.h",
-        "src/HashLookup.h",
-        "src/ChessPosition.cpp",
-        "src/ChessRules.cpp",
-        "src/ChessEvaluation.cpp",
-        "src/ChessEngine.cpp",
-        "src/Move.cpp",
-        "src/PrivateChessDefs.cpp"
+        "../src/Portability.cpp",
+        "../src/PrivateChessDefs.h",
+        "../src/HashLookup.h",
+        "../src/ChessPosition.cpp",
+        "../src/ChessRules.cpp",
+        "../src/ChessEvaluation.cpp",
+        "../src/Move.cpp",
+        "../src/PrivateChessDefs.cpp"
     };
 
-    std::ofstream out("src/thc-regen.cpp");
+    std::ofstream out("../src/thc-regen.cpp");
     if( !out )
     {
         printf( "Cannot open src/thc-regen.cpp\n" );
@@ -258,7 +233,7 @@ bool regenerate_cpp_file()
             {
                 util::putline(out,"// " + line);
                 keep = false;
-                std::ifstream in2("src/GeneratedLookupTables.h");
+                std::ifstream in2("../src/GeneratedLookupTables.h");
                 if( !in2 )
                 {
                     printf( "Cannot open src/GeneratedLookupTables.h\n" );
@@ -291,3 +266,37 @@ bool regenerate_cpp_file()
     util::putline(out,"");
     return true;
 }
+
+bool files_match( const std::string &file1, const std::string &file2 )
+{
+    bool match = false;
+    std::ifstream in1(file1);
+    if( !in1 )
+    {
+        printf( "Cannot open %s\n", file1.c_str() );
+        return false;
+    }
+    std::ifstream in2(file2);
+    if( !in2 )
+    {
+        printf( "Cannot open %s\n", file2.c_str() );
+        return false;
+    }
+    for(;;)
+    {
+        std::string line1;
+        std::string line2;
+        if( !std::getline(in1,line1) )
+        {
+            if( !std::getline(in2,line2) )
+                match = true; // every line has matched, and files end at same point
+            break;
+        }
+        if( !std::getline(in2,line2) )
+            break;
+        if( line1 != line2 )
+            break;
+    }
+    return match;
+}
+

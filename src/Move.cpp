@@ -2,7 +2,7 @@
  * Move.cpp Chess classes - Move
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 #define _CRT_SECURE_NO_DEPRECATE
 #include <stdio.h>
@@ -11,7 +11,6 @@
 #include <ctype.h>
 #include <algorithm>
 #include <string>
-#include "DebugPrintf.h"
 #include "PrivateChessDefs.h"
 #include "ChessRules.h"
 #include "Move.h"
@@ -38,7 +37,7 @@ bool Move::NaturalIn( ChessRules *cr, const char *natural_in )
     bool  white=cr->white;
     char  piece=(white?'P':'p');
     bool  default_piece=true;
-    
+
     // Indicate no move found (yet)
     bool okay=true;
 
@@ -94,37 +93,66 @@ bool Move::NaturalIn( ChessRules *cr, const char *natural_in )
         }
 
         // Promotion
-        if( strchr(move,'=') )
-        {
-            switch( move[len-1] )
+        if( len>2 )  // We are supporting "ab" to mean Pawn a5xb6 (say), and this test makes sure we don't
+        {            // mix that up with a lower case bishop promotion, and that we don't reject "ef" say
+                     // on the basis that 'F' is not a promotion indication. We've never supported "abQ" say
+                     // as a7xb8=Q, and we still don't so "abb" as a bishop promotion doesn't work, but we
+                     // continue to support "ab=Q", and even "ab=b".
+                     // The test also ensures we can access move[len-2] below
+                     // These comments added when we changed the logic to support "b8Q" and "a7xb8Q", the
+                     // '=' can optionally be omitted in such cases, the first change in this code for many,
+                     // many years.
+            char last = move[len-1];
+            bool is_file = ('1'<=last && last<='8');
+            if( !is_file )
             {
-                case 'q':
-                case 'Q':   promotion='Q';  break;
-                case 'r':
-                case 'R':   promotion='R';  break;
-                case 'b':
-                case 'B':   promotion='B';  break;
-                case 'n':
-                case 'N':   promotion='N';  break;
-                default:    okay = false;   break;
-            }
-            if( okay )
-            {
+                switch( last )
+                {
+                    case 'O':
+                    case 'o':   break;  // Allow castling!
+                    case 'q':
+                    case 'Q':   promotion='Q';  break;
+                    case 'r':
+                    case 'R':   promotion='R';  break;
+                    case 'b':   if( len==3 && '2'<=move[1] && move[1]<='7' )
+                                    break;  // else fall through to promotion - allows say "a5b" as disambiguating
+                                            //  version of "ab" if there's more than one "ab" available! Something
+                                            //  of an ultra refinement
+                    case 'B':   promotion='B';  break;
+                    case 'n':
+                    case 'N':   promotion='N';  break;
+                    default:    okay = false;   break;   // Castling and promotions are the only cases longer than 2
+                                                         //  chars where a non-file ends a move. (Note we still accept
+                                                         //  2 character pawn captures like "ef").
+                }
+                if( promotion )
+                {
+                    switch( move[len-2] )
+                    {
+                        case '=':
+                        case '1':   // we now allow '=' to be omitted, as eg ChessBase mobile seems to (sometimes?)
+                        case '8':   break;
+                        default:    okay = false;   break;
+                    }
+                    if( okay )
+                    {
 
-                // Trim string from end, again
-                move[len-1] = '\0';
-                s = strchr(move,'\0') - 1;
-                while( s>=move && !(isascii(*s) && isalnum(*s)) )
-                    *s-- = '\0';
-                len = (int)strlen(move);
+                        // Trim string from end, again
+                        move[len-1] = '\0';     // Get rid of 'Q', 'N' etc
+                        s = move + len-2;
+                        while( s>=move && !(isascii(*s) && isalnum(*s)) )
+                            *s-- = '\0';    // get rid of '=' but not '1','8'
+                        len = (int)strlen(move);
+                    }
+                }
             }
-        }    
+        }
     }
 
     // Castling
     if( okay )
     {
-        if( 0==strcmpi(move,"oo") || 0==strcmpi(move,"o-o") )
+        if( 0==strcmp_ignore(move,"oo") || 0==strcmp_ignore(move,"o-o") )
         {
             strcpy( move, (white?"e1g1":"e8g8") );
             len       = 4;
@@ -132,7 +160,7 @@ bool Move::NaturalIn( ChessRules *cr, const char *natural_in )
             default_piece = false;
             kcastling = true;
         }
-        else if( 0==strcmpi(move,"ooo") || 0==strcmpi(move,"o-o-o") )
+        else if( 0==strcmp_ignore(move,"ooo") || 0==strcmp_ignore(move,"o-o-o") )
         {
             strcpy( move, (white?"e1c1":"e8c8") );
             len       = 4;
@@ -148,8 +176,15 @@ bool Move::NaturalIn( ChessRules *cr, const char *natural_in )
         if( len==2 && 'a'<=move[0] && move[0]<='h'
                    && 'a'<=move[1] && move[1]<='h' )
         {
-            src_file = move[0]; // pawn takes pawn
+            src_file = move[0]; // eg "ab" pawn takes pawn
             dst_file = move[1];
+        }
+        else if( len==3 && 'a'<=move[0] && move[0]<='h'
+                        && '2'<=move[1] && move[1]<='7'
+                        && 'a'<=move[2] && move[2]<='h' )
+        {
+            src_file = move[0]; // eg "a3b"  pawn takes pawn
+            dst_file = move[2];
         }
         else if( len>=2 && 'a'<=move[len-2] && move[len-2]<='h'
                         && '1'<=move[len-1] && move[len-1]<='8' )
@@ -191,7 +226,7 @@ bool Move::NaturalIn( ChessRules *cr, const char *natural_in )
                             okay = false;
                         break;
                     }
-                }       
+                }
                 if( len>3  && src_file=='\0' )  // not eg "ef4" above
                 {
                     if( '1'<=move[1] && move[1]<='8' )
@@ -271,7 +306,7 @@ bool Move::NaturalIn( ChessRules *cr, const char *natural_in )
                 m = &list.moves[i];
                 if( piece     ==   cr->squares[m->src]   &&
                  /* src_file  ==   FILE(m->src) */
-                    src_rank  ==   RANK(m->src)          &&        
+                    src_rank  ==   RANK(m->src)          &&
                     dst_       ==   m->dst
                 )
                 {
@@ -307,7 +342,7 @@ bool Move::NaturalIn( ChessRules *cr, const char *natural_in )
                 m = &list.moves[i];
                 if( piece     ==   cr->squares[m->src]      &&
                     src_file  ==   FILE(m->src)             &&
-                 /* src_rank  ==   RANK(m->src) */                  
+                 /* src_rank  ==   RANK(m->src) */
                     dst_file  ==   FILE(m->dst)
                 )
                 {
@@ -387,6 +422,8 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
      Handles moves of the following type
      exd8=N
      e8=B
+     exd8N
+     e8B
      exd5
      e4
      Nf3
@@ -398,23 +435,23 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
      O-O
      O-O-O
      */
-    
+
 //
     mv.special = NOT_SPECIAL;
     mv.capture = ' ';
     char f = *natural_in++;
-   
+
     // WHITE MOVE
     if( cr->white )
     {
-        
+
         // Pawn move ?
         if( 'a'<=f && f<='h' )
         {
             char r = *natural_in++;
             if( r != 'x')
             {
-                
+
                 // Non capturing, non promoting pawn move
                 if( '3'<= r && r<= '7')
                 {
@@ -431,8 +468,10 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                 }
 
                 // Non capturing, promoting pawn move
-                else if( r=='8' && *natural_in++=='=' )
+                else if( r=='8' )
                 {
+                    if( *natural_in == '=' )    // now optional
+                        natural_in++;
                     mv.dst = SQ(f,r);
                     mv.src = SOUTH(mv.dst);
                     if( cr->squares[mv.src]=='P' && cr->squares[mv.dst]==' ')
@@ -481,7 +520,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                 if( 'a'<=g && g<='h' )
                 {
                     r = *natural_in++;
-                    
+
                     // Non promoting, capturing pawn move
                     if( '3'<= r && r<= '7')
                     {
@@ -499,10 +538,12 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                             found = true;
                         }
                     }
-                    
+
                     // Promoting, capturing pawn move
-                    else if( r=='8' && *natural_in++=='=' )
+                    else if( r=='8' )
                     {
+                        if( *natural_in == '=' )    // now optional
+                            natural_in++;
                         mv.dst = SQ(g,r);
                         mv.src = SQ(f,r-1);
                         if( cr->squares[mv.src]=='P' && IsBlack(cr->squares[mv.dst]) )
@@ -550,7 +591,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
         }
         else
         {
-            
+
             // Piece move
             const lte **ray_lookup = queen_lookup;
             switch( f )
@@ -577,7 +618,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                     }
                     break;
                 }
-                    
+
                 // King is simple special case - there's only one king so no disambiguation
                 case 'K':
                 {
@@ -601,7 +642,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                     }
                     break;
                 }
-                    
+
                 // Other pieces may need to check legality for disambiguation
                 case 'Q':   ray_lookup = queen_lookup;                      // fall through
                 case 'R':   if( f=='R' )    ray_lookup = rook_lookup;       // fall through
@@ -742,7 +783,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                                                     }
                                                 }
                                             }
-                                        }    
+                                        }
                                         if( probe==0 && count==1 )
                                             found = true; // done, no need for disambiguation by check
                                     }
@@ -764,7 +805,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
             char r = *natural_in++;
             if( r != 'x')
             {
-                
+
                 // Non capturing, non promoting pawn move
                 if( '2'<= r && r<= '6')
                 {
@@ -779,10 +820,12 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                         found = (cr->squares[mv.src]=='p');
                     }
                 }
-                
+
                 // Non capturing, promoting pawn move
-                else if( r=='1' && *natural_in++=='=' )
+                else if( r=='1' )
                 {
+                    if( *natural_in == '=' )    // now optional
+                        natural_in++;
                     mv.dst = SQ(f,r);
                     mv.src = NORTH(mv.dst);
                     if( cr->squares[mv.src]=='p' && cr->squares[mv.dst]==' ')
@@ -831,7 +874,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                 if( 'a'<=g && g<='h' )
                 {
                     r = *natural_in++;
-                    
+
                     // Non promoting, capturing pawn move
                     if( '2'<= r && r<= '6')
                     {
@@ -849,10 +892,12 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                             found = true;
                         }
                     }
-                    
+
                     // Promoting, capturing pawn move
-                    else if( r=='1' && *natural_in++=='=' )
+                    else if( r=='1' )
                     {
+                        if( *natural_in == '=' )    // now optional
+                            natural_in++;
                         mv.dst = SQ(g,r);
                         mv.src = SQ(f,r+1);
                         if( cr->squares[mv.src]=='p' && IsWhite(cr->squares[mv.dst]) )
@@ -900,7 +945,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
         }
         else
         {
-            
+
             // Piece move
             const lte **ray_lookup=queen_lookup;
             switch( f )
@@ -927,7 +972,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                     }
                     break;
                 }
-                    
+
                 // King is simple special case - there's only one king so no disambiguation
                 case 'K':
                 {
@@ -951,14 +996,14 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                     }
                     break;
                 }
-                    
+
                 // Other pieces may need to check legality for disambiguation
                 case 'Q':   ray_lookup = queen_lookup;                      // fall through
                 case 'R':   if( f=='R' )    ray_lookup = rook_lookup;       // fall through
                 case 'B':   if( f=='B' )    ray_lookup = bishop_lookup;     // fall through
                 case 'N':
                 {
-                    char piece = tolower(f);
+                    char piece = static_cast<char>(tolower(f));
                     f = *natural_in++;
                     char src_file='\0';
                     char src_rank='\0';
@@ -1191,22 +1236,22 @@ bool Move::TerseIn( ChessRules *cr, const char *tmove )
  ****************************************************************************/
 std::string Move::NaturalOut( ChessRules *cr )
 {
-    
+
 // Improved algorithm
 
     /* basic procedure is run the following algorithms in turn:
         pawn move     ?
         castling      ?
         Nd2 or Nxd2   ? (loop through all legal moves check if unique)
-        Nbd2 or Nbxd2 ? (loop through all legal moves check if unique)   
+        Nbd2 or Nbxd2 ? (loop through all legal moves check if unique)
         N1d2 or N1xd2 ? (loop through all legal moves check if unique)
         Nb1d2 or Nb1xd2 (fallback if nothing else works)
     */
 
     char nmove[10];
-    nmove[0] = '-';    
-    nmove[1] = '-';    
-    nmove[2] = '\0';    
+    nmove[0] = '-';
+    nmove[1] = '-';
+    nmove[2] = '\0';
     MOVELIST list;
     bool check[MAXMOVES];
     bool mate[MAXMOVES];
@@ -1331,7 +1376,7 @@ std::string Move::NaturalOut( ChessRules *cr )
                     break;
                 }
 
-                // Nbd2 or Nbxd2    
+                // Nbd2 or Nbxd2
                 case ALG_NBD2:
                 {
                     if( t == 'x' )
@@ -1391,7 +1436,7 @@ std::string Move::NaturalOut( ChessRules *cr )
  * Convert to terse string eg "e7e8q"
  ****************************************************************************/
 std::string Move::TerseOut()
-{    
+{
     char tmove[6];
     if( src == dst )   // null move should be "0000" according to UCI spec
     {
@@ -1420,5 +1465,5 @@ std::string Move::TerseOut()
         tmove[5] = '\0';
     }
     return tmove;
-}    
+}
 

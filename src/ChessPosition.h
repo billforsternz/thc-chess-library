@@ -2,7 +2,7 @@
  * ChessPosition.h Chess classes - Representation of the position on the board
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 #ifndef CHESSPOSITION_H
 #define CHESSPOSITION_H
@@ -28,8 +28,7 @@ public:
     void Init()
     {
         white = true;
-        strcpy_s( squares,
-           sizeof squares,
+        strcpy_s( squares, sizeof(squares),
            "rnbqkbnr"
            "pppppppp"
            "        "
@@ -50,10 +49,10 @@ public:
     }
 
     // Copy constructor and Assignment operator. Defining them this way
-	//  generates simple bitwise memory copy, which is exactly what we
-	//  want and is better practice than the old memcpy() versions (which
-	//  copy the vtable ptr as well - we don't want that). Thanks to Github
-	//  user metiscus for the pull request that fixed this.
+    //  generates simple bitwise memory copy, which is exactly what we
+    //  want and is better practice than the old memcpy() versions (which
+    //  copy the vtable ptr as well - we don't want that). Thanks to Github
+    //  user metiscus for the pull request that fixed this.
     ChessPosition( const ChessPosition& src ) = default;
     ChessPosition& operator=( const ChessPosition& src ) = default;
 
@@ -151,7 +150,7 @@ public:
     bool wqueen_allowed() const { return wqueen && squares[e1]=='K' && squares[a1]=='R'; }
     bool bking_allowed()  const { return bking  && squares[e8]=='k' && squares[h8]=='r'; }
     bool bqueen_allowed() const { return bqueen && squares[e8]=='k' && squares[a8]=='r'; }
-    
+
     // Return true if Positions are the same (including counts)
     bool CmpStrict( const ChessPosition &other ) const;
 
@@ -170,19 +169,19 @@ public:
 
     // Decompress chess position
     void Decompress( const CompressedPosition &src );
-    
+
     // Calculate a hash value for position (not same as CompressPosition algorithm hash)
     uint32_t HashCalculate();
-    
+
     // Incremental hash value update
     uint32_t HashUpdate( uint32_t hash_in, Move move );
-    
+
     // Calculate a hash value for position (64 bit version)
     uint64_t Hash64Calculate();
-    
+
     // Incremental hash value update (64 bit version)
     uint64_t Hash64Update( uint64_t hash_in, Move move );
- 
+
     // Whos turn is it anyway
     inline bool WhiteToPlay() const { return white; }
     void Toggle() { white = !white; }

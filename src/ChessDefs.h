@@ -2,12 +2,17 @@
  * Chessdefs.h Chess classes - Common definitions
  *  Author:  Bill Forster
  *  License: MIT license. Full text of license is in associated file LICENSE
- *  Copyright 2010-2014, Bill Forster <billforsternz at gmail dot com>
+ *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 #ifndef CHESSDEFS_H
 #define CHESSDEFS_H
-#include "Portability.h"
 
+#include <stdint.h>     // int32_t etc. 
+
+// Simple definition to aid platform portability (only remains of former Portability.h)
+int strcmp_ignore( const char *s, const char *t ); // return 0 if case insensitive match
+
+// Fast test for is square white or black. Intend to move this to namespace thc when convenient...
 inline bool is_dark( int sq )
 {
     bool dark = (!(sq&8) &&  (sq&1))    // eg (a8,b8,c8...h8) && (b8|d8|f8|h8) odd rank + odd file
@@ -39,9 +44,17 @@ enum Square
     SQUARE_INVALID
 };
 
+// thc::Square utilities
+inline char get_file( Square sq )
+    { return static_cast<char> (  (static_cast<int>(sq)&0x07) + 'a' ); }           // eg c5->'c'
+inline char get_rank( Square sq )
+    { return static_cast<char> (  '8' - ((static_cast<int>(sq)>>3) & 0x07) ); }    // eg c5->'5'
+inline Square make_square( char file, char rank )
+    { return static_cast<Square> ( ('8'-(rank))*8 + ((file)-'a') );  }            // eg ('c','5') -> c5
+
 // Special (i.e. not ordinary) move types
 enum SPECIAL
-{           
+{
     NOT_SPECIAL = 0,
     SPECIAL_KING_MOVE,     // special only because it changes wking_square, bking_square
     SPECIAL_WK_CASTLING,
@@ -91,11 +104,11 @@ enum TERMINAL
     TERMINAL_BSTALEMATE = 2     // Black is stalemated
 };
 
-// Calculate an upper limit to the length of a list of moves   
+// Calculate an upper limit to the length of a list of moves
 #define MAXMOVES (27 + 2*13 + 2*14 + 2*8 + 8 + 8*4  +  3*27)
                 //[Q   2*B    2*R    2*N   K   8*P] +  [3*Q]
-                //             ^                         ^       
-                //[calculated practical maximum   ] + [margin]   
+                //             ^                         ^
+                //[calculated practical maximum   ] + [margin]
 
 // We have developed an algorithm to compress any legal chess position,
 //  including who to move, castling allowed flags and enpassant_target
