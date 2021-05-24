@@ -30,9 +30,6 @@
     <ClCompile Include="_qt\qrc_MainWindow.cpp">
       <Filter>_qt</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ChessEngine.cpp">
-      <Filter>thc</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ChessEvaluation.cpp">
       <Filter>thc</Filter>
     </ClCompile>
@@ -45,10 +42,10 @@
     <ClCompile Include="..\..\src\Move.cpp">
       <Filter>thc</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Portability.cpp">
+    <ClCompile Include="..\..\src\PrivateChessDefs.cpp">
       <Filter>thc</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\PrivateChessDefs.cpp">
+    <ClCompile Include="..\..\src\Portability.cpp">
       <Filter>thc</Filter>
     </ClCompile>
   </ItemGroup>
@@ -74,9 +71,6 @@
     <ClInclude Include="..\..\src\ChessDefs.h">
       <Filter>thc</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\ChessEngine.h">
-      <Filter>thc</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\ChessEvaluation.h">
       <Filter>thc</Filter>
     </ClInclude>
@@ -89,9 +83,6 @@
     <ClInclude Include="..\..\src\ChessRules.h">
       <Filter>thc</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\DebugPrintf.h">
-      <Filter>thc</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\GeneratedLookupTables.h">
       <Filter>thc</Filter>
     </ClInclude>
@@ -99,9 +90,6 @@
       <Filter>thc</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Move.h">
-      <Filter>thc</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Portability.h">
       <Filter>thc</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\PrivateChessDefs.h">

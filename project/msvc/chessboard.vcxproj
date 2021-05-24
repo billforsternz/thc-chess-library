@@ -75,7 +75,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\ChessEngine.cpp" />
     <ClCompile Include="..\..\src\ChessEvaluation.cpp" />
     <ClCompile Include="..\..\src\ChessPosition.cpp" />
     <ClCompile Include="..\..\src\ChessRules.cpp" />
@@ -103,16 +102,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\ChessDefs.h" />
-    <ClInclude Include="..\..\src\ChessEngine.h" />
     <ClInclude Include="..\..\src\ChessEvaluation.h" />
     <ClInclude Include="..\..\src\ChessPosition.h" />
     <ClInclude Include="..\..\src\ChessPositionRaw.h" />
     <ClInclude Include="..\..\src\ChessRules.h" />
-    <ClInclude Include="..\..\src\DebugPrintf.h" />
     <ClInclude Include="..\..\src\GeneratedLookupTables.h" />
     <ClInclude Include="..\..\src\HashLookup.h" />
     <ClInclude Include="..\..\src\Move.h" />
-    <ClInclude Include="..\..\src\Portability.h" />
     <ClInclude Include="..\..\src\PrivateChessDefs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
