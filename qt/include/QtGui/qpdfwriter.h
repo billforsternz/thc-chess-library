@@ -75,6 +75,11 @@ public:
     void setResolution(int resolution);
     int resolution() const;
 
+    void setDocumentXmpMetadata(const QByteArray &xmpMetadata);
+    QByteArray documentXmpMetadata() const;
+
+    void addFileAttachment(const QString &fileName, const QByteArray &data, const QString &mimeType = QString());
+
 #ifdef Q_QDOC
     bool setPageLayout(const QPageLayout &pageLayout);
     bool setPageSize(const QPageSize &pageSize);
@@ -86,10 +91,14 @@ public:
     using QPagedPaintDevice::setPageSize;
 #endif
 
+#if QT_DEPRECATED_SINCE(5, 14)
+    QT_DEPRECATED_X("Use setPageSize(QPageSize(id)) instead")
     void setPageSize(PageSize size) override;
+    QT_DEPRECATED_X("Use setPageSize(QPageSize(size, QPageSize::Millimeter)) instead")
     void setPageSizeMM(const QSizeF &size) override;
-
+    QT_DEPRECATED_X("Use setPageMargins(QMarginsF(l, t, r, b), QPageLayout::Millimeter) instead")
     void setMargins(const Margins &m) override;
+#endif
 
 protected:
     QPaintEngine *paintEngine() const override;

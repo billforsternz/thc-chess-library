@@ -58,12 +58,12 @@ QT_BEGIN_NAMESPACE
 struct Q_CORE_EXPORT QAbstractConcatenable
 {
 protected:
-    static void convertFromAscii(const char *a, int len, QChar *&out) Q_DECL_NOTHROW;
-    static inline void convertFromAscii(char a, QChar *&out) Q_DECL_NOTHROW
+    static void convertFromAscii(const char *a, int len, QChar *&out) noexcept;
+    static inline void convertFromAscii(char a, QChar *&out) noexcept
     {
         *out++ = QLatin1Char(a);
     }
-    static void appendLatin1To(const char *a, int len, QChar *out) Q_DECL_NOTHROW;
+    static void appendLatin1To(const char *a, int len, QChar *out) noexcept;
 };
 
 template <typename T> struct QConcatenable {};
@@ -126,8 +126,8 @@ private:
     }
 
     typedef QConcatenable<QStringBuilder<A, B> > Concatenable;
-    typedef typename Concatenable::ConvertTo ConvertTo;
 public:
+    typedef typename Concatenable::ConvertTo ConvertTo;
     operator ConvertTo() const { return convertTo<ConvertTo>(); }
 
     int size() const { return Concatenable::size(*this); }
@@ -150,7 +150,7 @@ class QStringBuilder <QString, QString> : public QStringBuilderBase<QStringBuild
         const QString &b;
 
     private:
-        QStringBuilder &operator=(const QStringBuilder &) Q_DECL_EQ_DELETE;
+        QStringBuilder &operator=(const QStringBuilder &) = delete;
 };
 
 template <>
@@ -167,7 +167,7 @@ class QStringBuilder <QByteArray, QByteArray> : public QStringBuilderBase<QStrin
         const QByteArray &b;
 
     private:
-        QStringBuilder &operator=(const QStringBuilder &) Q_DECL_EQ_DELETE;
+        QStringBuilder &operator=(const QStringBuilder &) = delete;
 };
 
 
@@ -375,7 +375,7 @@ template <> struct QConcatenable<const char16_t *> : private QAbstractConcatenab
     using type = const char16_t *;
     using ConvertTo = QString;
     enum { ExactSize = true };
-    static int size(const char16_t *a) { return QStringView(a).length(); };
+    static int size(const char16_t *a) { return QStringView(a).length(); }
     static inline void QT_ASCII_CAST_WARN appendTo(const char16_t *a, QChar *&out)
     {
         if (!a)

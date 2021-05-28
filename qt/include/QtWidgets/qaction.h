@@ -63,7 +63,7 @@ class Q_WIDGETS_EXPORT QAction : public QObject
     Q_DECLARE_PRIVATE(QAction)
 
     Q_PROPERTY(bool checkable READ isCheckable WRITE setCheckable NOTIFY changed)
-    Q_PROPERTY(bool checked READ isChecked WRITE setChecked DESIGNABLE isCheckable NOTIFY toggled)
+    Q_PROPERTY(bool checked READ isChecked WRITE setChecked NOTIFY toggled)
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY changed)
     Q_PROPERTY(QIcon icon READ icon WRITE setIcon NOTIFY changed)
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY changed)
@@ -72,7 +72,7 @@ class Q_WIDGETS_EXPORT QAction : public QObject
     Q_PROPERTY(QString statusTip READ statusTip WRITE setStatusTip NOTIFY changed)
     Q_PROPERTY(QString whatsThis READ whatsThis WRITE setWhatsThis NOTIFY changed)
     Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY changed)
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
     Q_PROPERTY(QKeySequence shortcut READ shortcut WRITE setShortcut NOTIFY changed)
     Q_PROPERTY(Qt::ShortcutContext shortcutContext READ shortcutContext WRITE setShortcutContext NOTIFY changed)
     Q_PROPERTY(bool autoRepeat READ autoRepeat WRITE setAutoRepeat NOTIFY changed)
@@ -129,7 +129,7 @@ public:
     void setSeparator(bool b);
     bool isSeparator() const;
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
     void setShortcut(const QKeySequence &shortcut);
     QKeySequence shortcut() const;
 

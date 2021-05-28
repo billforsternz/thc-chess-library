@@ -72,7 +72,9 @@ public:
 
     QMatrix4x4(const float *values, int cols, int rows);
     QMatrix4x4(const QTransform& transform);
+#if QT_DEPRECATED_SINCE(5, 15)
     QMatrix4x4(const QMatrix& matrix);
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
     inline const float& operator()(int row, int column) const;
     inline float& operator()(int row, int column);
@@ -156,7 +158,9 @@ public:
 
     void copyDataTo(float *values) const;
 
-    QMatrix toAffine() const;
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("Use toTransform()") QMatrix toAffine() const;
+#endif // QT_DEPRECATED_SINCE(5, 15)
     QTransform toTransform() const;
     QTransform toTransform(float distanceToPlane) const;
 
@@ -215,6 +219,7 @@ private:
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
 QT_WARNING_DISABLE_GCC("-Wfloat-equal")
+QT_WARNING_DISABLE_INTEL(1572)
 Q_DECLARE_TYPEINFO(QMatrix4x4, Q_MOVABLE_TYPE);
 
 inline QMatrix4x4::QMatrix4x4

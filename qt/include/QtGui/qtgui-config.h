@@ -37,9 +37,12 @@
 #define QT_FEATURE_sessionmanager 1
 #define QT_FEATURE_shortcut 1
 #define QT_FEATURE_standarditemmodel 1
+#define QT_FEATURE_system_textmarkdownreader -1
 #define QT_FEATURE_systemtrayicon 1
 #define QT_FEATURE_tabletevent 1
 #define QT_FEATURE_texthtmlparser 1
+#define QT_FEATURE_textmarkdownreader 1
+#define QT_FEATURE_textmarkdownwriter 1
 #define QT_FEATURE_textodfwriter 1
 #define QT_FEATURE_validator 1
 #define QT_FEATURE_vulkan 1

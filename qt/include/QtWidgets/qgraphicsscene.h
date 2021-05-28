@@ -47,7 +47,6 @@
 #include <QtGui/qbrush.h>
 #include <QtGui/qfont.h>
 #include <QtGui/qtransform.h>
-#include <QtGui/qmatrix.h>
 #include <QtGui/qpen.h>
 
 QT_REQUIRE_CONFIG(graphicsview);
@@ -115,7 +114,7 @@ public:
         BspTreeIndex,
         NoIndex = -1
     };
-
+    Q_ENUM(ItemIndexMethod)
     enum SceneLayer {
         ItemLayer = 0x1,
         BackgroundLayer = 0x2,

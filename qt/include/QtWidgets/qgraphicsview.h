@@ -107,7 +107,9 @@ public:
     Q_ENUM(ViewportUpdateMode)
 
     enum OptimizationFlag {
-        DontClipPainter = 0x1, // obsolete
+#if QT_DEPRECATED_SINCE(5, 14)
+        DontClipPainter Q_DECL_ENUMERATOR_DEPRECATED_X("This flag is unused") = 0x1, // obsolete
+#endif
         DontSavePainterState = 0x2,
         DontAdjustForAntialiasing = 0x4,
         IndirectPainting = 0x8
@@ -163,9 +165,11 @@ public:
     void setSceneRect(const QRectF &rect);
     inline void setSceneRect(qreal x, qreal y, qreal w, qreal h);
 
-    QMatrix matrix() const;
-    void setMatrix(const QMatrix &matrix, bool combine = false);
-    void resetMatrix();
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("Use transform()") QMatrix matrix() const;
+    QT_DEPRECATED_X("Use setTransform()") void setMatrix(const QMatrix &matrix, bool combine = false);
+    QT_DEPRECATED_X("Use resetTransform()") void resetMatrix();
+#endif // QT_DEPRECATED_SINCE(5, 15)
     QTransform transform() const;
     QTransform viewportTransform() const;
     bool isTransformed() const;

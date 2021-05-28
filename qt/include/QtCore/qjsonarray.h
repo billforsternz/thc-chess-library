@@ -42,9 +42,8 @@
 
 #include <QtCore/qjsonvalue.h>
 #include <QtCore/qiterator.h>
-#if defined(Q_COMPILER_INITIALIZER_LISTS)
+#include <QtCore/qshareddata.h>
 #include <initializer_list>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -58,29 +57,16 @@ class Q_CORE_EXPORT QJsonArray
 public:
     QJsonArray();
 
-#if defined(Q_COMPILER_INITIALIZER_LISTS) || defined(Q_QDOC)
-    QJsonArray(std::initializer_list<QJsonValue> args)
-    {
-        initialize();
-        for (std::initializer_list<QJsonValue>::const_iterator i = args.begin(); i != args.end(); ++i)
-            append(*i);
-    }
-#endif
+    QJsonArray(std::initializer_list<QJsonValue> args);
 
     ~QJsonArray();
 
     QJsonArray(const QJsonArray &other);
     QJsonArray &operator =(const QJsonArray &other);
 
-    QJsonArray(QJsonArray &&other) Q_DECL_NOTHROW
-        : d(other.d),
-          a(other.a)
-    {
-        other.d = nullptr;
-        other.a = nullptr;
-    }
+    QJsonArray(QJsonArray &&other) noexcept;
 
-    QJsonArray &operator =(QJsonArray &&other) Q_DECL_NOTHROW
+    QJsonArray &operator =(QJsonArray &&other) noexcept
     {
         swap(other);
         return *this;
@@ -115,9 +101,8 @@ public:
     bool operator==(const QJsonArray &other) const;
     bool operator!=(const QJsonArray &other) const;
 
-    void swap(QJsonArray &other) Q_DECL_NOTHROW
+    void swap(QJsonArray &other) noexcept
     {
-        qSwap(d, other.d);
         qSwap(a, other.a);
     }
 
@@ -249,20 +234,21 @@ public:
     typedef int difference_type;
 
 private:
-    friend class QJsonPrivate::Data;
     friend class QJsonValue;
     friend class QJsonDocument;
+    friend class QCborArray;
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonArray &);
 
-    QJsonArray(QJsonPrivate::Data *data, QJsonPrivate::Array *array);
+    QJsonArray(QCborContainerPrivate *array);
     void initialize();
     void compact();
     // ### Qt 6: remove me and merge with detach2
     void detach(uint reserve = 0);
     bool detach2(uint reserve = 0);
 
-    QJsonPrivate::Data *d;
-    QJsonPrivate::Array *a;
+    // ### Qt 6: remove
+    void *dead = nullptr;
+    QExplicitlySharedDataPointer<QCborContainerPrivate> a;
 };
 
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QJsonArray)

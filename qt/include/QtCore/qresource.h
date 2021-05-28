@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -72,10 +73,11 @@ public:
 
     bool isValid() const;
 
-    bool isCompressed() const;
     Compression compressionAlgorithm() const;
     qint64 size() const;
     const uchar *data() const;
+    qint64 uncompressedSize() const;
+    QByteArray uncompressedData() const;
     QDateTime lastModified() const;
 
 #if QT_DEPRECATED_SINCE(5, 13)
@@ -83,6 +85,10 @@ public:
     static void addSearchPath(const QString &path);
     QT_DEPRECATED_X("Use QDir::searchPaths() instead")
     static QStringList searchPaths();
+#endif
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_VERSION_X_5_15("Use QResource::compressionAlgorithm() instead")
+    bool isCompressed() const;
 #endif
 
     static bool registerResource(const QString &rccFilename, const QString &resourceRoot=QString());

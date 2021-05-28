@@ -128,7 +128,10 @@ public:
     void removePage(int id);
     QWizardPage *page(int id) const;
     bool hasVisitedPage(int id) const;
-    QList<int> visitedPages() const;    // ### Qt 6: visitedIds()?
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_VERSION_X_5_15("Use visitedIds() instead") QList<int> visitedPages() const;
+#endif
+    QList<int> visitedIds() const;
     QList<int> pageIds() const;
     void setStartId(int id);
     int startId() const;
@@ -188,7 +191,11 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
 #if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+#  if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
+#  else
     bool nativeEvent(const QByteArray &eventType, void *message, long *result) override;
+#  endif
 #endif
     void done(int result) override;
     virtual void initializePage(int id);

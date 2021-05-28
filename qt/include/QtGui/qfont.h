@@ -80,8 +80,10 @@ public:
         PreferQuality       = 0x0040,
         PreferAntialias     = 0x0080,
         NoAntialias         = 0x0100,
-        OpenGLCompatible    = 0x0200,
-        ForceIntegerMetrics = 0x0400,
+#if QT_DEPRECATED_SINCE(5, 15)
+        OpenGLCompatible Q_DECL_ENUMERATOR_DEPRECATED = 0x0200,
+        ForceIntegerMetrics Q_DECL_ENUMERATOR_DEPRECATED = 0x0400,
+#endif
         NoSubpixelAntialias = 0x0800,
         PreferNoShaping     = 0x1000,
         NoFontMerging       = 0x8000
@@ -147,6 +149,7 @@ public:
     Q_ENUM(SpacingType)
 
     enum ResolveProperties {
+        NoPropertiesResolved        = 0x0000,
         FamilyResolved              = 0x0001,
         SizeResolved                = 0x0002,
         StyleHintResolved           = 0x0004,
@@ -167,6 +170,7 @@ public:
         FamiliesResolved            = 0x20000,
         AllPropertiesResolved       = 0x3ffff
     };
+    Q_ENUM(ResolveProperties)
 
     QFont();
     QFont(const QString &family, int pointSize = -1, int weight = -1, bool italic = false);
@@ -259,10 +263,8 @@ public:
     bool operator<(const QFont &) const;
     operator QVariant() const;
     bool isCopyOf(const QFont &) const;
-#ifdef Q_COMPILER_RVALUE_REFS
-    inline QFont &operator=(QFont &&other) Q_DECL_NOEXCEPT
+    inline QFont &operator=(QFont &&other) noexcept
     { qSwap(d, other.d); qSwap(resolve_mask, other.resolve_mask);  return *this; }
-#endif
 
 #if QT_DEPRECATED_SINCE(5, 3)
     // needed for X11
@@ -335,13 +337,17 @@ private:
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QFont &);
 #endif
 
+#ifndef QT_NO_DEBUG_STREAM
+    friend Q_GUI_EXPORT QDebug operator<<(QDebug, const QFont &);
+#endif
+
     QExplicitlySharedDataPointer<QFontPrivate> d;
     uint resolve_mask;
 };
 
 Q_DECLARE_SHARED(QFont)
 
-Q_GUI_EXPORT uint qHash(const QFont &font, uint seed = 0) Q_DECL_NOTHROW;
+Q_GUI_EXPORT uint qHash(const QFont &font, uint seed = 0) noexcept;
 
 inline bool QFont::bold() const
 { return weight() > Medium; }

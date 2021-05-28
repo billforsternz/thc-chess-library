@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -60,19 +60,17 @@ public:
     // ### Qt 6: remove them all, the compiler-generated ones are fine
     inline QItemSelectionRange(const QItemSelectionRange &other)
         : tl(other.tl), br(other.br) {}
-# ifdef Q_COMPILER_RVALUE_REFS
-    QItemSelectionRange(QItemSelectionRange &&other) Q_DECL_NOTHROW
+    QItemSelectionRange(QItemSelectionRange &&other) noexcept
         : tl(std::move(other.tl)), br(std::move(other.br)) {}
-    QItemSelectionRange &operator=(QItemSelectionRange &&other) Q_DECL_NOTHROW
+    QItemSelectionRange &operator=(QItemSelectionRange &&other) noexcept
     { tl = std::move(other.tl); br = std::move(other.br); return *this; }
-# endif
     QItemSelectionRange &operator=(const QItemSelectionRange &other)
     { tl = other.tl; br = other.br; return *this; }
 #endif // Qt < 6
     QItemSelectionRange(const QModelIndex &topL, const QModelIndex &bottomR) : tl(topL), br(bottomR) {}
     explicit QItemSelectionRange(const QModelIndex &index) : tl(index), br(tl) {}
 
-    void swap(QItemSelectionRange &other) Q_DECL_NOTHROW
+    void swap(QItemSelectionRange &other) noexcept
     {
         qSwap(tl, other.tl);
         qSwap(br, other.br);
@@ -116,7 +114,9 @@ public:
         { return (tl == other.tl && br == other.br); }
     inline bool operator!=(const QItemSelectionRange &other) const
         { return !operator==(other); }
-    bool operator<(const QItemSelectionRange &other) const;
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED bool operator<(const QItemSelectionRange &other) const;
+#endif
 
     inline bool isValid() const
     {
@@ -173,11 +173,11 @@ public:
     QModelIndex currentIndex() const;
 
     Q_INVOKABLE bool isSelected(const QModelIndex &index) const;
-    Q_INVOKABLE bool isRowSelected(int row, const QModelIndex &parent) const;
-    Q_INVOKABLE bool isColumnSelected(int column, const QModelIndex &parent) const;
+    Q_INVOKABLE bool isRowSelected(int row, const QModelIndex &parent = QModelIndex()) const;
+    Q_INVOKABLE bool isColumnSelected(int column, const QModelIndex &parent = QModelIndex()) const;
 
-    Q_INVOKABLE bool rowIntersectsSelection(int row, const QModelIndex &parent) const;
-    Q_INVOKABLE bool columnIntersectsSelection(int column, const QModelIndex &parent) const;
+    Q_INVOKABLE bool rowIntersectsSelection(int row, const QModelIndex &parent = QModelIndex()) const;
+    Q_INVOKABLE bool columnIntersectsSelection(int column, const QModelIndex &parent = QModelIndex()) const;
 
     bool hasSelection() const;
 
@@ -249,7 +249,7 @@ Q_TEMPLATE_EXTERN template class Q_CORE_EXPORT QList<QItemSelectionRange>;
 class Q_CORE_EXPORT QItemSelection : public QList<QItemSelectionRange>
 {
 public:
-    QItemSelection() Q_DECL_NOTHROW : QList<QItemSelectionRange>() {}
+    QItemSelection() noexcept : QList<QItemSelectionRange>() {}
     QItemSelection(const QModelIndex &topLeft, const QModelIndex &bottomRight);
 
     // reusing QList::swap() here is OK!

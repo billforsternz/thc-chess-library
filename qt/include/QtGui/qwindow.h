@@ -292,6 +292,8 @@ public Q_SLOTS:
     bool close();
     void raise();
     void lower();
+    bool startSystemResize(Qt::Edges edges);
+    bool startSystemMove();
 
     void setTitle(const QString &);
 
@@ -364,7 +366,11 @@ protected:
 #if QT_CONFIG(tabletevent)
     virtual void tabletEvent(QTabletEvent *);
 #endif
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    virtual bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result);
+#else
     virtual bool nativeEvent(const QByteArray &eventType, void *message, long *result);
+#endif
 
     QWindow(QWindowPrivate &dd, QWindow *parent);
 

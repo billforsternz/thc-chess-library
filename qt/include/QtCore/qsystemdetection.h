@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -71,10 +72,13 @@
      UNIX     - Any UNIX BSD/SYSV system
      ANDROID  - Android platform
      HAIKU    - Haiku
+     WEBOS    - LG WebOS
 
    The following operating systems have variants:
      LINUX    - both Q_OS_LINUX and Q_OS_ANDROID are defined when building for Android
               - only Q_OS_LINUX is defined if building for other Linux systems
+     MACOS    - both Q_OS_BSD4 and Q_OS_IOS are defined when building for iOS
+              - both Q_OS_BSD4 and Q_OS_MACOS are defined when building for macOS
      FREEBSD  - Q_OS_FREEBSD is defined only when building for FreeBSD with a BSD userland
               - Q_OS_FREEBSD_KERNEL is always defined on FreeBSD, even if the userland is from GNU
 */
@@ -108,6 +112,9 @@
 #  else
 #    error "Qt has not been ported to this Apple platform - see http://www.qt.io/developers"
 #  endif
+#elif defined(__WEBOS__)
+#  define Q_OS_WEBOS
+#  define Q_OS_LINUX
 #elif defined(__ANDROID__) || defined(ANDROID)
 #  define Q_OS_ANDROID
 #  define Q_OS_LINUX
@@ -166,6 +173,8 @@
 #  define Q_OS_QNX
 #elif defined(__INTEGRITY)
 #  define Q_OS_INTEGRITY
+#elif defined(__rtems__)
+#  define Q_OS_RTEMS
 #elif defined(VXWORKS) /* there is no "real" VxWorks define - this has to be set in the mkspec! */
 #  define Q_OS_VXWORKS
 #elif defined(__HAIKU__)
@@ -178,6 +187,12 @@
 #if defined(Q_OS_WIN32) || defined(Q_OS_WIN64) || defined(Q_OS_WINRT)
 #  define Q_OS_WINDOWS
 #  define Q_OS_WIN
+#  if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+// On Windows, pointers to dllimport'ed variables are not constant expressions,
+// so to keep to certain initializations (like QMetaObject) constexpr, we need
+// to use functions instead.
+#    define QT_NO_DATA_RELOCATION
+#  endif
 #endif
 
 #if defined(Q_OS_WIN)
@@ -234,6 +249,9 @@
 #  if !defined(__MAC_10_15)
 #       define __MAC_10_15 101500
 #  endif
+#  if !defined(__MAC_10_16)
+#       define __MAC_10_16 101600
+#  endif
 #  if !defined(MAC_OS_X_VERSION_10_11)
 #       define MAC_OS_X_VERSION_10_11 __MAC_10_11
 #  endif
@@ -248,6 +266,9 @@
 #  endif
 #  if !defined(MAC_OS_X_VERSION_10_15)
 #       define MAC_OS_X_VERSION_10_15 __MAC_10_15
+#  endif
+#  if !defined(MAC_OS_X_VERSION_10_16)
+#       define MAC_OS_X_VERSION_10_16 __MAC_10_16
 #  endif
 #
 #  if !defined(__IPHONE_10_0)

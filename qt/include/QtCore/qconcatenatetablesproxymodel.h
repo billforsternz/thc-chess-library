@@ -42,6 +42,8 @@
 
 #include <QtCore/qabstractitemmodel.h>
 
+QT_REQUIRE_CONFIG(concatenatetablesproxymodel);
+
 QT_BEGIN_NAMESPACE
 
 class QConcatenateTablesProxyModelPrivate;
@@ -54,6 +56,7 @@ public:
     explicit QConcatenateTablesProxyModel(QObject *parent = nullptr);
     ~QConcatenateTablesProxyModel();
 
+    QList<QAbstractItemModel *> sourceModels() const;
     Q_SCRIPTABLE void addSourceModel(QAbstractItemModel *sourceModel);
     Q_SCRIPTABLE void removeSourceModel(QAbstractItemModel *sourceModel);
 

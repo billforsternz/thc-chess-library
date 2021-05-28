@@ -63,14 +63,13 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
 
 #define QT_UNICODE_LITERAL(str) u"" str
 #define QStringLiteral(str) \
-    ([]() Q_DECL_NOEXCEPT -> QString { \
+    ([]() noexcept -> QString { \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
         static const QStaticStringData<Size> qstring_literal = { \
             Q_STATIC_STRING_DATA_HEADER_INITIALIZER(Size), \
             QT_UNICODE_LITERAL(str) }; \
         QStringDataPtr holder = { qstring_literal.data_ptr() }; \
-        const QString qstring_literal_temp(holder); \
-        return qstring_literal_temp; \
+        return QString(holder); \
     }()) \
     /**/
 
@@ -82,11 +81,8 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
     Q_STATIC_STRING_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, sizeof(QStringData)) \
     /**/
 
-#ifndef QT_NO_UNICODE_LITERAL
-# ifndef QT_UNICODE_LITERAL
-#  error "If you change QStringLiteral, please change QStringViewLiteral, too"
-# endif
-# define QStringViewLiteral(str) QStringView(QT_UNICODE_LITERAL(str))
+#if QT_DEPRECATED_SINCE(5, 14)
+# define QStringViewLiteral(str) QStringView(QT_UNICODE_LITERAL(str), QtPrivate::Deprecated)
 #endif
 
 template <int N>

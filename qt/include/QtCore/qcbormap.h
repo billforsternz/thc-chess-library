@@ -54,6 +54,8 @@ typedef QHash<QString, QVariant> QVariantHash;
 class QJsonObject;
 class QDataStream;
 
+namespace QJsonPrivate { class Variant; }
+
 class QCborContainerPrivate;
 class Q_CORE_EXPORT QCborMap
 {
@@ -245,7 +247,7 @@ public:
     { const_iterator it = find(key); return it != end(); }
 
     int compare(const QCborMap &other) const noexcept Q_DECL_PURE_FUNCTION;
-#if 0 && QT_HAS_INCLUDE(<compare>)
+#if 0 && __has_include(<compare>)
     std::strong_ordering operator<=>(const QCborMap &other) const
     {
         int c = compare(other);
@@ -327,6 +329,7 @@ public:
 private:
     friend class QCborValue;
     friend class QCborValueRef;
+    friend class QJsonPrivate::Variant;
     void detach(qsizetype reserve = 0);
 
     explicit QCborMap(QCborContainerPrivate &dd) noexcept;

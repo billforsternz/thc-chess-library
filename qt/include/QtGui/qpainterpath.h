@@ -42,6 +42,7 @@
 
 #include <QtGui/qtguiglobal.h>
 #include <QtGui/qmatrix.h>
+#include <QtGui/qtransform.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qline.h>
@@ -88,17 +89,15 @@ public:
         inline bool operator!=(const Element &e) const { return !operator==(e); }
     };
 
-    QPainterPath() Q_DECL_NOEXCEPT;
+    QPainterPath() noexcept;
     explicit QPainterPath(const QPointF &startPoint);
     QPainterPath(const QPainterPath &other);
     QPainterPath &operator=(const QPainterPath &other);
-#ifdef Q_COMPILER_RVALUE_REFS
-    inline QPainterPath &operator=(QPainterPath &&other) Q_DECL_NOEXCEPT
+    inline QPainterPath &operator=(QPainterPath &&other) noexcept
     { qSwap(d_ptr, other.d_ptr); return *this; }
-#endif
     ~QPainterPath();
 
-    inline void swap(QPainterPath &other) Q_DECL_NOEXCEPT { d_ptr.swap(other.d_ptr); }
+    inline void swap(QPainterPath &other) noexcept { d_ptr.swap(other.d_ptr); }
 
     void clear();
     void reserve(int size);
@@ -177,12 +176,18 @@ public:
     bool isEmpty() const;
 
     Q_REQUIRED_RESULT QPainterPath toReversed() const;
-    QList<QPolygonF> toSubpathPolygons(const QMatrix &matrix = QMatrix()) const;
-    QList<QPolygonF> toFillPolygons(const QMatrix &matrix = QMatrix()) const;
-    QPolygonF toFillPolygon(const QMatrix &matrix = QMatrix()) const;
-    QList<QPolygonF> toSubpathPolygons(const QTransform &matrix) const;
-    QList<QPolygonF> toFillPolygons(const QTransform &matrix) const;
-    QPolygonF toFillPolygon(const QTransform &matrix) const;
+
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("Use toSubpathPolygons(const QTransform &)")
+    QList<QPolygonF> toSubpathPolygons(const QMatrix &matrix) const;
+    QT_DEPRECATED_X("Use toFillPolygons(const QTransform &")
+    QList<QPolygonF> toFillPolygons(const QMatrix &matrix) const;
+    QT_DEPRECATED_X("Use toFillPolygon(const QTransform &)")
+    QPolygonF toFillPolygon(const QMatrix &matrix) const;
+#endif // QT_DEPRECATED_SINCE(5, 15)
+    QList<QPolygonF> toSubpathPolygons(const QTransform &matrix = QTransform()) const;
+    QList<QPolygonF> toFillPolygons(const QTransform &matrix = QTransform()) const;
+    QPolygonF toFillPolygon(const QTransform &matrix = QTransform()) const;
 
     int elementCount() const;
     QPainterPath::Element elementAt(int i) const;
@@ -358,6 +363,8 @@ inline void QPainterPath::translate(const QPointF &offset)
 inline QPainterPath QPainterPath::translated(const QPointF &offset) const
 { return translated(offset.x(), offset.y()); }
 
+inline QPainterPath operator *(const QPainterPath &p, const QTransform &m)
+{ return m.map(p); }
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QPainterPath &);

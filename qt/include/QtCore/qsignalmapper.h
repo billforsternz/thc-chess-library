@@ -42,8 +42,6 @@
 
 #include <QtCore/qobject.h>
 
-#if QT_DEPRECATED_SINCE(5, 10)
-
 QT_BEGIN_NAMESPACE
 
 class QSignalMapperPrivate;
@@ -53,7 +51,7 @@ class Q_CORE_EXPORT QSignalMapper : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QSignalMapper)
 public:
-    QT_DEPRECATED explicit QSignalMapper(QObject *parent = nullptr);
+    explicit QSignalMapper(QObject *parent = nullptr);
     ~QSignalMapper();
 
     void setMapping(QObject *sender, int id);
@@ -68,10 +66,20 @@ public:
     QObject *mapping(QObject *object) const;
 
 Q_SIGNALS:
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_VERSION_X_5_15("Use QSignalMapper::mappedInt(int) instead")
     void mapped(int);
+    QT_DEPRECATED_VERSION_X_5_15("Use QSignalMapper::mappedString(const QString&) instead")
     void mapped(const QString &);
+    QT_DEPRECATED_VERSION_X_5_15("Use QSignalMapper::mappedWidget(QWidget *) instead")
     void mapped(QWidget *);
+    QT_DEPRECATED_VERSION_X_5_15("Use QSignalMapper::mappedObject(QObject *) instead")
     void mapped(QObject *);
+#endif
+    void mappedInt(int);
+    void mappedString(const QString &);
+    void mappedWidget(QWidget *);
+    void mappedObject(QObject *);
 
 public Q_SLOTS:
     void map();
@@ -83,7 +91,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif
 
 #endif // QSIGNALMAPPER_H

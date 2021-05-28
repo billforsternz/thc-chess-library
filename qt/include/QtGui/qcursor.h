@@ -86,21 +86,30 @@ public:
     QCursor(const QCursor &cursor);
     ~QCursor();
     QCursor &operator=(const QCursor &cursor);
-#ifdef Q_COMPILER_RVALUE_REFS
-    QCursor(QCursor &&other) Q_DECL_NOTHROW : d(other.d) { other.d = nullptr; }
-    inline QCursor &operator=(QCursor &&other) Q_DECL_NOTHROW
+    QCursor(QCursor &&other) noexcept : d(other.d) { other.d = nullptr; }
+    inline QCursor &operator=(QCursor &&other) noexcept
     { swap(other); return *this; }
-#endif
 
-    void swap(QCursor &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    void swap(QCursor &other) noexcept { qSwap(d, other.d); }
 
     operator QVariant() const;
 
     Qt::CursorShape shape() const;
     void setShape(Qt::CursorShape newShape);
 
-    const QBitmap *bitmap() const;
-    const QBitmap *mask() const;
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_VERSION_X(5, 15, "Use the other overload which returns QBitmap by-value")
+    const QBitmap *bitmap() const; // ### Qt 7: Remove function
+
+    QT_DEPRECATED_VERSION_X(5, 15, "Use the other overload which returns QBitmap by-value")
+    const QBitmap *mask() const; // ### Qt 7: Remove function
+
+    QBitmap bitmap(Qt::ReturnByValueConstant) const;
+    QBitmap mask(Qt::ReturnByValueConstant) const;
+#else
+    QBitmap bitmap(Qt::ReturnByValueConstant = Qt::ReturnByValue) const; // ### Qt 7: Remove arg
+    QBitmap mask(Qt::ReturnByValueConstant = Qt::ReturnByValue) const; // ### Qt 7: Remove arg
+#endif // QT_DEPRECATED_SINCE(5, 15)
     QPixmap pixmap() const;
     QPoint hotSpot() const;
 
@@ -112,13 +121,13 @@ public:
     inline static void setPos(QScreen *screen, const QPoint &p) { setPos(screen, p.x(), p.y()); }
 
 private:
-    friend Q_GUI_EXPORT bool operator==(const QCursor &lhs, const QCursor &rhs) Q_DECL_NOTHROW;
+    friend Q_GUI_EXPORT bool operator==(const QCursor &lhs, const QCursor &rhs) noexcept;
     QCursorData *d;
 };
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QCursor)
 
-Q_GUI_EXPORT bool operator==(const QCursor &lhs, const QCursor &rhs) Q_DECL_NOTHROW;
-inline bool operator!=(const QCursor &lhs, const QCursor &rhs) Q_DECL_NOTHROW { return !(lhs == rhs); }
+Q_GUI_EXPORT bool operator==(const QCursor &lhs, const QCursor &rhs) noexcept;
+inline bool operator!=(const QCursor &lhs, const QCursor &rhs) noexcept { return !(lhs == rhs); }
 
 /*****************************************************************************
   QCursor stream functions

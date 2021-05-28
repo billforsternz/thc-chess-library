@@ -213,6 +213,7 @@ public:
         Envelope10 = Comm10E
     };
 
+    // keep in sync with QPdfEngine::PdfVersion!
     enum PdfVersion { PdfVersion_1_4, PdfVersion_A1b, PdfVersion_1_6 };
 
     // ### Qt6 Make these virtual
@@ -223,11 +224,17 @@ public:
     bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units);
     QPageLayout pageLayout() const;
 
+#if QT_DEPRECATED_SINCE(5,15)
+    QT_DEPRECATED_VERSION_X_5_15("Use setPageSize(QPageSize) instead.")
     virtual void setPageSize(PageSize size);
+    QT_DEPRECATED_VERSION_X_5_15("Use pageLayout().pageSize().id() instead.")
     PageSize pageSize() const;
 
+    QT_DEPRECATED_VERSION_X_5_15("Use setPageSize(QPageSize) instead.")
     virtual void setPageSizeMM(const QSizeF &size);
+    QT_DEPRECATED_VERSION_X_5_15("Use pageLayout().pageSize() instead.")
     QSizeF pageSizeMM() const;
+#endif
 
     // ### Qt6 Remove in favor of QMarginsF
     struct Margins {
@@ -237,8 +244,12 @@ public:
         qreal bottom;
     };
 
+#if QT_DEPRECATED_SINCE(5,15)
+    QT_DEPRECATED_VERSION_X_5_15("Use setPageMargins(QMarginsF, QPageLayout::Unit) instead.")
     virtual void setMargins(const Margins &margins);
+    QT_DEPRECATED_VERSION_X_5_15("Use pageLayout().margins() instead.")
     Margins margins() const;
+#endif
 
 protected:
     QPagedPaintDevice(QPagedPaintDevicePrivate *dd);

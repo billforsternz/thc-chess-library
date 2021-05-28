@@ -85,6 +85,7 @@ class QDragEnterEvent;
 class QDragMoveEvent;
 class QDragLeaveEvent;
 class QDropEvent;
+class QScreen;
 class QShowEvent;
 class QHideEvent;
 class QIcon;
@@ -174,11 +175,11 @@ class Q_WIDGETS_EXPORT QWidget : public QObject, public QPaintDevice
     Q_PROPERTY(QSize sizeHint READ sizeHint)
     Q_PROPERTY(QSize minimumSizeHint READ minimumSizeHint)
     Q_PROPERTY(bool acceptDrops READ acceptDrops WRITE setAcceptDrops)
-    Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle NOTIFY windowTitleChanged DESIGNABLE isWindow)
-    Q_PROPERTY(QIcon windowIcon READ windowIcon WRITE setWindowIcon NOTIFY windowIconChanged DESIGNABLE isWindow)
-    Q_PROPERTY(QString windowIconText READ windowIconText WRITE setWindowIconText NOTIFY windowIconTextChanged DESIGNABLE isWindow) // deprecated
-    Q_PROPERTY(double windowOpacity READ windowOpacity WRITE setWindowOpacity DESIGNABLE isWindow)
-    Q_PROPERTY(bool windowModified READ isWindowModified WRITE setWindowModified DESIGNABLE isWindow)
+    Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle NOTIFY windowTitleChanged)
+    Q_PROPERTY(QIcon windowIcon READ windowIcon WRITE setWindowIcon NOTIFY windowIconChanged)
+    Q_PROPERTY(QString windowIconText READ windowIconText WRITE setWindowIconText NOTIFY windowIconTextChanged) // deprecated
+    Q_PROPERTY(double windowOpacity READ windowOpacity WRITE setWindowOpacity)
+    Q_PROPERTY(bool windowModified READ isWindowModified WRITE setWindowModified)
 #ifndef QT_NO_TOOLTIP
     Q_PROPERTY(QString toolTip READ toolTip WRITE setToolTip)
     Q_PROPERTY(int toolTipDuration READ toolTipDuration WRITE setToolTipDuration)
@@ -200,7 +201,7 @@ class Q_WIDGETS_EXPORT QWidget : public QObject, public QPaintDevice
     Q_PROPERTY(QString styleSheet READ styleSheet WRITE setStyleSheet)
 #endif
     Q_PROPERTY(QLocale locale READ locale WRITE setLocale RESET unsetLocale)
-    Q_PROPERTY(QString windowFilePath READ windowFilePath WRITE setWindowFilePath DESIGNABLE isWindow)
+    Q_PROPERTY(QString windowFilePath READ windowFilePath WRITE setWindowFilePath)
     Q_PROPERTY(Qt::InputMethodHints inputMethodHints READ inputMethodHints WRITE setInputMethodHints)
 
 public:
@@ -524,7 +525,10 @@ public:
 
     void setContentsMargins(int left, int top, int right, int bottom);
     void setContentsMargins(const QMargins &margins);
+#if QT_DEPRECATED_SINCE(5, 14)
+    QT_DEPRECATED_X("use contentsMargins()")
     void getContentsMargins(int *left, int *top, int *right, int *bottom) const;
+#endif
     QMargins contentsMargins() const;
 
     QRect contentsRect() const;
@@ -555,7 +559,7 @@ public:
     void addAction(QAction *action);
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     void addActions(const QList<QAction*> &actions);
-    void insertActions(const QAction *before, const QList<QAction*> &actions);
+    void insertActions(QAction *before, const QList<QAction*> &actions);
 #else
     void addActions(QList<QAction*> actions);
     void insertActions(QAction *before, QList<QAction*> actions);
@@ -598,6 +602,7 @@ public:
     QBackingStore *backingStore() const;
 
     QWindow *windowHandle() const;
+    QScreen *screen() const;
 
     static QWidget *createWindowContainer(QWindow *window, QWidget *parent=nullptr, Qt::WindowFlags flags=Qt::WindowFlags());
 
@@ -648,7 +653,12 @@ protected:
 
     virtual void showEvent(QShowEvent *event);
     virtual void hideEvent(QHideEvent *event);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    virtual bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result);
+#else
     virtual bool nativeEvent(const QByteArray &eventType, void *message, long *result);
+#endif
 
     // Misc. protected functions
     virtual void changeEvent(QEvent *);
@@ -689,7 +699,7 @@ private:
     QLayout *takeLayout();
 
     friend class QBackingStoreDevice;
-    friend class QWidgetBackingStore;
+    friend class QWidgetRepaintManager;
     friend class QApplication;
     friend class QApplicationPrivate;
     friend class QGuiApplication;

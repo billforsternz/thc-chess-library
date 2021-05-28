@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Giuseppe D'Angelo <dangelog@gmail.com>.
-** Copyright (C) 2012 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
+** Copyright (C) 2020 Giuseppe D'Angelo <dangelog@gmail.com>.
+** Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -42,9 +42,8 @@
 #define QREGULAREXPRESSION_H
 
 #include <QtCore/qglobal.h>
-
 #include <QtCore/qstring.h>
-#include <QtCore/qstringlist.h>
+#include <QtCore/qstringview.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qvariant.h>
 
@@ -52,14 +51,15 @@ QT_REQUIRE_CONFIG(regularexpression);
 
 QT_BEGIN_NAMESPACE
 
-class QStringView;
+class QStringList;
+class QLatin1String;
 
 class QRegularExpressionMatch;
 class QRegularExpressionMatchIterator;
 struct QRegularExpressionPrivate;
 class QRegularExpression;
 
-Q_CORE_EXPORT uint qHash(const QRegularExpression &key, uint seed = 0) Q_DECL_NOTHROW;
+Q_CORE_EXPORT uint qHash(const QRegularExpression &key, uint seed = 0) noexcept;
 
 class Q_CORE_EXPORT QRegularExpression
 {
@@ -86,13 +86,10 @@ public:
     QRegularExpression(const QRegularExpression &re);
     ~QRegularExpression();
     QRegularExpression &operator=(const QRegularExpression &re);
-
-#ifdef Q_COMPILER_RVALUE_REFS
-    QRegularExpression &operator=(QRegularExpression &&re) Q_DECL_NOTHROW
+    QRegularExpression &operator=(QRegularExpression &&re) noexcept
     { d.swap(re.d); return *this; }
-#endif
 
-    void swap(QRegularExpression &other) Q_DECL_NOTHROW { d.swap(other.d); }
+    void swap(QRegularExpression &other) noexcept { d.swap(other.d); }
 
     QString pattern() const;
     void setPattern(const QString &pattern);
@@ -128,6 +125,11 @@ public:
                                   MatchType matchType       = NormalMatch,
                                   MatchOptions matchOptions = NoMatchOption) const;
 
+    QRegularExpressionMatch match(QStringView subject,
+                                  int offset                = 0,
+                                  MatchType matchType       = NormalMatch,
+                                  MatchOptions matchOptions = NoMatchOption) const;
+
     QRegularExpressionMatchIterator globalMatch(const QString &subject,
                                                 int offset                = 0,
                                                 MatchType matchType       = NormalMatch,
@@ -138,16 +140,25 @@ public:
                                                 MatchType matchType       = NormalMatch,
                                                 MatchOptions matchOptions = NoMatchOption) const;
 
+    QRegularExpressionMatchIterator globalMatch(QStringView subject,
+                                                int offset                = 0,
+                                                MatchType matchType       = NormalMatch,
+                                                MatchOptions matchOptions = NoMatchOption) const;
+
     void optimize() const;
 
+#if QT_STRINGVIEW_LEVEL < 2
     static QString escape(const QString &str);
     static QString wildcardToRegularExpression(const QString &str);
     static inline QString anchoredPattern(const QString &expression)
     {
-        return QLatin1String("\\A(?:")
-               + expression
-               + QLatin1String(")\\z");
+        return anchoredPattern(QStringView(expression));
     }
+#endif
+
+    static QString escape(QStringView str);
+    static QString wildcardToRegularExpression(QStringView str);
+    static QString anchoredPattern(QStringView expression);
 
     bool operator==(const QRegularExpression &re) const;
     inline bool operator!=(const QRegularExpression &re) const { return !operator==(re); }
@@ -157,7 +168,7 @@ private:
     friend class QRegularExpressionMatch;
     friend struct QRegularExpressionMatchPrivate;
     friend class QRegularExpressionMatchIterator;
-    friend Q_CORE_EXPORT uint qHash(const QRegularExpression &key, uint seed) Q_DECL_NOTHROW;
+    friend Q_CORE_EXPORT uint qHash(const QRegularExpression &key, uint seed) noexcept;
 
     QRegularExpression(QRegularExpressionPrivate &dd);
     QExplicitlySharedDataPointer<QRegularExpressionPrivate> d;
@@ -186,12 +197,9 @@ public:
     ~QRegularExpressionMatch();
     QRegularExpressionMatch(const QRegularExpressionMatch &match);
     QRegularExpressionMatch &operator=(const QRegularExpressionMatch &match);
-
-#ifdef Q_COMPILER_RVALUE_REFS
-    QRegularExpressionMatch &operator=(QRegularExpressionMatch &&match) Q_DECL_NOTHROW
+    QRegularExpressionMatch &operator=(QRegularExpressionMatch &&match) noexcept
     { d.swap(match.d); return *this; }
-#endif
-    void swap(QRegularExpressionMatch &other) Q_DECL_NOTHROW { d.swap(other.d); }
+    void swap(QRegularExpressionMatch &other) noexcept { d.swap(other.d); }
 
     QRegularExpression regularExpression() const;
     QRegularExpression::MatchType matchType() const;
@@ -257,11 +265,9 @@ public:
     ~QRegularExpressionMatchIterator();
     QRegularExpressionMatchIterator(const QRegularExpressionMatchIterator &iterator);
     QRegularExpressionMatchIterator &operator=(const QRegularExpressionMatchIterator &iterator);
-#ifdef Q_COMPILER_RVALUE_REFS
-    QRegularExpressionMatchIterator &operator=(QRegularExpressionMatchIterator &&iterator) Q_DECL_NOTHROW
+    QRegularExpressionMatchIterator &operator=(QRegularExpressionMatchIterator &&iterator) noexcept
     { d.swap(iterator.d); return *this; }
-#endif
-    void swap(QRegularExpressionMatchIterator &other) Q_DECL_NOTHROW { d.swap(other.d); }
+    void swap(QRegularExpressionMatchIterator &other) noexcept { d.swap(other.d); }
 
     bool isValid() const;
 
@@ -281,6 +287,35 @@ private:
 };
 
 Q_DECLARE_SHARED(QRegularExpressionMatchIterator)
+
+inline
+QRegularExpressionMatch QRegularExpression::match(QStringView subject, int offset,
+                                                  QRegularExpression::MatchType matchType, MatchOptions matchOptions) const
+{
+    return match(subject.toString(), offset, matchType, matchOptions);
+}
+
+inline
+QRegularExpressionMatchIterator QRegularExpression::globalMatch(QStringView subject, int offset,
+                                                                QRegularExpression::MatchType matchType, MatchOptions matchOptions) const
+{
+    return globalMatch(subject.toString(), offset, matchType, matchOptions);
+}
+
+
+// implementation here, so we have all required classes
+inline
+QList<QStringView> QStringView::split(const QRegularExpression &sep, Qt::SplitBehavior behavior) const
+{
+    Q_ASSERT(int(m_size) == m_size);
+    QString s = QString::fromRawData(data(), int(m_size));
+    const auto split = s.splitRef(sep, behavior);
+    QList<QStringView> result;
+    result.reserve(split.size());
+    for (const QStringRef &r : split)
+        result.append(r);
+    return result;
+}
 
 QT_END_NAMESPACE
 

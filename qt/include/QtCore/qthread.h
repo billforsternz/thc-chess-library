@@ -42,6 +42,7 @@
 #define QTHREAD_H
 
 #include <QtCore/qobject.h>
+#include <QtCore/qdeadlinetimer.h>
 
 // For QThread::create. The configure-time test just checks for the availability
 // of std::future and std::async; for the C++17 codepath we perform some extra
@@ -57,8 +58,6 @@
 #  endif
 #endif
 
-#include <limits.h>
-
 QT_BEGIN_NAMESPACE
 
 
@@ -70,9 +69,9 @@ class Q_CORE_EXPORT QThread : public QObject
 {
     Q_OBJECT
 public:
-    static Qt::HANDLE currentThreadId() Q_DECL_NOTHROW Q_DECL_PURE_FUNCTION;
+    static Qt::HANDLE currentThreadId() noexcept Q_DECL_PURE_FUNCTION;
     static QThread *currentThread();
-    static int idealThreadCount() Q_DECL_NOTHROW;
+    static int idealThreadCount() noexcept;
     static void yieldCurrentThread();
 
     explicit QThread(QObject *parent = nullptr);
@@ -135,8 +134,9 @@ public Q_SLOTS:
     void quit();
 
 public:
-    // default argument causes thread to block indefinetely
-    bool wait(unsigned long time = ULONG_MAX);
+    bool wait(QDeadlineTimer deadline = QDeadlineTimer(QDeadlineTimer::Forever));
+    // ### Qt6 inline this function
+    bool wait(unsigned long time);
 
     static void sleep(unsigned long);
     static void msleep(unsigned long);
@@ -209,7 +209,6 @@ struct Callable
     {
     }
 
-#if defined(Q_COMPILER_DEFAULT_MEMBERS) && defined(Q_COMPILER_DELETE_MEMBERS)
     // Apply the same semantics of a lambda closure type w.r.t. the special
     // member functions, if possible: delete the copy assignment operator,
     // bring back all the others as per the RO5 (cf. §8.1.5.1/11 [expr.prim.lambda.closure])
@@ -218,7 +217,6 @@ struct Callable
     Callable(Callable &&) = default;
     Callable &operator=(const Callable &) = delete;
     Callable &operator=(Callable &&) = default;
-#endif
 
     void operator()()
     {
