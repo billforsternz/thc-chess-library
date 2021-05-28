@@ -6,9 +6,12 @@
  ****************************************************************************/
 #ifndef CHESSRULES_H
 #define CHESSRULES_H
+#include <stddef.h>
+#include <vector>
+
 #include "ChessPosition.h"
 #include "Move.h"
-#include <vector>
+#include "ChessDefs.h"
 
 // TripleHappyChess
 namespace thc

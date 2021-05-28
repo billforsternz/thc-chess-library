@@ -5,14 +5,15 @@
  *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 #define _CRT_SECURE_NO_DEPRECATE
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include <assert.h>
 #include <algorithm>
+#include <__config>
+
 #include "ChessEvaluation.h"
 #include "PrivateChessDefs.h"
+#include "ChessDefs.h"
+#include "Move.h"
+
 using namespace std;
 using namespace thc;
 

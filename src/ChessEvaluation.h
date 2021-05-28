@@ -6,12 +6,17 @@
  ****************************************************************************/
 #ifndef CHESSEVALUATION_H
 #define CHESSEVALUATION_H
+#include <vector>
+
 #include "ChessRules.h"
 #include "Move.h"
 
 // TripleHappyChess
 namespace thc
 {
+class ChessPosition;
+class Move;
+struct MOVELIST;
 
 class ChessEvaluation: public ChessRules
 {

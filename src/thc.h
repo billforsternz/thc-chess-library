@@ -22,6 +22,7 @@
 
 #include <stddef.h>
 #include <string>
+#include <cstring>
 #include <vector>
 /****************************************************************************
  * Chessdefs.h Chess classes - Common definitions
@@ -334,7 +335,16 @@ public:
     void Init()
     {
         white = true;
-        strcpy_s( squares, sizeof(squares),
+        // strcpy_s( squares, sizeof(squares),
+        //    "rnbqkbnr"
+        //    "pppppppp"
+        //    "        "
+        //    "        "
+        //    "        "
+        //    "        "
+        //    "PPPPPPPP"
+        //    "RNBQKBNR" );
+        std::memcpy( squares,
            "rnbqkbnr"
            "pppppppp"
            "        "
@@ -342,7 +352,7 @@ public:
            "        "
            "        "
            "PPPPPPPP"
-           "RNBQKBNR" );
+           "RNBQKBNR", sizeof(squares));
         enpassant_target = SQUARE_INVALID;
         wking  = true;
         wqueen = true;
@@ -366,7 +376,7 @@ public:
     bool operator ==( const ChessPosition &other ) const
     {
         return( white == other.white                        &&
-                0 == memcmp( &squares, &other.squares, 64 ) &&
+                0 == std::memcmp( &squares, &other.squares, 64 ) &&
                 groomed_enpassant_target() == other.groomed_enpassant_target()  &&
                 wking_allowed()  == other.wking_allowed()   &&
                 wqueen_allowed() == other.wqueen_allowed()  &&
@@ -391,7 +401,7 @@ public:
         bool temp = (white==other.white);
         if( !temp )
             return white;
-        int itemp = memcmp( &squares, &other.squares, 64 );
+        int itemp = std::memcmp( &squares, &other.squares, 64 );
         if( itemp != 0 )
             return( itemp < 0 );
         temp = (groomed_enpassant_target() == other.groomed_enpassant_target());

@@ -7,6 +7,8 @@
 #ifndef CHESSDEFS_H
 #define CHESSDEFS_H
 
+#include <stdint.h>
+
 // Simple definition to aid platform portability (only remains of former Portability.h)
 int strcmp_ignore( const char *s, const char *t ); // return 0 if case insensitive match
 

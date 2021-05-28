@@ -6,8 +6,11 @@
  ****************************************************************************/
 #ifndef MOVE_H
 #define MOVE_H
-#include "ChessDefs.h"
+#include <stdint.h>
 #include <string>
+#include <iosfwd>
+
+#include "ChessDefs.h"
 
 // TripleHappyChess
 namespace thc

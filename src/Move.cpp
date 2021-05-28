@@ -6,14 +6,15 @@
  ****************************************************************************/
 #define _CRT_SECURE_NO_DEPRECATE
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include <algorithm>
+#include <_ctype.h>
 #include <string>
+#include <__config>
+
 #include "PrivateChessDefs.h"
 #include "ChessRules.h"
 #include "Move.h"
+
 using namespace std;
 using namespace thc;
 

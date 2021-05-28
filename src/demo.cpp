@@ -11,6 +11,9 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <__bit_reference>
+#include <iosfwd>
+
 #include "thc.h"
 
 void display_position( thc::ChessRules &cr, const std::string &description )
