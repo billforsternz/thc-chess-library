@@ -161,6 +161,16 @@ void findWhiteMate(std::string initPos, int moves)
 	Node::printWin(init);
 }
 
+void solve(const std::string &pos)
+{
+	thc::ChessPosition chessPos;
+	std::string fen = pos + " w - - 0 1";
+	if (!chessPos.Forsyth(fen.c_str()))
+		printf("[ERROR] invalid FEN: %s\n", pos.c_str());
+	else
+		findWhiteMate(fen, 3);
+}
+
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent), ui(new Ui::MainWindow)
 {
@@ -189,19 +199,10 @@ MainWindow::MainWindow(QWidget* parent)
 
 	ui->txtData->setText(QString::fromStdString(pos));
 
-	thc::ChessPosition chessPos;
-	std::string fen = pos + " w - - 0 1";
-	if (!chessPos.Forsyth(fen.c_str()))
-		printf("[ERROR] invalid FEN: %s\n", pos.c_str());
-	else
-		findWhiteMate(fen, 3);
-
 	connect(ui->btnDraw, SIGNAL(clicked()), this, SLOT(onDraw()));
 	connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(onExit()));
 
 	onDraw();
-
-	ui->txtData->setText(pos.c_str());
 }
 
 MainWindow::~MainWindow()
@@ -226,6 +227,7 @@ void MainWindow::changeEvent(QEvent* e)
 void MainWindow::onDraw()
 {
 	m_render->onDrawBoard(ui->txtData->text());
+	solve(ui->txtData->text().toStdString());
 }
 
 void MainWindow::onExit()
