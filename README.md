@@ -20,12 +20,30 @@ portable C++).
 To illustrate the process, I've introduced the new demonstration program called demo.cpp. This
 is a kind of 'Hello World' program for THC. Just build a program that compiles and links the
 two C++ files demo.cpp and thc.cpp together. I've included a Visual C++ 2017 solution and project
-but really any C++ development system should work fine.
+but really any C++ development system should work fine. More recently I added the simplest possible
+bash build script to build the demo on Linux. (I also updated the Visual C++ project file to 2019,
+this mainly changed the platform toolset from v141 to v142).
+
 
 The demo.cpp program is simple and self explanatory, and by looking at it and getting it
 going you will see the sort of things you can do with THC. It might be a good idea to keep
 demo.cpp as the main() file in your project (rename it to something else) and then to
 progressively replace it with the functionality you want to build.
+
+
+Rebuild and Test
+================
+
+I should mention that there's now a supplement to the Demo program I described in Getting started.
+It's called RebuildAndTest. You use it to, well, rebuild and test thc.c and thc.h. In this sense
+'rebuild' means to pull the components of thc.c and thc.h together, and 'test' is just some
+rudimentary testing that I should extend, for example with perft (see github.com Issues for the
+repository - the good news is that tch-chess-library does pass this standard test!).
+
+You can still ignore Rebuild and Test if you just want to quickly get started, but this is a good
+place to go if you want to get into the weeds a little further. Just as for the Demo program, there
+are Visual C++ 2019 files for building RebuildAndTest and a rudimentary Linux build script as well.
+This time there are three C++ files to compile and link - test-framework.cpp, thc.cpp and util.cpp.
 
 Background
 ==========
