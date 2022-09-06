@@ -28,7 +28,7 @@ public:
     void Init()
     {
         white = true;
-        strcpy_s( squares, sizeof(squares),
+        memcpy( squares,
            "rnbqkbnr"
            "pppppppp"
            "        "
@@ -36,7 +36,7 @@ public:
            "        "
            "        "
            "PPPPPPPP"
-           "RNBQKBNR" );
+           "RNBQKBNR", sizeof(squares) );
         enpassant_target = SQUARE_INVALID;
         wking  = true;
         wqueen = true;

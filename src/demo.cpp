@@ -96,6 +96,6 @@ int main()
     if( legal1 && normal1 && legal2 && mate2 )
         printf( "As expected, all flags true, so both penultimate and final positions are legal, in the final position White is mated\n" );
     else
-        printf( "Strange(???!), we expected all flags true, meaning both penultimate and final positions are legal, in the final position White is mated\n" );
+        printf( "Strange(?!), we expected all flags true, meaning both penultimate and final positions are legal, in the final position White is mated\n" );
 }
 

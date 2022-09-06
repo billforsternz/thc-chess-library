@@ -92,6 +92,8 @@ bool regenerate_h_file()
         " */",
         "",
         "#include <stddef.h>",
+        "#include <stdint.h>",
+        "#include <string.h>",
         "#include <string>",
         "#include <vector>"
     };
@@ -109,7 +111,7 @@ bool regenerate_h_file()
     std::ofstream out("../src/thc-regen.h");
     if( !out )
     {
-        printf( "Cannot open src/thc-regen.h\n" );
+        printf( "Cannot open ../src/thc-regen.h\n" );
         return false;
     }
 
@@ -200,7 +202,7 @@ bool regenerate_cpp_file()
     std::ofstream out("../src/thc-regen.cpp");
     if( !out )
     {
-        printf( "Cannot open src/thc-regen.cpp\n" );
+        printf( "Cannot open ../src/thc-regen.cpp\n" );
         return false;
     }
 
@@ -236,7 +238,7 @@ bool regenerate_cpp_file()
                 std::ifstream in2("../src/GeneratedLookupTables.h");
                 if( !in2 )
                 {
-                    printf( "Cannot open src/GeneratedLookupTables.h\n" );
+                    printf( "Cannot open ../src/GeneratedLookupTables.h\n" );
                     return false;
                 }
                 for(;;)
