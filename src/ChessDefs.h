@@ -121,7 +121,7 @@ union CompressedPosition
 //  at the moment, so we reluctantly expose them to users of the chess
 //  classes.
 typedef unsigned char lte;   // lte = lookup table element
-typedef int32_t DETAIL;
+typedef int DETAIL;
 
 } //namespace thc
 
