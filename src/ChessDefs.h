@@ -8,7 +8,7 @@
 #define CHESSDEFS_H
 
 // Simple definition to aid platform portability (only remains of former Portability.h)
-int strcmp_ignore( const char *s, const char *t ); // return 0 if case insensitive match
+int strcmp_ignore( const char *s, const char *t ); // return 0 if case-insensitive match
 
 // Fast test for is square white or black. Intend to move this to namespace thc when convenient...
 inline bool is_dark( int sq )
@@ -25,7 +25,7 @@ namespace thc
 // Use the most natural square convention possible; Define Square to
 //  correspond to a conventionally oriented chess diagram; Top left corner
 //  (square a8) is 0, bottom right corner (square h1) is 63.
-// Note that instead of defining a special piece type, we use the built in
+// Note that instead of defining a special piece type, we use the built-in
 //  char type, with 'N'=white knight, 'b'=black bishop etc. and ' '=an
 //  empty square.
 enum Square
@@ -85,9 +85,9 @@ enum DRAWTYPE
     NOT_DRAW,
     DRAWTYPE_50MOVE,
     DRAWTYPE_INSUFFICIENT,      // draw if superior side wants it
-                                //  since inferior side has insufficent
+                                //  since inferior side has insufficient
                                 //  mating material
-    DRAWTYPE_INSUFFICIENT_AUTO, // don't wait to be asked, eg draw
+    DRAWTYPE_INSUFFICIENT_AUTO, // don't wait to be asked, e.g. draw
                                 //  immediately if bare kings
     DRAWTYPE_REPITITION,
 };

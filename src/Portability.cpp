@@ -10,7 +10,7 @@
 #include <string.h>
 #include <ctype.h>
 
-// return 0 if case insensitive match
+// return 0 if case-insensitive match
 int strcmp_ignore( const char *s, const char *t )
 {
     bool same=true;

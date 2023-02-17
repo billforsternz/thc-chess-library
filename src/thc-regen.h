@@ -35,7 +35,7 @@
 #define CHESSDEFS_H
 
 // Simple definition to aid platform portability (only remains of former Portability.h)
-int strcmp_ignore( const char *s, const char *t ); // return 0 if case insensitive match
+int strcmp_ignore( const char *s, const char *t ); // return 0 if case-insensitive match
 
 // Fast test for is square white or black. Intend to move this to namespace thc when convenient...
 inline bool is_dark( int sq )
@@ -52,7 +52,7 @@ namespace thc
 // Use the most natural square convention possible; Define Square to
 //  correspond to a conventionally oriented chess diagram; Top left corner
 //  (square a8) is 0, bottom right corner (square h1) is 63.
-// Note that instead of defining a special piece type, we use the built in
+// Note that instead of defining a special piece type, we use the built-in
 //  char type, with 'N'=white knight, 'b'=black bishop etc. and ' '=an
 //  empty square.
 enum Square
@@ -112,9 +112,9 @@ enum DRAWTYPE
     NOT_DRAW,
     DRAWTYPE_50MOVE,
     DRAWTYPE_INSUFFICIENT,      // draw if superior side wants it
-                                //  since inferior side has insufficent
+                                //  since inferior side has insufficient
                                 //  mating material
-    DRAWTYPE_INSUFFICIENT_AUTO, // don't wait to be asked, eg draw
+    DRAWTYPE_INSUFFICIENT_AUTO, // don't wait to be asked, e.g. draw
                                 //  immediately if bare kings
     DRAWTYPE_REPITITION,
 };
@@ -170,8 +170,8 @@ class ChessRules;
 // Our representation of a chess move
 //
 // Note this is really an old school C struct, designed for speed
-// There is no contructor on purpose, we don't want unnecessary
-// contruction of an array of Moves in a MOVELIST when we are running
+// There is no constructor on purpose, we don't want unnecessary
+// construction of an array of Moves in a MOVELIST when we are running
 // the fast move generator.
 // The default assignment operator (bitwise copy) is ideal.
 // We define bitwise == and != operators
@@ -186,7 +186,7 @@ class ChessRules;
 class Move
 {
 public:
-    // Move is a lightweight type, it is accomodated in only 32 bits
+    // Move is a lightweight type, it is accommodated in only 32 bits
     Square  src       : 8;
     Square  dst       : 8;
     SPECIAL special   : 8;
@@ -277,12 +277,12 @@ struct ChessPositionRaw
     // note indexed according to Square convention, a8=0 etc.
 
     // Half moves since pawn move or capture (for 50 move rule)
-    //  eg after 1.e4 it's 0
+    //  e.g. after 1.e4 it's 0
     int  half_move_clock;
 
     // Full move count. Initially 1 and increments after black moves
-    //  eg after 1.e4 it's 1
-    //  eg after 1... d6 it's 2
+    //  e.g. after 1.e4 it's 1
+    //  e.g. after 1... d6 it's 2
     int  full_move_count;
 
     // The following are deemed "details", and must be stored at the
@@ -299,9 +299,9 @@ struct ChessPositionRaw
                                     //  the details blow out and use
                                     //  another 32 bits (??!!)
     // Note that for say white king side castling to be allowed in
-    //  in the same sense as the Forsyth representation, not only
+    //  the same sense as the Forsyth representation, not only
     //  must wking be true, but the  white king and king rook must
-    //  be present and in position, see the wking_allowed() etc
+    //  be present and in position, see the wking_allowed() etc.
     //  methods in class ChessPosition, these are used for the ChessPosition
     //  == operator.
 };
@@ -359,7 +359,7 @@ public:
     // Copy constructor and Assignment operator. Defining them this way
     //  generates simple bitwise memory copy, which is exactly what we
     //  want and is better practice than the old memcpy() versions (which
-    //  copy the vtable ptr as well - we don't want that). Thanks to Github
+    //  copy the vtable ptr as well - we don't want that). Thanks to GitHub
     //  user metiscus for the pull request that fixed this.
     ChessPosition( const ChessPosition& src ) = default;
     ChessPosition& operator=( const ChessPosition& src ) = default;
@@ -472,7 +472,7 @@ public:
     // Publish chess position and supplementary info in forsyth notation
     std::string ForsythPublish();
 
-    // Compress a ChessPosition into 24 bytes, return 16 bit hash
+    // Compress a ChessPosition into 24 bytes, return 16-bit hash
     unsigned short Compress( CompressedPosition &dst ) const;
 
     // Decompress chess position
@@ -490,7 +490,7 @@ public:
     // Incremental hash value update (64 bit version)
     uint64_t Hash64Update( uint64_t hash_in, Move move );
 
-    // Whos turn is it anyway
+    // Who's turn is it anyway
     inline bool WhiteToPlay() const { return white; }
     void Toggle() { white = !white; }
 };
@@ -524,7 +524,7 @@ public:
                    // when it would be disastrous to set the initial position (because
                    // we have carefully copied a position into the ChessRules object)
     {
-        history_idx    = 1;    // prevent bogus repition draws
+        history_idx    = 1;    // prevent bogus repetition draws
         history[0].src = a8;   // (look backwards through history stops when src==dst)
         history[0].dst = a8;
         detail_idx =0;
@@ -533,16 +533,16 @@ public:
     // Copy constructor
     ChessRules( const ChessPosition& src ) : ChessPosition( src )
     {
-        Init();   // even if src is eg ChessRules or ChessEngine don't
-                  //   copy stuff for repitition, 50 move rule
+        Init();   // even if src is e.g. ChessRules or ChessEngine don't
+                  //   copy stuff for repetition, 50 move rule
     }
 
     // Assignment operator
     ChessRules& operator=( const ChessPosition& src )
     {
         *((ChessPosition *)this) = src;
-        Init();   // even if src is eg ChessRules or ChessEngine don't
-                  //   copy stuff for repitition, 50 move rule
+        Init();   // even if src is e.g. ChessRules or ChessEngine don't
+                  //   copy stuff for repetition, 50 move rule
         return *this;
     }
 
@@ -554,7 +554,7 @@ public:
     {
         bool okay = ChessPosition::Forsyth(txt);
         if( okay )
-            Init(); // clear stuff for repitition, 50 move rule
+            Init(); // clear stuff for repetition, 50 move rule
         return okay;
     }
 
@@ -670,7 +670,7 @@ namespace thc
 class ChessEvaluation: public ChessRules
 {
 public:
-    // Default contructor
+    // Default constructor
     ChessEvaluation() : ChessRules()
     {
     }

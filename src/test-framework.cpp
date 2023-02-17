@@ -4,7 +4,7 @@
 
     Does two jobs;
 
-    1) Concatentate the .cpp files into a single thc.cpp and the .h files into a single thc.h
+    1) Concatenate the .cpp files into a single thc.cpp and the .h files into a single thc.h
     2) Do some basic testing of the library
 
     Note that 1) generates thc-regen.cpp and thc-regen.h and 2) relies upon thc.h being

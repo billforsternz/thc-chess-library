@@ -34,12 +34,12 @@ struct ChessPositionRaw
     // note indexed according to Square convention, a8=0 etc.
 
     // Half moves since pawn move or capture (for 50 move rule)
-    //  eg after 1.e4 it's 0
+    //  e.g. after 1.e4 it's 0
     int  half_move_clock;
 
     // Full move count. Initially 1 and increments after black moves
-    //  eg after 1.e4 it's 1
-    //  eg after 1... d6 it's 2
+    //  e.g. after 1.e4 it's 1
+    //  e.g. after 1... d6 it's 2
     int  full_move_count;
 
     // The following are deemed "details", and must be stored at the
@@ -56,9 +56,9 @@ struct ChessPositionRaw
                                     //  the details blow out and use
                                     //  another 32 bits (??!!)
     // Note that for say white king side castling to be allowed in
-    //  in the same sense as the Forsyth representation, not only
+    //  the same sense as the Forsyth representation, not only
     //  must wking be true, but the  white king and king rook must
-    //  be present and in position, see the wking_allowed() etc
+    //  be present and in position, see the wking_allowed() etc.
     //  methods in class ChessPosition, these are used for the ChessPosition
     //  == operator.
 };

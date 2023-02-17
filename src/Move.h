@@ -17,8 +17,8 @@ class ChessRules;
 // Our representation of a chess move
 //
 // Note this is really an old school C struct, designed for speed
-// There is no contructor on purpose, we don't want unnecessary
-// contruction of an array of Moves in a MOVELIST when we are running
+// There is no constructor on purpose, we don't want unnecessary
+// construction of an array of Moves in a MOVELIST when we are running
 // the fast move generator.
 // The default assignment operator (bitwise copy) is ideal.
 // We define bitwise == and != operators
@@ -33,7 +33,7 @@ class ChessRules;
 class Move
 {
 public:
-    // Move is a lightweight type, it is accomodated in only 32 bits
+    // Move is a lightweight type, it is accommodated in only 32 bits
     Square  src       : 8;
     Square  dst       : 8;
     SPECIAL special   : 8;
