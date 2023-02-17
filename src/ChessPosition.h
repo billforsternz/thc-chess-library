@@ -51,7 +51,7 @@ public:
     // Copy constructor and Assignment operator. Defining them this way
     //  generates simple bitwise memory copy, which is exactly what we
     //  want and is better practice than the old memcpy() versions (which
-    //  copy the vtable ptr as well - we don't want that). Thanks to Github
+    //  copy the vtable ptr as well - we don't want that). Thanks to GitHub
     //  user metiscus for the pull request that fixed this.
     ChessPosition( const ChessPosition& src ) = default;
     ChessPosition& operator=( const ChessPosition& src ) = default;
@@ -164,7 +164,7 @@ public:
     // Publish chess position and supplementary info in forsyth notation
     std::string ForsythPublish();
 
-    // Compress a ChessPosition into 24 bytes, return 16 bit hash
+    // Compress a ChessPosition into 24 bytes, return 16-bit hash
     unsigned short Compress( CompressedPosition &dst ) const;
 
     // Decompress chess position
@@ -182,7 +182,7 @@ public:
     // Incremental hash value update (64 bit version)
     uint64_t Hash64Update( uint64_t hash_in, Move move );
 
-    // Whos turn is it anyway
+    // Who's turn is it anyway
     inline bool WhiteToPlay() const { return white; }
     void Toggle() { white = !white; }
 };

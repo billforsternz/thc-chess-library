@@ -214,7 +214,7 @@ void ChessRules::PlayMove( Move imove )
     else if( !IsEmptySquare(imove.capture) )
         half_move_clock=0;   // capture
     else
-        half_move_clock++;   // neither pawn move or capture
+        half_move_clock++;   // neither pawn move nor capture
 
     // Actually play the move
     PushMove( imove );
@@ -263,7 +263,7 @@ void ChessRules::GenLegalMoveList( MOVELIST *list )
     bool okay;
     MOVELIST list2;
 
-    // Generate all moves, including illegal (eg put king in check) moves
+    // Generate all moves, including illegal (e.g. put king in check) moves
     GenMoveList( &list2 );
 
     // Loop copying the proven good ones
@@ -290,7 +290,7 @@ void ChessRules::GenLegalMoveList( MOVELIST *list, bool check[MAXMOVES],
     TERMINAL terminal_score;
     MOVELIST list2;
 
-    // Generate all moves, including illegal (eg put king in check) moves
+    // Generate all moves, including illegal (e.g. put king in check) moves
     GenMoveList( &list2 );
 
     // Loop copying the proven good ones

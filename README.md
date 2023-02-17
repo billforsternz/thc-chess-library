@@ -1,4 +1,4 @@
-# THC Chess Libary
+# THC Chess Library
 
 THC stands for "Triplehappy Chess". Triplehappy is a former company name, and still exists
 as triplehappy.com, a website hosting my chess projects. THC the library is a C++ implementation
@@ -25,7 +25,7 @@ bash build script to build the demo on Linux. (I also updated the Visual C++ pro
 this mainly changed the platform toolset from v141 to v142).
 
 
-The demo.cpp program is simple and self explanatory, and by looking at it and getting it
+The demo.cpp program is simple and self-explanatory, and by looking at it and getting it
 going you will see the sort of things you can do with THC. It might be a good idea to keep
 demo.cpp as the main() file in your project (rename it to something else) and then to
 progressively replace it with the functionality you want to build.
@@ -67,7 +67,7 @@ Features
 THC and other projects/repositories
 ===================================
 
-In December 2020 I (finally) got all my Github chess projects properly aligned.
+In December 2020 I (finally) got all my GitHub chess projects properly aligned.
 
 - THC, a C++ implementation of the rules of chess (this project)
 - Tarrasch Chess GUI, My main project, a chess workbench
@@ -75,7 +75,7 @@ In December 2020 I (finally) got all my Github chess projects properly aligned.
 - Tarrasch Toy Engine, a simple original UCI engine
 
 The idea is that project thc will deliver a simple pair of C++ file thc.cpp and thc.h which
-implement the rules of chess for the other three projects. Finally thc.cpp and thc.h
+implement the rules of chess for the other three projects. Finally, thc.cpp and thc.h
 are the same for all three projects! (at least on December 2nd 2020).
 
 Older Information

@@ -90,7 +90,7 @@ inline Square& operator++ ( Square& sq )
 #define BQUEEN  0x08
 
 
-// Convert piece, eg 'N' to bitmask in lookup tables. See automatically
+// Convert piece, e.g. 'N' to bitmask in lookup tables. See automatically
 //  PrivateChessDefs.cpp and GeneratedLookupTables.h for format of
 //  lookup tables
 extern lte to_mask[];

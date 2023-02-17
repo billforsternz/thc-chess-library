@@ -225,7 +225,7 @@ int ChessEvaluation::EnpriseWhite()
                     lte mask      = *ptr++;
                     defender = squares[defend_square];
 
-                    // If the square is occupied by an defending (black) piece, and
+                    // If the square is occupied by a defending (black) piece, and
                     //  it matches a piece that defends down that ray we have found
                     //  a defender
                     if( IsBlack(defender) && (to_mask[defender]&mask) )
@@ -329,7 +329,7 @@ int ChessEvaluation::EnpriseWhite()
                     max = net;
             }
 
-            // Result is the lowest of best attacker can do and
+            // Result is the lowest of the best attacker can do and
             //  best defender can do
             int score = min<=max ? min : max;
             if( score > best_so_far )
@@ -526,7 +526,7 @@ int ChessEvaluation::EnpriseBlack()
                     lte mask      = *ptr++;
                     defender = squares[defend_square];
 
-                    // If the square is occupied by an defending (white) piece, and
+                    // If the square is occupied by a defending (white) piece, and
                     //  it matches a piece that defends down that ray we have found
                     //  a defender
                     if( IsWhite(defender) && (to_mask[defender]&mask) )
@@ -628,7 +628,7 @@ int ChessEvaluation::EnpriseBlack()
                     max = net;
             }
 
-            // Result is the lowest of best attacker can do and
+            // Result is the lowest of the best attacker can do and
             //  best defender can do
             int score = min<=max ? min : max;
             if( score > best_so_far )
@@ -2013,7 +2013,7 @@ void ChessEvaluation::GenLegalMoveListSorted( MOVELIST *list )
     // Call this before calls to EvaluateLeaf()
     Planning();
 
-    // Generate all moves, including illegal (eg put king in check) moves
+    // Generate all moves, including illegal (e.g. put king in check) moves
     GenMoveList( &list2 );
 
     // Loop copying the proven good ones

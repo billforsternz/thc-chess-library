@@ -130,7 +130,7 @@ bool Move::NaturalIn( ChessRules *cr, const char *natural_in )
                     switch( move[len-2] )
                     {
                         case '=':
-                        case '1':   // we now allow '=' to be omitted, as eg ChessBase mobile seems to (sometimes?)
+                        case '1':   // we now allow '=' to be omitted, as e.g. ChessBase mobile seems to (sometimes?)
                         case '8':   break;
                         default:    okay = false;   break;
                     }
@@ -467,7 +467,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                     }
                 }
 
-                // Non capturing, promoting pawn move
+                // Non-capturing, promoting pawn move
                 else if( r=='8' )
                 {
                     if( *natural_in == '=' )    // now optional
@@ -821,7 +821,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                     }
                 }
 
-                // Non capturing, promoting pawn move
+                // Non-capturing, promoting pawn move
                 else if( r=='1' )
                 {
                     if( *natural_in == '=' )    // now optional

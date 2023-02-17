@@ -16,7 +16,7 @@ namespace thc
 class ChessEvaluation: public ChessRules
 {
 public:
-    // Default contructor
+    // Default constructor
     ChessEvaluation() : ChessRules()
     {
     }

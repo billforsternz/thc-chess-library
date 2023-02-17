@@ -39,7 +39,7 @@ using namespace thc;
  *  Copyright 2010-2020, Bill Forster <billforsternz at gmail dot com>
  ****************************************************************************/
 
-// return 0 if case insensitive match
+// return 0 if case-insensitive match
 int strcmp_ignore( const char *s, const char *t )
 {
     bool same=true;
@@ -145,7 +145,7 @@ inline Square& operator++ ( Square& sq )
 #define BQUEEN  0x08
 
 
-// Convert piece, eg 'N' to bitmask in lookup tables. See automatically
+// Convert piece, e.g. 'N' to bitmask in lookup tables. See automatically
 //  PrivateChessDefs.cpp and GeneratedLookupTables.h for format of
 //  lookup tables
 extern lte to_mask[];
@@ -1688,7 +1688,7 @@ void ChessPosition::Decompress( const CompressedPosition &src )
     //  Since a friendly pawn must be on 4th rank, save the actual 1st rank
     //  occupant in the 4th rank square.
     bool ep=false;
-    for( idx=0; !ep && idx<8; idx++ )   // loop thru black 1st rank
+    for( idx=0; !ep && idx<8; idx++ )   // loop through black 1st rank
     {
         if( squares[idx] == 'p' )
         {
@@ -1698,7 +1698,7 @@ void ChessPosition::Decompress( const CompressedPosition &src )
             enpassant_target = (Square)(idx+16);
         }
     }
-    for( idx=56; !ep && idx<64; idx++ ) // loop thru white 1st rank
+    for( idx=56; !ep && idx<64; idx++ ) // loop through white 1st rank
     {
         if( squares[idx] == 'P' )
         {
@@ -2305,7 +2305,7 @@ void ChessRules::PlayMove( Move imove )
     else if( !IsEmptySquare(imove.capture) )
         half_move_clock=0;   // capture
     else
-        half_move_clock++;   // neither pawn move or capture
+        half_move_clock++;   // neither pawn move nor capture
 
     // Actually play the move
     PushMove( imove );
@@ -2354,7 +2354,7 @@ void ChessRules::GenLegalMoveList( MOVELIST *list )
     bool okay;
     MOVELIST list2;
 
-    // Generate all moves, including illegal (eg put king in check) moves
+    // Generate all moves, including illegal (e.g. put king in check) moves
     GenMoveList( &list2 );
 
     // Loop copying the proven good ones
@@ -2381,7 +2381,7 @@ void ChessRules::GenLegalMoveList( MOVELIST *list, bool check[MAXMOVES],
     TERMINAL terminal_score;
     MOVELIST list2;
 
-    // Generate all moves, including illegal (eg put king in check) moves
+    // Generate all moves, including illegal (e.g. put king in check) moves
     GenMoveList( &list2 );
 
     // Loop copying the proven good ones
@@ -3903,7 +3903,7 @@ int ChessEvaluation::EnpriseWhite()
                     lte mask      = *ptr++;
                     defender = squares[defend_square];
 
-                    // If the square is occupied by an defending (black) piece, and
+                    // If the square is occupied by a defending (black) piece, and
                     //  it matches a piece that defends down that ray we have found
                     //  a defender
                     if( IsBlack(defender) && (to_mask[defender]&mask) )
@@ -4204,7 +4204,7 @@ int ChessEvaluation::EnpriseBlack()
                     lte mask      = *ptr++;
                     defender = squares[defend_square];
 
-                    // If the square is occupied by an defending (white) piece, and
+                    // If the square is occupied by a defending (white) piece, and
                     //  it matches a piece that defends down that ray we have found
                     //  a defender
                     if( IsWhite(defender) && (to_mask[defender]&mask) )
@@ -5691,7 +5691,7 @@ void ChessEvaluation::GenLegalMoveListSorted( MOVELIST *list )
     // Call this before calls to EvaluateLeaf()
     Planning();
 
-    // Generate all moves, including illegal (eg put king in check) moves
+    // Generate all moves, including illegal (e.g. put king in check) moves
     GenMoveList( &list2 );
 
     // Loop copying the proven good ones
@@ -5854,7 +5854,7 @@ bool Move::NaturalIn( ChessRules *cr, const char *natural_in )
                     switch( move[len-2] )
                     {
                         case '=':
-                        case '1':   // we now allow '=' to be omitted, as eg ChessBase mobile seems to (sometimes?)
+                        case '1':   // we now allow '=' to be omitted, as e.g. ChessBase mobile seems to (sometimes?)
                         case '8':   break;
                         default:    okay = false;   break;
                     }
@@ -6191,7 +6191,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                     }
                 }
 
-                // Non capturing, promoting pawn move
+                // Non-capturing, promoting pawn move
                 else if( r=='8' )
                 {
                     if( *natural_in == '=' )    // now optional
@@ -6545,7 +6545,7 @@ bool Move::NaturalInFast( ChessRules *cr, const char *natural_in )
                     }
                 }
 
-                // Non capturing, promoting pawn move
+                // Non-capturing, promoting pawn move
                 else if( r=='1' )
                 {
                     if( *natural_in == '=' )    // now optional

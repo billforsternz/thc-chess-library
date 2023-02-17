@@ -853,7 +853,7 @@ void ChessPosition::Decompress( const CompressedPosition &src )
     //  Since a friendly pawn must be on 4th rank, save the actual 1st rank
     //  occupant in the 4th rank square.
     bool ep=false;
-    for( idx=0; !ep && idx<8; idx++ )   // loop thru black 1st rank
+    for( idx=0; !ep && idx<8; idx++ )   // loop through black 1st rank
     {
         if( squares[idx] == 'p' )
         {
@@ -863,7 +863,7 @@ void ChessPosition::Decompress( const CompressedPosition &src )
             enpassant_target = (Square)(idx+16);
         }
     }
-    for( idx=56; !ep && idx<64; idx++ ) // loop thru white 1st rank
+    for( idx=56; !ep && idx<64; idx++ ) // loop through white 1st rank
     {
         if( squares[idx] == 'P' )
         {
