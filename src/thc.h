@@ -643,6 +643,9 @@ public:
     //Generate atack moves for evaluation pruposes
     void BlackPawnCaptureMoves( MOVELIST *l, Square square );
 
+    // changes whose move is, true - white, false - black
+    void GiveMoveTo(bool site);
+
     // Evaluate a position, returns bool okay (not okay means illegal position)
     bool Evaluate( MOVELIST *list, TERMINAL &score_terminal );
 

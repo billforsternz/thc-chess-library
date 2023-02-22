@@ -3169,6 +3169,10 @@ void ChessRules::BlackPawnCaptureMoves(MOVELIST *l, Square square ) {
         ++(l->count);
     }
 }
+
+void ChessRules::GiveMoveTo(bool site) { 
+    white = site;
+}
 /****************************************************************************
  * Make a move (with the potential to undo)
  ****************************************************************************/
