@@ -646,6 +646,11 @@ public:
     // changes whose move is, true - white, false - black
     void GiveMoveTo(bool site);
 
+    // function that returns copy of position with all pieces black, for 
+    // evaluation purposes
+    thc::ChessRules MakePiecesBlack();
+
+
     // Evaluate a position, returns bool okay (not okay means illegal position)
     bool Evaluate( MOVELIST *list, TERMINAL &score_terminal );
 
