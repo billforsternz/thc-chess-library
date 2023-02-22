@@ -1053,14 +1053,32 @@ void ChessRules::WhitePawnCaptureMoves(MOVELIST *l, Square square ) {
         m.src = square;
         m.dst = NW(square);
         l->moves[l->count] = m;
+        ++(l->count);
     }
     if(FILE(square) != 'h') {
         q.src = square;
         q.dst = NE(square);
         l->moves[l->count] = q;
+        ++(l->count);
     }
 }
 
+void ChessRules::BlackPawnCaptureMoves(MOVELIST *l, Square square ) {
+    thc::Move m;
+    thc::Move q;
+    if(FILE(square) != 'a') {
+        m.src = square;
+        m.dst = SW(square);
+        l->moves[l->count] = m;
+        ++(l->count);
+    }
+    if(FILE(square) != 'h') {
+        q.src = square;
+        q.dst = SE(square);
+        l->moves[l->count] = q;
+        ++(l->count);
+    }
+}
 
 /****************************************************************************
  * Make a move (with the potential to undo)
