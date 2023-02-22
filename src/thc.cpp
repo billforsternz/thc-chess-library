@@ -3136,7 +3136,20 @@ void ChessRules::BlackPawnMoves( MOVELIST *l, Square square )
         }
     }
 }
-
+void ChessRules::WhitePawnCaptureMoves(MOVELIST *l, Square square ) {
+    thc::Move m;
+    thc::Move q;
+    if(FILE(square) != 'a') {
+        m.src = square;
+        m.dst = NW(square);
+        l->moves[l->count] = m;
+    }
+    if(FILE(square) != 'h') {
+        q.src = square;
+        q.dst = NE(square);
+        l->moves[l->count] = q;
+    }
+}
 /****************************************************************************
  * Make a move (with the potential to undo)
  ****************************************************************************/

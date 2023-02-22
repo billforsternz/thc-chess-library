@@ -616,7 +616,7 @@ public:
     void TestInternals();
 
 // Private stuff
-protected:
+//protected:
 
     // Generate a list of all possible moves in a position (including
     //  illegally "moving into check")
@@ -636,6 +636,12 @@ protected:
 
     // Generate list of black pawn moves
     void BlackPawnMoves( MOVELIST *l, Square square );
+
+    //Generate atack moves for evaluation pruposes
+    void WhitePawnCaptureMoves( MOVELIST *l, Square square );
+
+    //Generate atack moves for evaluation pruposes
+    void BlackPawnCaptureMoves( MOVELIST *l, Square square );
 
     // Evaluate a position, returns bool okay (not okay means illegal position)
     bool Evaluate( MOVELIST *list, TERMINAL &score_terminal );
