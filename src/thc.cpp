@@ -3173,11 +3173,24 @@ void ChessRules::BlackPawnCaptureMoves(MOVELIST *l, Square square ) {
 void ChessRules::GiveMoveTo(bool site) { 
     white = site;
 }
+thc::ChessRules ChessRules::MakePiecesWhite() { 
+    thc::ChessRules new_position;
+    for(int i = 0; i < 64 + 1;++i) {
+        if(squares[i] <= 'a' && squares[i] >= 'z') {
+            new_position.squares[i] = squares[i] + 'A' - 'a';
+        }
+        else {
+            new_position.squares[i] = squares[i];
+        }
+    }
+    new_position.white = false; // we will be moving black piece
+    return new_position;
+}
 
 thc::ChessRules ChessRules::MakePiecesBlack() { 
     thc::ChessRules new_position;
     for(int i = 0; i < 64 + 1;++i) {
-        if(square[i] <= 'Z' && square[i] >= 'A') {
+        if(squares[i] <= 'Z' && squares[i] >= 'A') {
             new_position.squares[i] = squares[i] + 'a' - 'A';
         }
         else {

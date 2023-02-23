@@ -648,6 +648,10 @@ public:
 
     // function that returns copy of position with all pieces black, for 
     // evaluation purposes
+    thc::ChessRules MakePiecesWhite();
+    
+    // function that returns copy of position with all pieces black, for 
+    // evaluation purposes
     thc::ChessRules MakePiecesBlack();
 
 
