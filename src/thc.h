@@ -643,6 +643,8 @@ public:
     //Generate atack moves for evaluation pruposes
     void BlackPawnCaptureMoves( MOVELIST *l, Square square );
 
+    void EvalLegalKingMoves( MOVELIST *l, Square square );
+
     // changes whose move is, true - white, false - black
     void GiveMoveTo(bool site);
 
