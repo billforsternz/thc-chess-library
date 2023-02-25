@@ -95,6 +95,8 @@ inline Square& operator++ ( Square& sq )
 #define IRANK(sq)   (  7 - ((((int)(sq)) >>3) & 0x07) )         // eg c5->4
 #define SOUTH(sq)   (  (Square)((sq) + 8) )                     // eg c5->c4
 #define NORTH(sq)   (  (Square)((sq) - 8) )                     // eg c5->c6
+#define WEST(sq)    (  (Square)((sq) - 1) )                     // eg c5->b5
+#define EAST(sq)    (  (Square)((sq) + 1) )                     // ef c5->d5
 #define SW(sq)      (  (Square)((sq) + 7) )                     // eg c5->b4
 #define SE(sq)      (  (Square)((sq) + 9) )                     // eg c5->d4
 #define NW(sq)      (  (Square)((sq) - 9) )                     // eg c5->b6

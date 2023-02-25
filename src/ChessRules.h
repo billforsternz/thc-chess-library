@@ -144,6 +144,8 @@ public:
     //Generate atack moves for evaluation pruposes
     void BlackPawnCaptureMoves( MOVELIST *l, Square square );
 
+    void EvalLegalKingMoves( MOVELIST *l, Square square );
+
     // function that returns copy of position with all pieces white, for 
     // evaluation purposes
     thc::ChessRules MakePiecesWhite();

@@ -1079,6 +1079,49 @@ void ChessRules::BlackPawnCaptureMoves(MOVELIST *l, Square square ) {
         ++(l->count);
     }
 }
+void ChessRules::EvalLegalKingMoves( MOVELIST *l, Square square ) 
+{
+    Move m;
+    m.src = square;
+    if(get_file(square) != 'a')
+    {
+        if(get_rank(square) != '1')
+        {
+            m.dst = SW(square);
+            l->moves[l->count] = m;
+            l->count++;
+        }
+        if(get_rank(square) != '8')
+        {
+            m.dst = NW(square);
+            l->moves[l->count] = m;
+            l->count++;
+        }
+        m.dst = WEST(square);
+        l->moves[l->count] = m;
+        l->count++;
+    }
+    if(get_file(square) != 'h')
+    {
+        if(get_rank(square) != '1')
+        {
+            m.dst = SE(square);
+            l->moves[l->count] = m;
+            l->count++;
+        }
+        if(get_rank(square) != '8')
+        {
+            m.dst = NE(square);
+            l->moves[l->count] = m;
+            l->count++;           
+        }
+        m.dst = EAST(square);
+        l->moves[l->count] = m;
+        l->count++;
+    }
+}
+
+
 
 void ChessRules::GiveMoveTo(bool site) { 
     white = site;
