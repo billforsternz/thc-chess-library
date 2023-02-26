@@ -1141,17 +1141,17 @@ Square ChessRules::south(Square square) {
 Square ChessRules::north(Square square) {
     if(get_rank(square) == '8')
         return (Square)(64);
-    return SOUTH(square);
+    return NORTH(square);
 }
 Square ChessRules::west(Square square) {
     if(get_file(square) == 'a')
         return (Square)(64);
-    return SOUTH(square);
+    return WEST(square);
 }
 Square ChessRules::east(Square square) {
     if(get_file(square) == 'h')
         return (Square)(64);
-    return SOUTH(square);
+    return EAST(square);
     
 }
 
