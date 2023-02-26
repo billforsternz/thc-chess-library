@@ -643,6 +643,18 @@ public:
     //Generate atack moves for evaluation pruposes
     void BlackPawnCaptureMoves( MOVELIST *l, Square square );
 
+    // if on edge of the board will return square 64, otherwise returns normally S
+    Square south(Square square);
+
+    // if on edge of the board will return square 64, otherwise returns normally N
+    Square north(Square square);
+
+    // if on edge of the board will return square 64, otherwise returns normally W
+    Square west(Square square);
+
+    // if on edge of the board will return square 64, otherwise returns normally E
+    Square east(Square square);
+
     void EvalLegalKingMoves( MOVELIST *l, Square square );
 
     void EvalLegalRookMoves( MOVELIST *l, Square square );
