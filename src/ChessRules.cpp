@@ -1160,40 +1160,40 @@ void ChessRules::EvalLegalRookMoves( MOVELIST *l, Square square )
     Move m;
     m.src = square;
     thc::Square new_square = square;
-    new_square = NORTH(new_square);
+    new_square = north(new_square);
     while (new_square >= 0 && new_square < 64) {
         m.dst = new_square;
         l->moves[l->count] = m;
         l->count++;
         if(squares[new_square] != ' ') break;
-        new_square = NORTH(new_square);
+        new_square = north(new_square);
     }
 
-    new_square = SOUTH(square);
+    new_square = south(square);
     while (new_square >= 0 && new_square < 64) {
         m.dst = new_square;
         l->moves[l->count] = m;
         l->count++;
         if(squares[new_square] != ' ') break;
-        new_square = SOUTH(new_square);
+        new_square = south(new_square);
     }
 
-    new_square = WEST(square);
+    new_square = west(square);
     while (new_square >= 0 && new_square < 64) {
         m.dst = new_square;
         l->moves[l->count] = m;
         l->count++;
         if(squares[new_square] != ' ') break;
-        new_square = WEST(new_square);
+        new_square = west(new_square);
     }
 
-    new_square = EAST(square);
+    new_square = east(square);
     while (new_square >= 0 && new_square < 64) {
         m.dst = new_square;
         l->moves[l->count] = m;
         l->count++;
         if(squares[new_square] != ' ') break;
-        new_square = EAST(new_square);
+        new_square = east(new_square);
     }
 }
 
