@@ -1133,6 +1133,47 @@ void ChessRules::EvalLegalKingMoves( MOVELIST *l, Square square )
     }
 }
 
+void ChessRules::EvalLegalRookMoves( MOVELIST *l, Square square ) 
+{
+    Move m;
+    m.src = square;
+    thc::Square new_square = square;
+    new_square = NORTH(new_square);
+    while (new_square >= 0 && new_square < 64) {
+        m.dst = new_square;
+        l->moves[l->count] = m;
+        l->count++;
+        if(squares[new_square] != ' ') break;
+        new_square = NORTH(new_square);
+    }
+
+    new_square = SOUTH(square);
+    while (new_square >= 0 && new_square < 64) {
+        m.dst = new_square;
+        l->moves[l->count] = m;
+        l->count++;
+        if(squares[new_square] != ' ') break;
+        new_square = SOUTH(new_square);
+    }
+
+    new_square = WEST(square);
+    while (new_square >= 0 && new_square < 64) {
+        m.dst = new_square;
+        l->moves[l->count] = m;
+        l->count++;
+        if(squares[new_square] != ' ') break;
+        new_square = WEST(new_square);
+    }
+
+    new_square = EAST(square);
+    while (new_square >= 0 && new_square < 64) {
+        m.dst = new_square;
+        l->moves[l->count] = m;
+        l->count++;
+        if(squares[new_square] != ' ') break;
+        new_square = EAST(new_square);
+    }
+}
 
 
 void ChessRules::GiveMoveTo(bool site) { 

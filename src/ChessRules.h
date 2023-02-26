@@ -146,6 +146,8 @@ public:
 
     void EvalLegalKingMoves( MOVELIST *l, Square square );
 
+    void EvalLegalRookMoves( MOVELIST *l, Square square );
+
     // function that returns copy of position with all pieces white, for 
     // evaluation purposes
     thc::ChessRules MakePiecesWhite();

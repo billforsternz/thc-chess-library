@@ -645,6 +645,8 @@ public:
 
     void EvalLegalKingMoves( MOVELIST *l, Square square );
 
+    void EvalLegalRookMoves( MOVELIST *l, Square square );
+
     // changes whose move is, true - white, false - black
     void GiveMoveTo(bool site);
 
