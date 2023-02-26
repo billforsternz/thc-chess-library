@@ -3212,6 +3212,18 @@ void ChessRules::EvalLegalKingMoves( MOVELIST *l, Square square )
         l->moves[l->count] = m;
         l->count++;
     }
+    if(get_rank(square) != '1')
+    {
+        m.dst = SOUTH(square);
+        l->moves[l->count] = m;
+        l->count++;
+    }
+    if(get_rank(square) != '8')
+    {
+        m.dst = NORTH(square);
+        l->moves[l->count] = m;
+        l->count++;
+    }
 }
 
 void ChessRules::GiveMoveTo(bool site) { 
