@@ -157,9 +157,19 @@ public:
     // if on edge of the board will return square 64, otherwise returns normally E
     Square east(Square square);
 
+    Square sw(Square square);
+
+    Square se(Square square);
+
+    Square nw(Square square); 
+
+    Square ne(Square square);
+
     void EvalLegalKingMoves( MOVELIST *l, Square square );
 
     void EvalLegalRookMoves( MOVELIST *l, Square square );
+
+    void EvalLegalBishopMoves( MOVELIST *l, Square square );
 
     // function that returns copy of position with all pieces white, for 
     // evaluation purposes

@@ -1155,6 +1155,28 @@ Square ChessRules::east(Square square) {
     
 }
 
+Square ChessRules::sw(Square square) {
+    if(get_rank(square) == '1' || get_file(square) == 'a')
+        return (Square)(64);
+    return SW(square);
+}
+Square ChessRules::se(Square square) {
+    if(get_rank(square) == '1'|| get_file(square) == 'h')
+        return (Square)(64);
+    return SE(square);
+}
+Square ChessRules::nw(Square square) {
+    if(get_rank(square) == '8' || get_file(square) == 'a')
+        return (Square)(64);
+    return NW(square);
+}
+Square ChessRules::ne(Square square) {
+    if(get_rank(square) == '8' || get_file(square) == 'h')
+        return (Square)(64);
+    return NE(square);
+    
+}
+
 void ChessRules::EvalLegalRookMoves( MOVELIST *l, Square square ) 
 {
     Move m;
@@ -1194,6 +1216,49 @@ void ChessRules::EvalLegalRookMoves( MOVELIST *l, Square square )
         l->count++;
         if(squares[new_square] != ' ') break;
         new_square = east(new_square);
+    }
+}
+
+
+void ChessRules::EvalLegalBishopMoves( MOVELIST *l, Square square ) 
+{
+    Move m;
+    m.src = square;
+    thc::Square new_square = square;
+    new_square = nw(new_square);
+    while (new_square >= 0 && new_square < 64) {
+        m.dst = new_square;
+        l->moves[l->count] = m;
+        l->count++;
+        if(squares[new_square] != ' ') break;
+        new_square = nw(new_square);
+    }
+
+    new_square = ne(square);
+    while (new_square >= 0 && new_square < 64) {
+        m.dst = new_square;
+        l->moves[l->count] = m;
+        l->count++;
+        if(squares[new_square] != ' ') break;
+        new_square = ne(new_square);
+    }
+
+    new_square = sw(square);
+    while (new_square >= 0 && new_square < 64) {
+        m.dst = new_square;
+        l->moves[l->count] = m;
+        l->count++;
+        if(squares[new_square] != ' ') break;
+        new_square = sw(new_square);
+    }
+
+    new_square = se(square);
+    while (new_square >= 0 && new_square < 64) {
+        m.dst = new_square;
+        l->moves[l->count] = m;
+        l->count++;
+        if(squares[new_square] != ' ') break;
+        new_square = se(new_square);
     }
 }
 
