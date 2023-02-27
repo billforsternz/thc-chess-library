@@ -171,6 +171,9 @@ public:
 
     void EvalLegalBishopMoves( MOVELIST *l, Square square );
 
+    void EvalLegalQueenMoves( MOVELIST *l, Square square );
+
+    void EvalLegalKnightMoves( MOVELIST *l, Square square );
     // function that returns copy of position with all pieces white, for 
     // evaluation purposes
     thc::ChessRules MakePiecesWhite();

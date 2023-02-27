@@ -1262,6 +1262,67 @@ void ChessRules::EvalLegalBishopMoves( MOVELIST *l, Square square )
     }
 }
 
+void ChessRules::EvalLegalQueenMoves( MOVELIST *l, Square square ) 
+{
+    ChessRules::EvalLegalBishopMoves(l,square);
+    ChessRules::EvalLegalRookMoves(l, square);
+}
+
+void ChessRules::EvalLegalKnightMoves(MOVELIST *l, Square square)
+{
+    Move m;
+    m.src = square;
+    Square straight;
+    straight = north(nw(square));
+    if(straight != 64) {
+        m.dst = straight;
+        l->moves[l->count] = m;
+        l->count++;
+    }
+    straight = north(ne(square));
+    if(straight != 64) {
+        m.dst = straight;
+        l->moves[l->count] = m;
+        l->count++;
+    }
+    straight = south(sw(square));
+    if(straight != 64) {
+        m.dst = straight;
+        l->moves[l->count] = m;
+        l->count++;
+    }
+    straight = south(se(square));
+    if(straight != 64) {
+        m.dst = straight;
+        l->moves[l->count] = m;
+        l->count++;
+    }
+    straight = west(nw(square));
+    if(straight != 64) {
+        m.dst = straight;
+        l->moves[l->count] = m;
+        l->count++;
+    }
+    straight = west(sw(square));
+    if(straight != 64) {
+        m.dst = straight;
+        l->moves[l->count] = m;
+        l->count++;
+    }
+    straight = east(ne(square));
+    if(straight != 64) {
+        m.dst = straight;
+        l->moves[l->count] = m;
+        l->count++;
+    }
+    straight = east(se(square));
+    if(straight != 64) {
+        m.dst = straight;
+        l->moves[l->count] = m;
+        l->count++;
+    }
+
+}
 
 void ChessRules::GiveMoveTo(bool site) { 
     white = site;
