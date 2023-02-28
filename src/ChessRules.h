@@ -138,13 +138,6 @@ public:
     // Generate list of black pawn moves
     void BlackPawnMoves( MOVELIST *l, Square square );
 
-    //Generate atack moves for evaluation pruposes
-    void WhitePawnCaptureMoves( MOVELIST *l, Square square );
-
-    //Generate atack moves for evaluation pruposes
-    void BlackPawnCaptureMoves( MOVELIST *l, Square square );
-
-
     // if on edge of the board will return square 64, otherwise returns normally S
     Square south(Square square);
 
@@ -165,6 +158,12 @@ public:
 
     Square ne(Square square);
 
+    //Generate atack moves for evaluation pruposes
+    void EvalLegalWhitePawnMoves( MOVELIST *l, Square square );
+
+    //Generate atack moves for evaluation pruposes
+    void EvalLegalBlackPawnMoves( MOVELIST *l, Square square );
+
     void EvalLegalKingMoves( MOVELIST *l, Square square );
 
     void EvalLegalRookMoves( MOVELIST *l, Square square );
@@ -174,20 +173,7 @@ public:
     void EvalLegalQueenMoves( MOVELIST *l, Square square );
 
     void EvalLegalKnightMoves( MOVELIST *l, Square square );
-    // function that returns copy of position with all pieces white, for 
-    // evaluation purposes
-    thc::ChessRules MakePiecesWhite();
 
-    // function that returns copy of position with all pieces black, for 
-    // evaluation purposes
-    thc::ChessRules MakePiecesBlack();
-
-
-
-
-
-    // changes whose move is, true - white, false - black
-    void GiveMoveTo(bool site);
 
 
     // Evaluate a position, returns bool okay (not okay means illegal position)
