@@ -3173,42 +3173,50 @@ void ChessRules::BlackPawnCaptureMoves(MOVELIST *l, Square square ) {
 }
 
 Square ChessRules::south(Square square) {
+    if(square == 64) return square;
     if(get_rank(square) == '1')
         return (Square)(64);
     return SOUTH(square);
 }
 Square ChessRules::north(Square square) {
+    if(square == 64) return square;
     if(get_rank(square) == '8')
         return (Square)(64);
     return NORTH(square);
 }
 Square ChessRules::west(Square square) {
+    if(square == 64) return square;
     if(get_file(square) == 'a')
         return (Square)(64);
     return WEST(square);
 }
 Square ChessRules::east(Square square) {
+    if(square == 64) return square;
     if(get_file(square) == 'h')
         return (Square)(64);
     return EAST(square);
 }
 
 Square ChessRules::sw(Square square) {
+    if(square == 64) return square;
     if(get_rank(square) == '1' || get_file(square) == 'a')
         return (Square)(64);
     return SW(square);
 }
 Square ChessRules::se(Square square) {
+    if(square == 64) return square;
     if(get_rank(square) == '1'|| get_file(square) == 'h')
         return (Square)(64);
     return SE(square);
 }
 Square ChessRules::nw(Square square) {
+    if(square == 64) return square;
     if(get_rank(square) == '8' || get_file(square) == 'a')
         return (Square)(64);
     return NW(square);
 }
 Square ChessRules::ne(Square square) {
+    if(square == 64) return square;
     if(get_rank(square) == '8' || get_file(square) == 'h')
         return (Square)(64);
     return NE(square);
