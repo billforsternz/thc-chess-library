@@ -1219,7 +1219,7 @@ bool ChessPosition::Forsyth( const char *txt )
 /****************************************************************************
  * Publish chess position and supplementary info in forsyth notation
  ****************************************************************************/
-std::string ChessPosition::ForsythPublish()
+std::string ChessPosition::ForsythPublish() const
 {
     int i, empty=0, file=0, rank=7, save_file=0, save_rank=0;
     Square sq;
