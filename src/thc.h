@@ -470,7 +470,7 @@ public:
     virtual bool Forsyth( const char *txt );
 
     // Publish chess position and supplementary info in forsyth notation
-    std::string ForsythPublish();
+    std::string ForsythPublish() const;
 
     // Compress a ChessPosition into 24 bytes, return 16-bit hash
     unsigned short Compress( CompressedPosition &dst ) const;
